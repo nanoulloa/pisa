@@ -1,0 +1,14 @@
+{
+  "name": "pisa",
+  "private": true,
+  "description": "Pisa tells you whether a viral video is physically possible.",
+  "license": "MIT",
+  "packageManager": "npm@11.13.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/contracts"
+  ]
+}

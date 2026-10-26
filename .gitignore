@@ -1,0 +1,32 @@
+# Secrets. .env.example is the committed template.
+.env
+.env.*
+!.env.example
+
+# Video clips and spike output (they can show people, so they are never committed)
+eval/raw/
+**/spikes/out/
+
+# Python
+__pycache__/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Node
+node_modules/
+.next/
+
+# macOS
+.DS_Store
+
+# Local spend ledger for paid API calls
+.pisa/
+
+# Test and build output
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+test-results/
+playwright-report/

@@ -1,0 +1,18 @@
+# uv workspace root: one lockfile for every Python package in the repo.
+[tool.uv.workspace]
+members = ["services/engine", "packages/contracts/python"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["packages/contracts/python/src/pisa_contracts/models.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "S", "PT"]
+ignore = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
