@@ -249,5 +249,22 @@
     "toggle": "Cambiar tema",
     "toDark": "Cambiar a tema oscuro",
     "toLight": "Cambiar a tema claro"
+  },
+  "WhatsApp": {
+    "welcome": "Hola, soy Pisa. Reenvíame un video en el que algo caiga, se lance o rebote y te digo si la física real pudo producirlo. No reviso rostros, voces ni sincronización de labios.",
+    "received": "Recibido. Estoy midiendo cómo se mueve lo que aparece y te respondo en menos de un minuto. Pisa borra tu video en un máximo de 24 horas y solo guarda las mediciones.",
+    "onlyVideos": "Solo puedo revisar videos. Reenvíame el video que quieres comprobar.",
+    "tooLarge": "Este video pesa más de 16 MB. Envía uno más corto, de hasta 60 segundos.",
+    "rateLimited": "Ya revisaste muchos videos en la última hora. Vuelve a intentarlo más tarde.",
+    "busy": "Pisa está recibiendo muchos videos ahora mismo. Vuelve a intentarlo en un rato.",
+    "frequentlyForwarded": "Este video se ha reenviado muchas veces.",
+    "details": "Mediciones y evidencia: {link}",
+    "tryAnother": "Puedes probar con otro video.",
+    "legend": {
+      "fit": "En el video, el círculo verde lima sigue el camino más cercano que permite la gravedad real.",
+      "earth_gravity": "En el video, el círculo verde lima muestra adónde lo llevaría la gravedad de la Tierra.",
+      "partner": "En el video, cada círculo verde lima muestra dónde estaría el objeto si los dos cayeran juntos.",
+      "elastic_bounce": "En el video, el círculo verde lima muestra el rebote más alto que permite la física real."
+    }
   }
 }

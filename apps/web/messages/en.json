@@ -249,5 +249,22 @@
     "toggle": "Change theme",
     "toDark": "Switch to dark theme",
     "toLight": "Switch to light theme"
+  },
+  "WhatsApp": {
+    "welcome": "Hi, I'm Pisa. Forward me a video where something falls, is thrown or bounces, and I'll tell you whether real physics could have made it. I don't check faces, voices or lip sync.",
+    "received": "Got it. I'm measuring how things move in it and will reply in under a minute. Pisa deletes your video within 24 hours and keeps only the measurements.",
+    "onlyVideos": "I can only check videos. Forward me the video you want to check.",
+    "tooLarge": "This video is larger than 16 MB. Send a shorter one, up to 60 seconds.",
+    "rateLimited": "You've checked many videos in the last hour. Try again later.",
+    "busy": "Pisa is getting a lot of videos right now. Try again in a while.",
+    "frequentlyForwarded": "This video has been forwarded many times.",
+    "details": "Measurements and evidence: {link}",
+    "tryAnother": "You can try another video.",
+    "legend": {
+      "fit": "In the video, the lime circle follows the closest path real gravity allows.",
+      "earth_gravity": "In the video, the lime circle shows where Earth's gravity would take it.",
+      "partner": "In the video, each lime circle shows where the object would be if both fell together.",
+      "elastic_bounce": "In the video, the lime circle shows the highest bounce real physics allows."
+    }
   }
 }

@@ -25,11 +25,13 @@ gen: ## Regenerate contract types, brand tokens CSS and logo SVGs
 		--extra-fields forbid --disable-timestamp --formatters ruff-format \
 		--custom-file-header '# Generated from $(SCHEMA) by `make gen`. Do not edit by hand.'
 	uv run python packages/contracts/python/embed_schema.py $(SCHEMA) $(PY_SCHEMA)
+	uv run python scripts/embed_messages.py apps/web/messages services/engine/src/pisa_engine/whatsapp/messages.py
 	uv run python brand/build_tokens.py
 	uv run python brand/logo/generate.py
 
 gen-check: gen ## Fail if generated types are out of date
-	git diff --exit-code -- packages/contracts brand apps/web/src/app/icon.svg apps/web/public/brand
+	git diff --exit-code -- packages/contracts brand apps/web/src/app/icon.svg apps/web/public/brand \
+		services/engine/src/pisa_engine/whatsapp/messages.py
 
 lint: ## Lint and check formatting
 	uv run ruff check .

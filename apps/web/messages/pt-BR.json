@@ -249,5 +249,22 @@
     "toggle": "Mudar tema",
     "toDark": "Mudar para o tema escuro",
     "toLight": "Mudar para o tema claro"
+  },
+  "WhatsApp": {
+    "welcome": "Oi, eu sou o Pisa. Encaminhe um vídeo em que algo cai, é arremessado ou quica e eu digo se a física real poderia ter produzido isso. Não verifico rostos, vozes nem sincronia labial.",
+    "received": "Recebido. Estou medindo como as coisas se movem e respondo em menos de um minuto. O Pisa apaga seu vídeo em até 24 horas e guarda só as medições.",
+    "onlyVideos": "Só consigo verificar vídeos. Encaminhe o vídeo que você quer verificar.",
+    "tooLarge": "Este vídeo tem mais de 16 MB. Envie um mais curto, de até 60 segundos.",
+    "rateLimited": "Você já verificou muitos vídeos na última hora. Tente de novo mais tarde.",
+    "busy": "O Pisa está recebendo muitos vídeos agora. Tente de novo daqui a pouco.",
+    "frequentlyForwarded": "Este vídeo já foi encaminhado muitas vezes.",
+    "details": "Medições e evidências: {link}",
+    "tryAnother": "Você pode tentar com outro vídeo.",
+    "legend": {
+      "fit": "No vídeo, o círculo verde-limão segue o caminho mais próximo que a gravidade real permite.",
+      "earth_gravity": "No vídeo, o círculo verde-limão mostra aonde a gravidade da Terra o levaria.",
+      "partner": "No vídeo, cada círculo verde-limão mostra onde o objeto estaria se os dois caíssem juntos.",
+      "elastic_bounce": "No vídeo, o círculo verde-limão mostra o quique mais alto que a física real permite."
+    }
   }
 }
