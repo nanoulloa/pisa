@@ -87,7 +87,9 @@ def render_evidence(
         "-vf", f"setpts={1 / rate:g}*PTS", "-r", f"{timebase.fps_num}/{timebase.fps_den}",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
         "-maxrate", "2M", "-bufsize", "4M",
-        "-pix_fmt", "yuv420p", "-profile:v", "main", "-movflags", "+faststart", "-an",
+        # Main profile without B-frames, the moov box first: what WhatsApp on Android plays.
+        "-pix_fmt", "yuv420p", "-profile:v", "main", "-bf", "0",
+        "-movflags", "+faststart", "-an",
         str(output),
     ]  # fmt: skip
     encoder = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=subprocess.PIPE)  # noqa: S603
