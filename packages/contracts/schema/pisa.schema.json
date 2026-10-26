@@ -723,6 +723,36 @@
         }
       }
     },
+    "Stabilization": {
+      "description": "How camera motion was handled before measuring. Unreliable frames are dropped; cuts are in the ingest result.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applied",
+        "max_motion_px",
+        "frames",
+        "unreliable_frames"
+      ],
+      "properties": {
+        "applied": {
+          "type": "boolean",
+          "description": "False when the camera was still, or the background had nothing to follow."
+        },
+        "max_motion_px": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Largest displacement of a frame corner relative to the first frame of its shot."
+        },
+        "frames": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unreliable_frames": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "AnalysisResult": {
       "description": "Everything the result page and the WhatsApp reply need for one job.",
       "type": "object",
@@ -732,6 +762,7 @@
         "ingest",
         "plan",
         "tracks",
+        "stabilization",
         "tests",
         "verdict",
         "costs"
@@ -764,6 +795,16 @@
           "anyOf": [
             {
               "$ref": "#/$defs/TrackSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stabilization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Stabilization"
             },
             {
               "type": "null"

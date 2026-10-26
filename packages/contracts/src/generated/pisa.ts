@@ -337,6 +337,24 @@ export interface CostEntry {
   usd: number;
 }
 /**
+ * How camera motion was handled before measuring. Unreliable frames are dropped; cuts are in the ingest result.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "Stabilization".
+ */
+export interface Stabilization {
+  /**
+   * False when the camera was still, or the background had nothing to follow.
+   */
+  applied: boolean;
+  /**
+   * Largest displacement of a frame corner relative to the first frame of its shot.
+   */
+  max_motion_px: number;
+  frames: number;
+  unreliable_frames: number;
+}
+/**
  * Everything the result page and the WhatsApp reply need for one job.
  *
  * This interface was referenced by `PisaContracts`'s JSON-Schema
@@ -347,6 +365,7 @@ export interface AnalysisResult {
   ingest: IngestResult | null;
   plan: Plan | null;
   tracks: TrackSet | null;
+  stabilization: Stabilization | null;
   tests: TestResult[];
   verdict: Verdict | null;
   costs: CostEntry[];

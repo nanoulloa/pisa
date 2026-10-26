@@ -1,8 +1,8 @@
 """Runs one job through the stages, recording each stage as it starts so clients show real progress.
 
-Day-2 slice: ingest, track, measure, test and verdict. The planner (day 4) will choose the
-event windows and phrases; until then the whole clip is one event tracked with one phrase.
-Explanations are templated by the client from the verdict and measurements.
+Stages so far: ingest, track, stabilize, measure, test and verdict. The planner (day 4) will
+choose the event windows and phrases; until then the whole clip is one event tracked with one
+phrase. Explanations are templated by the client from the verdict and measurements.
 """
 
 from __future__ import annotations
@@ -12,14 +12,31 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from pisa_contracts import AnalysisResult, ErrorInfo, Job, Stage, TestResult, TrackSet
+from pisa_contracts import (
+    AnalysisResult,
+    ErrorInfo,
+    Job,
+    Stabilization,
+    Stage,
+    TestResult,
+    TrackedObject,
+    TrackSet,
+)
 from pisa_engine.ingest.normalize import IngestError, normalize
 from pisa_engine.jobs import JobStore
 from pisa_engine.model_api.spend import PaidCallsDisabledError, SpendCapExceededError
-from pisa_engine.physics.shape import free_fall_shape
-from pisa_engine.physics.trajectory import flight_phases, from_track
-from pisa_engine.tracking.segmenter import Segmenter
+from pisa_engine.physics.results import measurement, result
+from pisa_engine.physics.suite import run_tests
+from pisa_engine.physics.trajectory import Flight, from_track, segment_flight
+from pisa_engine.tracking.segmenter import Segmenter, frame_time
 from pisa_engine.verdict import decide
+from pisa_engine.vision.stabilize import (
+    MAX_UNRELIABLE_SHARE,
+    CameraPath,
+    boxes_by_frame,
+    estimate_camera_path,
+    stabilize,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +66,24 @@ async def run_job(job: Job, source: Path, work_dir: Path, deps: PipelineDeps) ->
             objects=objects,
         )
 
+        await progress.enter("stabilize")
+        path = await asyncio.to_thread(
+            estimate_camera_path, work_dir / "normalized.mp4", boxes_by_frame(objects)
+        )
+        cuts_s = [frame_time(ingest.timebase, cut) for cut in path.cuts]
+        ingest = ingest.model_copy(update={"scene_cuts_s": cuts_s})
+        stabilization = Stabilization(
+            applied=not path.static,
+            max_motion_px=round(path.max_motion_px, 2),
+            frames=len(path.to_reference),
+            unreliable_frames=path.unreliable_frames,
+        )
+
         await progress.enter("measure")
-        phases = [phase for obj in objects for phase in flight_phases(from_track(obj))]
+        flights, unmeasured = _measure(objects, path)
 
         await progress.enter("test")
-        results: list[TestResult] = [free_fall_shape(phase) for phase in phases]
+        results = unmeasured + run_tests(flights)
 
         await progress.enter("verdict")
         verdict = decide(results)
@@ -74,12 +104,40 @@ async def run_job(job: Job, source: Path, work_dir: Path, deps: PipelineDeps) ->
         ingest=ingest,
         plan=None,
         tracks=tracks,
+        stabilization=stabilization,
         tests=results,
         verdict=verdict,
         costs=[],
     )
     await asyncio.to_thread(deps.store.save_result, result)
     return await progress.finish()
+
+
+def _measure(
+    objects: list[TrackedObject], path: CameraPath
+) -> tuple[list[Flight], list[TestResult]]:
+    """Flights per object and shot, in stabilized coordinates.
+
+    An object seen mostly on frames the camera path cannot place is not measured; it gets an
+    insufficient-data result instead, so the verdict can say why.
+    """
+    flights: list[Flight] = []
+    unmeasured: list[TestResult] = []
+    for obj in objects:
+        share = path.unreliable_share(obj)
+        if share > MAX_UNRELIABLE_SHARE:
+            unmeasured.append(
+                result(
+                    "free_fall_shape",
+                    "insufficient_data",
+                    0.0,
+                    [measurement("unreliable_share", share, "1")],
+                    "camera_motion",
+                )
+            )
+            continue
+        flights.extend(segment_flight(from_track(shot)) for shot in stabilize(obj, path))
+    return flights, unmeasured
 
 
 class _Progress:

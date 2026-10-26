@@ -350,6 +350,26 @@ class CostEntry(BaseModel):
     usd: Annotated[float, Field(ge=0.0)]
 
 
+class Stabilization(BaseModel):
+    """
+    How camera motion was handled before measuring. Unreliable frames are dropped; cuts are in the ingest result.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    applied: bool
+    """
+    False when the camera was still, or the background had nothing to follow.
+    """
+    max_motion_px: Annotated[float, Field(ge=0.0)]
+    """
+    Largest displacement of a frame corner relative to the first frame of its shot.
+    """
+    frames: Annotated[int, Field(ge=0)]
+    unreliable_frames: Annotated[int, Field(ge=0)]
+
+
 class AnalysisResult(BaseModel):
     """
     Everything the result page and the WhatsApp reply need for one job.
@@ -362,6 +382,7 @@ class AnalysisResult(BaseModel):
     ingest: IngestResult | None
     plan: Plan | None
     tracks: TrackSet | None
+    stabilization: Stabilization | None
     tests: list[TestResult]
     verdict: Verdict | None
     costs: list[CostEntry]
