@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -37,6 +38,18 @@ class Settings(BaseSettings):
         default=REPO_ROOT / ".pisa" / "spend.jsonl", validation_alias="PISA_SPEND_LEDGER_PATH"
     )
     log_level: str = Field(default="INFO", validation_alias="PISA_LOG_LEVEL")
+
+    # Where jobs, uploads and results live on this machine.
+    data_dir: Path = Field(default=REPO_ROOT / ".pisa" / "data", validation_alias="PISA_DATA_DIR")
+    # "fake" tracks the synthetic ball by color for free; "sam" calls SAM 3.1.
+    segmenter: Literal["fake", "sam"] = Field(default="fake", validation_alias="PISA_SEGMENTER")
+    # Concept phrase sent to SAM until the planner (day 4) chooses one per clip.
+    default_phrase: str = Field(default="ball", validation_alias="PISA_DEFAULT_PHRASE")
+    max_upload_bytes: int = Field(
+        default=50_000_000, gt=0, validation_alias="PISA_MAX_UPLOAD_BYTES"
+    )
+    # Comma-separated origins allowed to call the API from a browser.
+    web_origins: str = Field(default="http://localhost:3000", validation_alias="PISA_WEB_ORIGINS")
 
 
 @lru_cache(maxsize=1)

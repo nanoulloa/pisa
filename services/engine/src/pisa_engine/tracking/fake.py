@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import cv2
@@ -21,21 +22,25 @@ class ColorSegmenter:
     async def track(
         self, video: Path, phrase: str, timebase: Timebase, *, policy: DataPolicy
     ) -> list[TrackedObject]:
-        capture = cv2.VideoCapture(str(video))
-        samples: list[TrackSample] = []
-        frame_index = 0
-        try:
-            while True:
-                ok, frame = capture.read()
-                if not ok:
-                    break
-                sample = _segment(frame, frame_index, timebase)
-                if sample is not None:
-                    samples.append(sample)
-                frame_index += 1
-        finally:
-            capture.release()
-        return [TrackedObject(phrase=phrase, object_id=0, samples=samples)] if samples else []
+        return await asyncio.to_thread(_track, video, phrase, timebase)
+
+
+def _track(video: Path, phrase: str, timebase: Timebase) -> list[TrackedObject]:
+    capture = cv2.VideoCapture(str(video))
+    samples: list[TrackSample] = []
+    frame_index = 0
+    try:
+        while True:
+            ok, frame = capture.read()
+            if not ok:
+                break
+            sample = _segment(frame, frame_index, timebase)
+            if sample is not None:
+                samples.append(sample)
+            frame_index += 1
+    finally:
+        capture.release()
+    return [TrackedObject(phrase=phrase, object_id=0, samples=samples)] if samples else []
 
 
 def _segment(frame: np.ndarray, frame_index: int, timebase: Timebase) -> TrackSample | None:

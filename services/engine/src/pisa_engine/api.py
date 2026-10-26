@@ -1,14 +1,122 @@
-"""HTTP API of the engine. Jobs arrive here from the web app and the WhatsApp webhook."""
+"""HTTP API of the engine. Jobs arrive here from the web app and, later, the WhatsApp webhook."""
 
 from __future__ import annotations
 
-from fastapi import FastAPI
+import shutil
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Annotated, Any
+from uuid import UUID, uuid4
 
+from fastapi import BackgroundTasks, FastAPI, Form, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from pisa_contracts import Job, Locale
 from pisa_engine import __version__
+from pisa_engine.jobs import JobStore
+from pisa_engine.model_api.client import MetaModelApiClient
+from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
+from pisa_engine.pipeline import PipelineDeps, run_job
+from pisa_engine.settings import Settings, get_settings
+from pisa_engine.storage import LocalStorage
+from pisa_engine.tracking.fake import ColorSegmenter
+from pisa_engine.tracking.sam import Sam31Segmenter
+from pisa_engine.tracking.segmenter import Segmenter
 
-app = FastAPI(title="Pisa engine", version=__version__)
+_CHUNK_BYTES = 1 << 20
 
 
-@app.get("/healthz")
-def healthz() -> dict[str, str]:
-    return {"status": "ok", "version": __version__}
+def create_app(settings: Settings | None = None, segmenter: Segmenter | None = None) -> FastAPI:
+    config = settings or get_settings()
+    store = JobStore(LocalStorage(config.data_dir))
+    deps = PipelineDeps(
+        segmenter=segmenter or _segmenter(config), store=store, phrase=config.default_phrase
+    )
+    app = FastAPI(title="Pisa engine", version=__version__)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[origin.strip() for origin in config.web_origins.split(",") if origin],
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    )
+
+    @app.get("/healthz")
+    def healthz() -> dict[str, str]:
+        return {"status": "ok", "version": __version__}
+
+    @app.post("/jobs", status_code=202, response_model=None)
+    async def create_job(
+        video: UploadFile,
+        background: BackgroundTasks,
+        locale: Annotated[Locale, Form()] = "en",
+    ) -> Job | JSONResponse:
+        job = Job(
+            id=uuid4(),
+            created_at=datetime.now(UTC),
+            source="web",
+            locale=locale,
+            data_policy="user",
+            status="queued",
+            stage=None,
+            error=None,
+        )
+        work_dir = config.data_dir / "work" / str(job.id)
+        work_dir.mkdir(parents=True, exist_ok=True)
+        source = work_dir / "source"
+        if not await _save_upload(video, source, config.max_upload_bytes):
+            shutil.rmtree(work_dir, ignore_errors=True)
+            return _error(413, "file_too_large")
+        store.save(job)
+        background.add_task(run_job, job, source, work_dir, deps)
+        return job
+
+    @app.get("/jobs/{job_id}", response_model=None)
+    def get_job(job_id: UUID) -> Job | JSONResponse:
+        job = store.get(job_id)
+        return job if job is not None else _error(404, "job_not_found")
+
+    @app.get("/jobs/{job_id}/result", response_model=None)
+    def get_result(job_id: UUID) -> Any:
+        result = store.get_result(job_id)
+        if result is None:
+            return _error(404, "result_not_ready")
+        return result
+
+    return app
+
+
+def _segmenter(config: Settings) -> Segmenter:
+    if config.segmenter == "fake":
+        return ColorSegmenter()
+    guard = SpendGuard(
+        enabled=config.paid_calls_enabled,
+        cap_usd=config.spend_cap_usd,
+        ledger=JsonlSpendLedger(config.spend_ledger_path),
+    )
+    client = MetaModelApiClient(
+        api_key=config.meta_api_key, base_url=config.meta_api_base_url, guard=guard
+    )
+    return Sam31Segmenter(client, model=config.sam_model)
+
+
+async def _save_upload(upload: UploadFile, path: Path, limit: int) -> bool:
+    """Streams the upload to disk. False, and nothing kept, if it exceeds `limit` bytes."""
+    written = 0
+    with path.open("wb") as file:
+        while chunk := await upload.read(_CHUNK_BYTES):
+            written += len(chunk)
+            if written > limit:
+                break
+            file.write(chunk)
+    if written > limit:
+        path.unlink(missing_ok=True)
+        return False
+    return True
+
+
+def _error(status: int, code: str) -> JSONResponse:
+    return JSONResponse(status_code=status, content={"error": {"code": code, "stage": None}})
+
+
+app = create_app()
