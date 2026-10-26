@@ -1,0 +1,96 @@
+/* Generated from brand/tokens.json by brand/build_tokens.py. Do not edit by hand. */
+:root {
+  --pisa-paper: #FBFCFC;
+  --pisa-ink: #0F3D3E;
+  --pisa-teal: #14746F;
+  --pisa-sage: #8EB69B;
+  --pisa-lime: #D4E64A;
+  --pisa-terracotta: #A3432A;
+  --pisa-near-black: #0A0D0D;
+  --pisa-mist: #E8EFED;
+  --pisa-teal-light: #6CC8BB;
+  --pisa-terracotta-light: #EC8A6E;
+  --color-surface: #FBFCFC;
+  --color-surface-raised: #F1F5F4;
+  --color-text: #0F3D3E;
+  --color-text-muted: #4D6766;
+  --color-border: #C5D3D1;
+  --color-grid: #DCE6E4;
+  --color-action: #14746F;
+  --color-action-hover: #0F5D59;
+  --color-on-action: #FFFFFF;
+  --color-accent: #D4E64A;
+  --color-on-accent: #0F3D3E;
+  --color-focus: #0F3D3E;
+  --color-ghost: #D4E64A;
+  --color-ghost-edge: #0F3D3E;
+  --color-measured: #0F3D3E;
+  --color-fit: #14746F;
+  --color-verdict-impossible: #A3432A;
+  --color-verdict-impossible-surface: #F7E7E1;
+  --color-verdict-consistent: #14746F;
+  --color-verdict-consistent-surface: #E1F0ED;
+  --color-verdict-inconclusive: #4F5F5E;
+  --color-verdict-inconclusive-surface: #EAEFEE;
+  --font-ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Bodoni Moda", "Bodoni 72", Didot, Georgia, serif;
+  --font-zh: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --line-height-latin: 1.5;
+  --line-height-zh: 1.6;
+  --radius-control: 2px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-surface: #0A0D0D;
+    --color-surface-raised: #131919;
+    --color-text: #E8EFED;
+    --color-text-muted: #9EB2AF;
+    --color-border: #2A3534;
+    --color-grid: #1E2827;
+    --color-action: #D4E64A;
+    --color-action-hover: #E2EF7C;
+    --color-on-action: #0A0D0D;
+    --color-accent: #D4E64A;
+    --color-on-accent: #0A0D0D;
+    --color-focus: #D4E64A;
+    --color-ghost: #D4E64A;
+    --color-ghost-edge: transparent;
+    --color-measured: #E8EFED;
+    --color-fit: #6CC8BB;
+    --color-verdict-impossible: #EC8A6E;
+    --color-verdict-impossible-surface: #2B1813;
+    --color-verdict-consistent: #6CC8BB;
+    --color-verdict-consistent-surface: #0E2724;
+    --color-verdict-inconclusive: #B3C2BF;
+    --color-verdict-inconclusive-surface: #1A2221;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-surface: #0A0D0D;
+  --color-surface-raised: #131919;
+  --color-text: #E8EFED;
+  --color-text-muted: #9EB2AF;
+  --color-border: #2A3534;
+  --color-grid: #1E2827;
+  --color-action: #D4E64A;
+  --color-action-hover: #E2EF7C;
+  --color-on-action: #0A0D0D;
+  --color-accent: #D4E64A;
+  --color-on-accent: #0A0D0D;
+  --color-focus: #D4E64A;
+  --color-ghost: #D4E64A;
+  --color-ghost-edge: transparent;
+  --color-measured: #E8EFED;
+  --color-fit: #6CC8BB;
+  --color-verdict-impossible: #EC8A6E;
+  --color-verdict-impossible-surface: #2B1813;
+  --color-verdict-consistent: #6CC8BB;
+  --color-verdict-consistent-surface: #0E2724;
+  --color-verdict-inconclusive: #B3C2BF;
+  --color-verdict-inconclusive-surface: #1A2221;
+  color-scheme: dark;
+}

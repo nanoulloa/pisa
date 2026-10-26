@@ -38,6 +38,10 @@ One entry per decision that would be expensive to undo: context, decision, why.
 
 **Context.** The product ships in English, Spanish, Simplified Chinese and Brazilian Portuguese, and no string may be hardcoded. **Decision.** next-intl with ICU messages and typed keys from the first page, with a test that all locales share keys and the agreed core terms. Full review of phrasing stays on day 8. **Why.** Retrofitting i18n means hunting strings; starting with it costs minutes.
 
+## 2026-10-26 · Brand: Plumb mark, Schibsted Grotesk and Bodoni Moda, terracotta for impossible
+
+**Context.** The brief asks for a letterless mark that works at 16 px in one color, an Italian modernist system on its palette, readable type with tabular figures and Latin Extended, and one restrained warning hue. **Decision.** The Plumb mark (a tower of four floors and a belfry leaning 4° beside a vertical drop line and sphere), chosen over Pair and Ghost after rendering all three at 16, 32 and 64 px. Schibsted Grotesk for interface and numbers (tabular figures, 99% of Latin Extended-A, read from the font file), Bodoni Moda for display at 32 px and up, Noto Sans SC for Chinese. Lime tuned to `#D4E64A`; terracotta `#A3432A` (light) and `#EC8A6E` (dark) for "Physically impossible". Tokens live in `brand/tokens.json` and generate `brand/tokens.css`. **Why.** Plumb is the only direction that names the place and states the method, and its solid shapes survive 16 px. Every text pair passes WCAG AA in both themes; lime and sage fail as lines on paper, so the ghost gets an ink edge there and sage only draws gridlines. Details in `brand/README.md`.
+
 ## 2026-10-26 · Brand exploration as an HTML board
 
 **Context.** The `/design` skill is not installed in this environment and the Pencil connector failed to start. **Decision.** Explore the logo, tokens and type in an HTML brand board published as a private Artifact, with the SVGs and tokens committed under `brand/`. **Why.** It shows real rendering at 16 px, in both themes and all four scripts, and the tokens feed the web app directly.

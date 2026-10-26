@@ -17,6 +17,7 @@
 - Web: Next.js 16 with next-intl in en, es, zh-CN and pt-BR, typed ICU messages, a language switcher, message tests and a Playwright smoke test.
 - CI: ruff, mypy strict, pytest, contract drift, ESLint, tsc strict, Vitest, build, Playwright and gitleaks.
 - Docs: README, architecture, decisions, demo outline and the eval shot list.
+- Brand: the Plumb mark chosen from three directions rendered at 16 to 128 px. Tokens for both themes with computed WCAG contrast, verdict states (icon, label and copy), and type checked against the font files. Favicons and app icon are in `brand/`, generated from code; the brand board is published as a private Artifact.
 
 ### Next (day 2: vertical slice)
 
@@ -29,4 +30,3 @@
 - **Real SAM 3.1 and Muse Spark runs:** waiting for the $150 credits to appear under Billing > free credits (claim form sent Oct 26). Paid calls stay disabled until then.
 - **Real clips:** the drop, throw and bounce from the shot list in [eval/README.md](../eval/README.md).
 - **Accounts for day 2:** Supabase, Modal and Vercel.
-- **Brand board:** proposed as a separate session and not started yet.

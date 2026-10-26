@@ -14,7 +14,7 @@ setup: ## Install Node and Python dependencies and the test browser
 	uv sync --all-packages --all-groups
 	npx --workspace @pisa/web playwright install chromium
 
-gen: ## Regenerate TypeScript and Pydantic types from the JSON Schema
+gen: ## Regenerate contract types, brand tokens CSS and logo SVGs
 	npm run gen --workspace @pisa/contracts
 	uv run datamodel-codegen \
 		--input $(SCHEMA) --input-file-type jsonschema --output $(PY_MODELS) \
@@ -23,9 +23,11 @@ gen: ## Regenerate TypeScript and Pydantic types from the JSON Schema
 		--use-annotated --use-type-alias --field-constraints --use-field-description --use-schema-description \
 		--extra-fields forbid --disable-timestamp --formatters ruff-format \
 		--custom-file-header '# Generated from $(SCHEMA) by `make gen`. Do not edit by hand.'
+	uv run python brand/build_tokens.py
+	uv run python brand/logo/generate.py
 
 gen-check: gen ## Fail if generated types are out of date
-	git diff --exit-code -- packages/contracts
+	git diff --exit-code -- packages/contracts brand
 
 lint: ## Lint and check formatting
 	uv run ruff check .
@@ -33,7 +35,7 @@ lint: ## Lint and check formatting
 	npm run lint --workspaces --if-present
 
 typecheck: ## Strict type checks (mypy, tsc)
-	uv run mypy services/engine scripts packages/contracts/python/src
+	uv run mypy services/engine scripts brand packages/contracts/python/src
 	npm run typecheck --workspaces --if-present
 
 test: ## Unit tests (never call paid APIs)
