@@ -52,22 +52,47 @@ def from_track(obj: TrackedObject) -> Trajectory:
     )
 
 
-def flight_phases(trajectory: Trajectory, *, min_samples: int = 8) -> list[Trajectory]:
-    """Split a track into free-flight phases.
+@dataclass(frozen=True, slots=True)
+class Bounce:
+    """Two flight phases on either side of one contact with the ground."""
+
+    before: Trajectory
+    after: Trajectory
+    contact_t: float
+    contact_y: float
+
+
+@dataclass(frozen=True, slots=True)
+class Flight:
+    phases: list[Trajectory]
+    bounces: list[Bounce]
+
+
+def segment_flight(trajectory: Trajectory, *, min_samples: int = 8) -> Flight:
+    """Split a track into free-flight phases and the bounces between them.
 
     Drops the rest before release (keeping the release frame) and the rest after landing,
     then cuts at every bounce. The bounce frame belongs to no phase: the object is in
-    contact there. Phases shorter than `min_samples` are dropped.
+    contact there. Phases shorter than `min_samples` are dropped, and so are bounces next
+    to them.
     """
     start, stop = _moving_span(trajectory)
     if stop - start < min_samples:
-        return []
-    cuts = [i for i in range(start + 2, stop - 2) if _is_bounce(trajectory.y, i)]
-    phases = []
-    for left, right in pairwise([start - 1, *cuts, stop]):
-        if right - (left + 1) >= min_samples:
-            phases.append(trajectory.window(left + 1, right))
-    return phases
+        return Flight(phases=[], bounces=[])
+    contacts = [i for i in range(start + 2, stop - 2) if _is_bounce(trajectory.y, i)]
+    windows = [(left + 1, right) for left, right in pairwise([start - 1, *contacts, stop])]
+    pieces = [trajectory.window(lo, hi) if hi - lo >= min_samples else None for lo, hi in windows]
+    bounces = [
+        Bounce(before, after, float(trajectory.t[contact]), float(trajectory.y[contact]))
+        for before, after, contact in zip(pieces, pieces[1:], contacts, strict=False)
+        if before is not None and after is not None
+    ]
+    return Flight(phases=[piece for piece in pieces if piece is not None], bounces=bounces)
+
+
+def flight_phases(trajectory: Trajectory, *, min_samples: int = 8) -> list[Trajectory]:
+    """The free-flight phases of a track. See `segment_flight`."""
+    return segment_flight(trajectory, min_samples=min_samples).phases
 
 
 def _moving_span(trajectory: Trajectory) -> tuple[int, int]:
