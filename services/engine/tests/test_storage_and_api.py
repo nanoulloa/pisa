@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from pisa_engine import __version__
 from pisa_engine.api import create_app
@@ -104,6 +106,48 @@ def test_sam_jobs_stop_at_the_kill_switch(settings: Settings, clips: dict[str, P
     created = _upload(client, clips["free_fall"])
     job = client.get(f"/jobs/{created['id']}").json()
     assert job["error"] == {"code": "paid_calls_disabled", "stage": "track"}
+
+
+def test_bodies_over_the_limit_are_cut_off_while_they_arrive(settings: Settings) -> None:
+    client = TestClient(create_app(settings.model_copy(update={"max_upload_bytes": 1000})))
+    declared = client.post("/jobs", content=b"x" * 200_000, headers={"content-type": "video/mp4"})
+    assert declared.status_code == 413
+
+    def chunks() -> Iterator[bytes]:  # Chunked: no Content-Length to check up front.
+        for _ in range(100):
+            yield b"x" * 4096
+
+    form = {"content-type": "multipart/form-data; boundary=pisa"}
+    streamed = client.post("/jobs", content=chunks(), headers=form)
+    assert streamed.status_code == 413
+    assert streamed.json()["error"]["code"] == "file_too_large"
+
+
+def test_jobs_are_rate_limited_per_client(settings: Settings, clips: dict[str, Path]) -> None:
+    client = TestClient(create_app(settings.model_copy(update={"jobs_per_hour": 2})))
+    for _ in range(2):
+        _upload(client, clips["free_fall"])
+    with clips["free_fall"].open("rb") as video:
+        response = client.post("/jobs", files={"video": ("clip.mp4", video, "video/mp4")})
+    assert response.status_code == 429
+    assert response.json()["error"]["code"] == "rate_limited"
+
+
+def test_engine_token_is_required_when_configured(
+    settings: Settings, clips: dict[str, Path]
+) -> None:
+    token = SecretStr("s3cret-engine-token")
+    client = TestClient(create_app(settings.model_copy(update={"engine_token": token})))
+    with clips["free_fall"].open("rb") as video:
+        refused = client.post("/jobs", files={"video": ("clip.mp4", video, "video/mp4")})
+    assert refused.status_code == 401
+    with clips["free_fall"].open("rb") as video:
+        accepted = client.post(
+            "/jobs",
+            files={"video": ("clip.mp4", video, "video/mp4")},
+            headers={"Authorization": "Bearer s3cret-engine-token"},
+        )
+    assert accepted.status_code == 202
 
 
 def test_unknown_jobs_and_locales(client: TestClient, clips: dict[str, Path]) -> None:

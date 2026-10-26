@@ -64,11 +64,14 @@ async def test_kill_switch_blocks_before_any_request(tmp_path: Path) -> None:
         await client.upload_file(video)
     with pytest.raises(PaidCallsDisabledError):
         await client.create_response(
-            {"model": "muse-spark-1.3", "input": "hi"}, policy="internal", worst_case_usd=0.001
+            {"model": "muse-spark-1.3", "input": "hi"},
+            policy="internal",
+            worst_case_usd=0.001,
+            stage="plan",
         )
     with pytest.raises(PaidCallsDisabledError):
         async for _ in client.stream_response(
-            {"model": "sam-3.1", "input": []}, policy="internal", worst_case_usd=0.01
+            {"model": "sam-3.1", "input": []}, policy="internal", worst_case_usd=0.01, charge=[]
         ):
             pass
     assert recorder.requests == []
@@ -82,17 +85,25 @@ async def test_user_videos_never_reach_contributor_models() -> None:
             {"model": "muse-spark-1.3-contributor", "input": "hi"},
             policy="user",
             worst_case_usd=0.001,
+            stage="plan",
         )
     assert recorder.requests == []
 
 
-async def test_create_response_sends_bearer_key_to_responses_endpoint() -> None:
-    recorder = Recorder(lambda _: httpx.Response(200, json={"status": "completed"}))
-    client = _client(recorder)
+async def test_create_response_sends_bearer_key_and_records_token_cost() -> None:
+    usage = {"input_tokens": 15, "output_tokens": 175}
+    recorder = Recorder(lambda _: httpx.Response(200, json={"status": "completed", "usage": usage}))
+    ledger = InMemorySpendLedger()
+    client = _client(recorder, ledger=ledger)
     payload = await client.create_response(
-        {"model": "muse-spark-1.3", "input": "hi"}, policy="user", worst_case_usd=0.001
+        {"model": "muse-spark-1.3", "input": "hi"}, policy="user", worst_case_usd=0.01, stage="plan"
     )
-    assert payload == {"status": "completed"}
+    assert payload["status"] == "completed"
+    assert [(e.unit, e.quantity) for e in ledger.entries] == [
+        ("input_tokens", 15),
+        ("output_tokens", 175),
+    ]
+    assert ledger.total_usd() == pytest.approx(0.000763, abs=1e-6)
     (request,) = recorder.requests
     assert request.url == f"{BASE_URL}/responses"
     assert request.headers["Authorization"] == f"Bearer {FAKE_KEY}"
@@ -104,7 +115,10 @@ async def test_http_errors_do_not_echo_the_key() -> None:
     client = _client(recorder)
     with pytest.raises(ModelApiError) as error:
         await client.create_response(
-            {"model": "muse-spark-1.3", "input": "hi"}, policy="user", worst_case_usd=0.001
+            {"model": "muse-spark-1.3", "input": "hi"},
+            policy="user",
+            worst_case_usd=0.001,
+            stage="plan",
         )
     assert error.value.status_code == 401
     assert FAKE_KEY not in str(error.value)

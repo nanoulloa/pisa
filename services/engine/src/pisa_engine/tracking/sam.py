@@ -58,21 +58,19 @@ class Sam31Segmenter:
             "metadata": {"include_confidence": "true", "mask_encoding": "lossless"},
         }
         cost = sam_cost_usd(timebase.frame_count)
-        events = self._client.stream_response(body, policy=policy, worst_case_usd=cost)
+        charge = CostEntry(
+            stage="track",
+            model=self._model,
+            unit="frames",
+            quantity=sam_billed_frames(timebase.frame_count),
+            usd=cost,
+        )
+        events = self._client.stream_response(
+            body, policy=policy, worst_case_usd=cost, charge=[charge]
+        )
         result = await parse_responses_stream(events, video_segmentation_format()).final_result()
         if self._on_raw_output is not None:
             self._on_raw_output(result.raw_output)
-        self._client.record(
-            [
-                CostEntry(
-                    stage="track",
-                    model=self._model,
-                    unit="frames",
-                    quantity=sam_billed_frames(timebase.frame_count),
-                    usd=cost,
-                )
-            ]
-        )
         return tracks_from_records(result.records, phrase=phrase, timebase=timebase)
 
 

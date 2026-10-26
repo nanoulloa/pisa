@@ -25,17 +25,29 @@ def test_disabled_guard_refuses_everything() -> None:
     with pytest.raises(PaidCallsDisabledError):
         guard.ensure_enabled()
     with pytest.raises(PaidCallsDisabledError):
-        guard.authorize(0.0)
+        guard.reserve(0.0)
 
 
 def test_guard_refuses_a_call_that_could_cross_the_cap() -> None:
     ledger = InMemorySpendLedger()
     guard = SpendGuard(enabled=True, cap_usd=1.0, ledger=ledger)
-    guard.authorize(0.9)
-    guard.record([_entry(0.9)])
+    guard.settle(guard.reserve(0.9), [_entry(0.9)])
     with pytest.raises(SpendCapExceededError):
-        guard.authorize(0.2)
-    guard.authorize(0.1)
+        guard.reserve(0.2)
+    guard.reserve(0.1)
+
+
+def test_reservations_stop_concurrent_calls_from_jointly_crossing_the_cap() -> None:
+    guard = SpendGuard(enabled=True, cap_usd=1.0, ledger=InMemorySpendLedger())
+    first = guard.reserve(0.6)
+    with pytest.raises(SpendCapExceededError):
+        guard.reserve(0.6)  # The first call has not settled yet, but its cost is held.
+    guard.release(first)
+    second = guard.reserve(0.6)
+    guard.settle(second, [_entry(0.5)])
+    guard.release(second)  # Already settled: no double release.
+    assert guard.spent_usd() == pytest.approx(0.5)
+    guard.reserve(0.5)
 
 
 def test_jsonl_ledger_survives_a_restart(tmp_path: Path) -> None:

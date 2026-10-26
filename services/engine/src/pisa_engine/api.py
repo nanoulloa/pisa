@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
+import hmac
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import BackgroundTasks, FastAPI, Form, UploadFile
+from fastapi import BackgroundTasks, FastAPI, Form, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
 from pisa_engine.jobs import JobStore
+from pisa_engine.limits import BodySizeLimitMiddleware, RateLimiter
 from pisa_engine.model_api.client import MetaModelApiClient
 from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
@@ -25,6 +28,8 @@ from pisa_engine.tracking.sam import Sam31Segmenter
 from pisa_engine.tracking.segmenter import Segmenter
 
 _CHUNK_BYTES = 1 << 20
+# Room for multipart boundaries and form fields around the video itself.
+_FORM_OVERHEAD_BYTES = 64 * 1024
 
 
 def create_app(settings: Settings | None = None, segmenter: Segmenter | None = None) -> FastAPI:
@@ -33,7 +38,17 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
     deps = PipelineDeps(
         segmenter=segmenter or _segmenter(config), store=store, phrase=config.default_phrase
     )
+    rate = RateLimiter(config.jobs_per_hour, window_s=3600)
+    slots = asyncio.Semaphore(config.max_concurrent_jobs)
+
+    async def run_when_free(job: Job, source: Path, work_dir: Path) -> None:
+        async with slots:
+            await run_job(job, source, work_dir, deps)
+
     app = FastAPI(title="Pisa engine", version=__version__)
+    app.add_middleware(
+        BodySizeLimitMiddleware, max_bytes=config.max_upload_bytes + _FORM_OVERHEAD_BYTES
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[origin.strip() for origin in config.web_origins.split(",") if origin],
@@ -47,10 +62,15 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
 
     @app.post("/jobs", status_code=202, response_model=None)
     async def create_job(
+        request: Request,
         video: UploadFile,
         background: BackgroundTasks,
         locale: Annotated[Locale, Form()] = "en",
     ) -> Job | JSONResponse:
+        if not _authorized(request, config):
+            return _error(401, "unauthorized")
+        if not rate.allow(request.client.host if request.client else "unknown"):
+            return _error(429, "rate_limited")
         job = Job(
             id=uuid4(),
             created_at=datetime.now(UTC),
@@ -68,7 +88,7 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
             shutil.rmtree(work_dir, ignore_errors=True)
             return _error(413, "file_too_large")
         store.save(job)
-        background.add_task(run_job, job, source, work_dir, deps)
+        background.add_task(run_when_free, job, source, work_dir)
         return job
 
     @app.get("/jobs/{job_id}", response_model=None)
@@ -84,6 +104,14 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
         return result
 
     return app
+
+
+def _authorized(request: Request, config: Settings) -> bool:
+    token = config.engine_token.get_secret_value()
+    if not token:
+        return True
+    supplied = request.headers.get("authorization", "")
+    return hmac.compare_digest(supplied.encode(), f"Bearer {token}".encode())
 
 
 def _segmenter(config: Settings) -> Segmenter:

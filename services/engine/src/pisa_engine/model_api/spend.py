@@ -6,7 +6,9 @@ budget itself: a kill switch, plus a persistent ledger checked before every call
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
@@ -65,26 +67,56 @@ class JsonlSpendLedger:
                 ledger.write(entry.model_dump_json() + "\n")
 
 
+@dataclass(slots=True)
+class Reservation:
+    """A worst-case cost held against the cap while a call is in flight."""
+
+    usd: float
+    open: bool = True
+
+
 class SpendGuard:
+    """Kill switch plus cap. Reserving and settling are atomic, so concurrent calls cannot
+    each pass the check and overshoot the cap together."""
+
     def __init__(self, *, enabled: bool, cap_usd: float, ledger: SpendLedger) -> None:
         self._enabled = enabled
         self._cap_usd = cap_usd
         self._ledger = ledger
+        self._lock = threading.Lock()
+        self._reserved_usd = 0.0
 
     def ensure_enabled(self) -> None:
         """For calls that are not billed themselves, such as file uploads."""
         if not self._enabled:
             raise PaidCallsDisabledError()
 
-    def authorize(self, worst_case_usd: float) -> None:
-        """Raise unless the call is allowed and its worst-case cost fits under the cap."""
+    def reserve(self, worst_case_usd: float) -> Reservation:
+        """Hold the worst-case cost, or raise if it would not fit under the cap."""
         self.ensure_enabled()
-        spent = self._ledger.total_usd()
-        if spent + worst_case_usd > self._cap_usd:
-            raise SpendCapExceededError(spent, worst_case_usd, self._cap_usd)
+        with self._lock:
+            committed = self._ledger.total_usd() + self._reserved_usd
+            if committed + worst_case_usd > self._cap_usd:
+                raise SpendCapExceededError(committed, worst_case_usd, self._cap_usd)
+            self._reserved_usd += worst_case_usd
+        return Reservation(worst_case_usd)
 
-    def record(self, entries: Sequence[CostEntry]) -> None:
-        self._ledger.append(entries)
+    def settle(self, reservation: Reservation, entries: Sequence[CostEntry]) -> None:
+        """Record what the call cost and free its reservation."""
+        with self._lock:
+            if reservation.open:
+                self._ledger.append(entries)
+                self._close(reservation)
+
+    def release(self, reservation: Reservation) -> None:
+        """Free a reservation without recording a cost (the call never went through)."""
+        with self._lock:
+            if reservation.open:
+                self._close(reservation)
 
     def spent_usd(self) -> float:
         return self._ledger.total_usd()
+
+    def _close(self, reservation: Reservation) -> None:
+        self._reserved_usd -= reservation.usd
+        reservation.open = False

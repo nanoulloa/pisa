@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     )
     # Comma-separated origins allowed to call the API from a browser.
     web_origins: str = Field(default="http://localhost:3000", validation_alias="PISA_WEB_ORIGINS")
+    # Analyses running at once; more wait their turn.
+    max_concurrent_jobs: int = Field(default=2, gt=0, validation_alias="PISA_MAX_CONCURRENT_JOBS")
+    # New jobs per client IP per hour.
+    jobs_per_hour: int = Field(default=20, gt=0, validation_alias="PISA_JOBS_PER_HOUR")
+    # When set, POST /jobs requires "Authorization: Bearer <token>" (the web server holds it).
+    engine_token: SecretStr = Field(default=SecretStr(""), validation_alias="PISA_ENGINE_TOKEN")
 
 
 @lru_cache(maxsize=1)

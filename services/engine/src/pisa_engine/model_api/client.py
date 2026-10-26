@@ -16,9 +16,10 @@ from typing import Any
 import httpx
 from pydantic import SecretStr
 
-from pisa_contracts import CostEntry, DataPolicy
+from pisa_contracts import CostEntry, DataPolicy, Stage
 from pisa_engine.model_api.policy import ensure_model_allowed
-from pisa_engine.model_api.spend import SpendGuard
+from pisa_engine.model_api.pricing import UnknownPriceError, token_cost_usd
+from pisa_engine.model_api.spend import Reservation, SpendGuard
 
 DEFAULT_TIMEOUT = httpx.Timeout(30.0, read=300.0)
 
@@ -64,39 +65,56 @@ class MetaModelApiClient:
         return file_id
 
     async def create_response(
-        self, body: Mapping[str, Any], *, policy: DataPolicy, worst_case_usd: float
+        self, body: Mapping[str, Any], *, policy: DataPolicy, worst_case_usd: float, stage: Stage
     ) -> dict[str, Any]:
-        """POST /responses without streaming."""
-        self._authorize(body, policy=policy, worst_case_usd=worst_case_usd)
-        response = await self._http.post("responses", headers=self._auth_headers(), json=body)
-        return self._json_or_raise(response)
+        """POST /responses without streaming. Records the cost from the response's token usage."""
+        reservation = self._reserve(body, policy=policy, worst_case_usd=worst_case_usd)
+        try:
+            response = await self._http.post("responses", headers=self._auth_headers(), json=body)
+            payload = self._json_or_raise(response)
+            self._guard.settle(
+                reservation, _token_costs(stage, str(body["model"]), payload, worst_case_usd)
+            )
+            return payload
+        finally:
+            self._guard.release(reservation)
 
     async def stream_response(
-        self, body: Mapping[str, Any], *, policy: DataPolicy, worst_case_usd: float
+        self,
+        body: Mapping[str, Any],
+        *,
+        policy: DataPolicy,
+        worst_case_usd: float,
+        charge: Sequence[CostEntry],
     ) -> AsyncIterator[dict[str, Any]]:
-        """POST /responses with `stream: true`, yielding each server-sent event as a dict."""
-        self._authorize(body, policy=policy, worst_case_usd=worst_case_usd)
+        """POST /responses with `stream: true`, yielding each server-sent event as a dict.
+
+        `charge` is recorded as soon as the API accepts the request: from then on the call is
+        billed, whatever happens to the stream.
+        """
+        reservation = self._reserve(body, policy=policy, worst_case_usd=worst_case_usd)
         headers = {**self._auth_headers(), "Accept": "text/event-stream"}
-        async with self._http.stream(
-            "POST", "responses", headers=headers, json={**body, "stream": True}
-        ) as response:
-            if response.status_code >= 400:
-                await response.aread()
-                raise ModelApiError(response.status_code, response.text)
-            async for event in _server_sent_events(response.aiter_lines()):
-                yield event
+        try:
+            async with self._http.stream(
+                "POST", "responses", headers=headers, json={**body, "stream": True}
+            ) as response:
+                if response.status_code >= 400:
+                    await response.aread()
+                    raise ModelApiError(response.status_code, response.text)
+                self._guard.settle(reservation, charge)
+                async for event in _server_sent_events(response.aiter_lines()):
+                    yield event
+        finally:
+            self._guard.release(reservation)
 
-    def record(self, entries: Sequence[CostEntry]) -> None:
-        self._guard.record(entries)
-
-    def _authorize(
+    def _reserve(
         self, body: Mapping[str, Any], *, policy: DataPolicy, worst_case_usd: float
-    ) -> None:
+    ) -> Reservation:
         model = body.get("model")
         if not isinstance(model, str):
             raise ValueError("Request body needs a model id.")
         ensure_model_allowed(model, policy)
-        self._guard.authorize(worst_case_usd)
+        return self._guard.reserve(worst_case_usd)
 
     def _auth_headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._api_key.get_secret_value()}"}
@@ -133,3 +151,35 @@ def _decode_event(data: str) -> dict[str, Any] | None:
         return None
     event = json.loads(data)
     return event if isinstance(event, dict) else None
+
+
+def _token_costs(
+    stage: Stage, model: str, payload: Mapping[str, Any], worst_case_usd: float
+) -> list[CostEntry]:
+    """Cost entries from the response's token usage; the worst case when usage is missing."""
+    usage = payload.get("usage")
+    tokens = usage if isinstance(usage, Mapping) else {}
+    input_tokens, output_tokens = tokens.get("input_tokens"), tokens.get("output_tokens")
+    if isinstance(input_tokens, int) and isinstance(output_tokens, int):
+        try:
+            return [
+                CostEntry(
+                    stage=stage,
+                    model=model,
+                    unit="input_tokens",
+                    quantity=input_tokens,
+                    usd=token_cost_usd(model, input_tokens, 0),
+                ),
+                CostEntry(
+                    stage=stage,
+                    model=model,
+                    unit="output_tokens",
+                    quantity=output_tokens,
+                    usd=token_cost_usd(model, 0, output_tokens),
+                ),
+            ]
+        except UnknownPriceError:
+            pass
+    return [
+        CostEntry(stage=stage, model=model, unit="output_tokens", quantity=0, usd=worst_case_usd)
+    ]
