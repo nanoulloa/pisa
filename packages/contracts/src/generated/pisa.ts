@@ -38,6 +38,13 @@ export type EventType = "fall" | "throw" | "bounce" | "pair_drop";
  */
 export type CameraMotion = "static" | "handheld" | "pan" | "unknown";
 /**
+ * Why nothing in a clip can be measured. no_free_flight: nothing falls, flies or bounces on its own (objects are carried, pushed, self-propelled, or still). too_unclear: something does, but it is too small, blurred, hidden, brief or cut to follow.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "PlanReason".
+ */
+export type PlanReason = "no_free_flight" | "too_unclear";
+/**
  * T1 free_fall_shape, T2 galileo_pair, T3 bounce_energy, T4 implied_g, T5 time_base_consistency.
  *
  * This interface was referenced by `PisaContracts`'s JSON-Schema
@@ -220,7 +227,7 @@ export interface Plan {
   /**
    * Why nothing is measurable, when measurable is false.
    */
-  reason: string | null;
+  reason: PlanReason | null;
   events: PlanEvent[];
   references: ReferenceObject[];
   camera: CameraNotes;
@@ -355,6 +362,17 @@ export interface Stabilization {
   unreliable_frames: number;
 }
 /**
+ * A short explanation of the verdict in the job's language, written by Muse Spark from the measurements. Every number in it was checked against them; when the check fails there is no explanation and clients use their own templated copy.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "Explanation".
+ */
+export interface Explanation {
+  locale: Locale;
+  text: string;
+  model: string;
+}
+/**
  * Everything the result page and the WhatsApp reply need for one job.
  *
  * This interface was referenced by `PisaContracts`'s JSON-Schema
@@ -368,5 +386,6 @@ export interface AnalysisResult {
   stabilization: Stabilization | null;
   tests: TestResult[];
   verdict: Verdict | null;
+  explanation: Explanation | null;
   costs: CostEntry[];
 }

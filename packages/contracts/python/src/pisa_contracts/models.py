@@ -197,6 +197,12 @@ class CameraNotes(BaseModel):
     slow_motion_suspected: bool
 
 
+type PlanReason = Literal["no_free_flight", "too_unclear"]
+"""
+Why nothing in a clip can be measured. no_free_flight: nothing falls, flies or bounces on its own (objects are carried, pushed, self-propelled, or still). too_unclear: something does, but it is too small, blurred, hidden, brief or cut to follow.
+"""
+
+
 class Plan(BaseModel):
     """
     The planner's reading of a clip. Sent as a structured-output schema, so it stays inside Muse Spark's strict subset: no oneOf or allOf, every object closed, every key required.
@@ -209,7 +215,7 @@ class Plan(BaseModel):
     """
     False when nothing in the clip can be measured.
     """
-    reason: str | None
+    reason: PlanReason | None
     """
     Why nothing is measurable, when measurable is false.
     """
@@ -370,6 +376,19 @@ class Stabilization(BaseModel):
     unreliable_frames: Annotated[int, Field(ge=0)]
 
 
+class Explanation(BaseModel):
+    """
+    A short explanation of the verdict in the job's language, written by Muse Spark from the measurements. Every number in it was checked against them; when the check fails there is no explanation and clients use their own templated copy.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    locale: Locale
+    text: str
+    model: str
+
+
 class AnalysisResult(BaseModel):
     """
     Everything the result page and the WhatsApp reply need for one job.
@@ -385,4 +404,5 @@ class AnalysisResult(BaseModel):
     stabilization: Stabilization | None
     tests: list[TestResult]
     verdict: Verdict | None
+    explanation: Explanation | None
     costs: list[CostEntry]

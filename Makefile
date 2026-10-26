@@ -3,6 +3,7 @@
 
 SCHEMA := packages/contracts/schema/pisa.schema.json
 PY_MODELS := packages/contracts/python/src/pisa_contracts/models.py
+PY_SCHEMA := packages/contracts/python/src/pisa_contracts/schema.py
 
 .PHONY: help setup gen gen-check lint typecheck test e2e check dev-engine dev-web deploy-engine
 
@@ -23,6 +24,7 @@ gen: ## Regenerate contract types, brand tokens CSS and logo SVGs
 		--use-annotated --use-type-alias --field-constraints --use-field-description --use-schema-description \
 		--extra-fields forbid --disable-timestamp --formatters ruff-format \
 		--custom-file-header '# Generated from $(SCHEMA) by `make gen`. Do not edit by hand.'
+	uv run python packages/contracts/python/embed_schema.py $(SCHEMA) $(PY_SCHEMA)
 	uv run python brand/build_tokens.py
 	uv run python brand/logo/generate.py
 
@@ -35,7 +37,7 @@ lint: ## Lint and check formatting
 	npm run lint --workspaces --if-present
 
 typecheck: ## Strict type checks (mypy, tsc)
-	uv run mypy services/engine scripts brand packages/contracts/python/src
+	uv run mypy services/engine scripts brand packages/contracts/python
 	npm run typecheck --workspaces --if-present
 
 test: ## Unit tests (never call paid APIs)

@@ -370,6 +370,14 @@
         }
       }
     },
+    "PlanReason": {
+      "description": "Why nothing in a clip can be measured. no_free_flight: nothing falls, flies or bounces on its own (objects are carried, pushed, self-propelled, or still). too_unclear: something does, but it is too small, blurred, hidden, brief or cut to follow.",
+      "type": "string",
+      "enum": [
+        "no_free_flight",
+        "too_unclear"
+      ]
+    },
     "Plan": {
       "description": "The planner's reading of a clip. Sent as a structured-output schema, so it stays inside Muse Spark's strict subset: no oneOf or allOf, every object closed, every key required.",
       "type": "object",
@@ -388,9 +396,13 @@
         },
         "reason": {
           "description": "Why nothing is measurable, when measurable is false.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlanReason"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "events": {
@@ -753,6 +765,27 @@
         }
       }
     },
+    "Explanation": {
+      "description": "A short explanation of the verdict in the job's language, written by Muse Spark from the measurements. Every number in it was checked against them; when the check fails there is no explanation and clients use their own templated copy.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locale",
+        "text",
+        "model"
+      ],
+      "properties": {
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "text": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      }
+    },
     "AnalysisResult": {
       "description": "Everything the result page and the WhatsApp reply need for one job.",
       "type": "object",
@@ -765,6 +798,7 @@
         "stabilization",
         "tests",
         "verdict",
+        "explanation",
         "costs"
       ],
       "properties": {
@@ -821,6 +855,16 @@
           "anyOf": [
             {
               "$ref": "#/$defs/Verdict"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "explanation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Explanation"
             },
             {
               "type": "null"
