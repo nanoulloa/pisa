@@ -10,7 +10,7 @@ from typing import Any
 REDACTED = "[REDACTED]"
 
 # Extra attributes callers may attach with `logger.info(..., extra={...})`.
-_CONTEXT_FIELDS = ("job_id", "stage", "duration_ms", "usd", "model")
+_CONTEXT_FIELDS = ("job_id", "stage", "duration_ms", "usd", "model", "client", "client_source")
 
 
 class JsonFormatter(logging.Formatter):

@@ -18,6 +18,7 @@ from pisa_contracts import Job, Locale
 from pisa_engine import __version__
 from pisa_engine.jobs import JobStore, StorageJobStore, SupabaseJobStore
 from pisa_engine.limits import AdmissionMiddleware, BodySizeLimitMiddleware, RateLimiter
+from pisa_engine.logs import configure_logging
 from pisa_engine.model_api.client import MetaModelApiClient
 from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
@@ -36,6 +37,14 @@ _FORM_OVERHEAD_BYTES = 64 * 1024
 
 def create_app(settings: Settings | None = None, segmenter: Segmenter | None = None) -> FastAPI:
     config = settings or get_settings()
+    configure_logging(
+        config.log_level,
+        secrets=[
+            config.meta_api_key.get_secret_value(),
+            config.supabase_secret_key.get_secret_value(),
+            config.engine_token.get_secret_value(),
+        ],
+    )
     store = _job_store(config)
     deps = PipelineDeps(
         segmenter=segmenter or _segmenter(config), store=store, phrase=config.default_phrase

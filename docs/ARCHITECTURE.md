@@ -31,7 +31,17 @@ flowchart TB
     JOB -- reply --> WA
 ```
 
-Status after day 2: the whole flow (upload, ingest, track, T1, verdict, result page) runs locally and end to end in CI, with a local JSON job store and the free color segmenter. Supabase, Modal, real SAM 3.1 calls, the WhatsApp webhook and the deploys are next.
+Status after day 2: the whole flow (upload, ingest, track, T1, verdict, result page) runs locally, end to end in CI, and deployed, with the free color segmenter. Real SAM 3.1 calls and the WhatsApp webhook are next.
+
+### Deployment (all on free plans, no payment method anywhere)
+
+| Piece | Where | Notes |
+|---|---|---|
+| Web | Vercel, personal team `nanos-projects-ace74675`, project `pisa` (root `apps/web`) | Deploys on every push to `main`. `NEXT_PUBLIC_ENGINE_URL` points at the engine. |
+| Engine | Modal app `pisa-engine`, `https://nanoulloa--pisa-engine-web.us-east.modal.run` | 1 CPU, at most 2 containers, scales to zero. `make deploy-engine`. Secret `pisa-engine` holds the Supabase URL and secret key and the allowed web origins. |
+| Jobs and results | Supabase project `Pisa` (`supabase/migrations`) | RLS on with no policies: only the engine's secret key reads and writes. Videos never reach the database and are deleted from the engine when each job ends. |
+
+Modal hands the engine the real client address as the connection peer and drops forged `X-Forwarded-For` headers (checked by hashing this machine's public IP against the engine's log on 2026-10-26), so the rate limiter keys on the peer.
 
 ## Pipeline
 

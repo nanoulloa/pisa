@@ -17,17 +17,22 @@
   - The concurrency limit holds.
 - **Web:** upload, progress driven by real stages, and a result page (verdict icon, label and sentence, measurement cards, technical panel, limits) in four languages, with colors from `brand/tokens.css`.
 - **End-to-end:** Playwright drives the built app against the real engine (free segmenter) and gets each of the three verdicts plus a clear error.
+- **Deployed on free plans:**
+  - The engine runs on Modal ($1/month free, no card).
+  - Jobs and results live in Supabase on the free plan.
+  - The web is on the personal Vercel team.
+  - Synthetic clips give the right verdicts through the deployed engine in about 5 s each.
+  - CORS only admits the web, and forged client addresses are ignored.
 
 ### Next (day 3)
 
 - Stabilization for handheld clips; T2 Galileo pair, T3 bounce energy, T4 implied g, T5 time-base consistency; synthetic tests for each.
-- Deploy the skeleton (Vercel, Modal, Supabase) when the accounts exist; put the engine behind the web server with `PISA_ENGINE_TOKEN`.
+- Decide whether the production web on Vercel is public (Vercel login protects it by default).
 
 ### Blocked
 
 - Real SAM 3.1 and Muse Spark runs: waiting for the $150 credits in Billing.
 - Real clips from the shot list.
-- Accounts: Supabase, Modal, Vercel.
 
 ## Day 1 · Monday, Oct 26
 

@@ -6,6 +6,7 @@ All of them are ASGI middleware, so they run before FastAPI reads or parses the 
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import hmac
 import ipaddress
 import json
@@ -176,24 +177,32 @@ class AdmissionMiddleware:
                 await _send_error(send, 401, "unauthorized")
                 return
         creates_job = scope["method"] == "POST" and _route_path(scope).rstrip("/") == JOBS_PATH
-        if creates_job and not self.limiter.allow(client_key(self._client_host(scope))):
-            if self.limiter.global_exhausted:
-                logger.warning("Global job limit reached; refusing new jobs for now")
-            await _send_error(send, 429, "rate_limited")
-            return
+        if creates_job:
+            host, source = self._client_host(scope)
+            key = client_key(host)
+            allowed = self.limiter.allow(key)
+            # A short hash, never the address itself: enough to see whether limits key correctly.
+            client = hashlib.sha256(key.encode()).hexdigest()[:12]
+            context = {"client": client, "client_source": source}
+            logger.info("Job request %s", "admitted" if allowed else "refused", extra=context)
+            if not allowed:
+                if self.limiter.global_exhausted:
+                    logger.warning("Global job limit reached; refusing new jobs for now")
+                await _send_error(send, 429, "rate_limited")
+                return
         await self.app(scope, receive, send)
 
-    def _client_host(self, scope: Scope) -> str:
-        """The caller's address. Behind one trusted proxy, the last X-Forwarded-For entry is the
-        one the proxy added; earlier entries come from the client and can be forged."""
+    def _client_host(self, scope: Scope) -> tuple[str, str]:
+        """The caller's address and where it came from. Behind one trusted proxy, the last
+        X-Forwarded-For entry is the one the proxy added; earlier entries can be forged."""
         if self.trust_proxy:
             raw: bytes = dict(scope["headers"]).get(b"x-forwarded-for", b"")
             forwarded = raw.decode("latin-1")
             hops = [hop.strip() for hop in forwarded.split(",") if hop.strip()]
             if hops and _is_ip(hops[-1]):
-                return hops[-1]
+                return hops[-1], "forwarded"
         client = scope.get("client")
-        return str(client[0]) if client else "unknown"
+        return (str(client[0]), "peer") if client else ("unknown", "none")
 
 
 def _is_ip(value: str) -> bool:

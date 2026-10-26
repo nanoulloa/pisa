@@ -19,7 +19,13 @@ REQUIREMENTS = Path(__file__).parent / "requirements.modal.txt"
 
 
 def _pinned_requirements() -> list[str]:
-    """Exact versions exported from uv.lock by `make deploy-engine`."""
+    """Exact versions exported from uv.lock by `make deploy-engine`.
+
+    Containers import this module again at startup, where the file does not exist and the
+    image is already built, so it is only read on the machine that deploys.
+    """
+    if not modal.is_local():
+        return []
     lines = REQUIREMENTS.read_text(encoding="utf-8").splitlines()
     return [line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#")]
 
@@ -34,7 +40,9 @@ image = (
             "PISA_PAID_CALLS_ENABLED": "false",
             "PISA_DATA_DIR": "/root/pisa-data",
             "PISA_SPEND_LEDGER_PATH": "/root/pisa-data/spend.jsonl",
-            "PISA_TRUST_PROXY": "true",
+            # Modal passes the real client address as the connection peer and drops forged
+            # X-Forwarded-For headers (checked 2026-10-26), so forwarded headers stay untrusted.
+            "PISA_TRUST_PROXY": "false",
         }
     )
     .add_local_python_source("pisa_engine", "pisa_contracts")
