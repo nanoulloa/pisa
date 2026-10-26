@@ -23,11 +23,11 @@
   - The web is on the personal Vercel team.
   - Synthetic clips give the right verdicts through the deployed engine in about 5 s each.
   - CORS only admits the web, and forged client addresses are ignored.
+  - Public at https://pisa-nanos-projects-ace74675.vercel.app. A real upload from a phone-sized browser in Spanish returned "Físicamente imposible" in 14.6 s, cold start included.
 
 ### Next (day 3)
 
 - Stabilization for handheld clips; T2 Galileo pair, T3 bounce energy, T4 implied g, T5 time-base consistency; synthetic tests for each.
-- Decide whether the production web on Vercel is public (Vercel login protects it by default).
 
 ### Blocked
 

@@ -37,7 +37,7 @@ Status after day 2: the whole flow (upload, ingest, track, T1, verdict, result p
 
 | Piece | Where | Notes |
 |---|---|---|
-| Web | Vercel, personal team `nanos-projects-ace74675`, project `pisa` (root `apps/web`) | Deploys on every push to `main`. `NEXT_PUBLIC_ENGINE_URL` points at the engine. |
+| Web | Vercel, personal team `nanos-projects-ace74675`, project `pisa` (root `apps/web`), public at https://pisa-nanos-projects-ace74675.vercel.app | Deploys on every push to `main`. `NEXT_PUBLIC_ENGINE_URL` points at the engine. Vercel login protects preview branches and deployment-specific URLs; the production domains are public. |
 | Engine | Modal app `pisa-engine`, `https://nanoulloa--pisa-engine-web.us-east.modal.run` | 1 CPU, at most 2 containers, scales to zero. `make deploy-engine`. Secret `pisa-engine` holds the Supabase URL and secret key and the allowed web origins. |
 | Jobs and results | Supabase project `Pisa` (`supabase/migrations`) | RLS on with no policies: only the engine's secret key reads and writes. Videos never reach the database and are deleted from the engine when each job ends. |
 
