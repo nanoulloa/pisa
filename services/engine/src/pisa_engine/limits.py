@@ -9,11 +9,16 @@ import contextlib
 import hmac
 import ipaddress
 import json
+import logging
 import time
 from collections import OrderedDict, deque
 from collections.abc import Callable
 
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+logger = logging.getLogger(__name__)
+
+JOBS_PATH = "/jobs"
 
 
 class _BodyTooLargeError(Exception):
@@ -108,11 +113,13 @@ class RateLimiter:
         self._clock = clock
         self._all: deque[float] = deque()
         self._events: OrderedDict[str, deque[float]] = OrderedDict()
+        self.global_exhausted = False
 
     def allow(self, key: str) -> bool:
         now = self._clock()
         _expire(self._all, now - self._window_s)
-        if len(self._all) >= self._global_limit:
+        self.global_exhausted = len(self._all) >= self._global_limit
+        if self.global_exhausted:
             return False
         events = self._events.pop(key, deque())
         _expire(events, now - self._window_s)
@@ -149,7 +156,7 @@ def client_key(host: str) -> str:
 class AdmissionMiddleware:
     """Runs before any body is read. With a token configured, every route except the health
     check needs it, so no path variant can slip past an allowlist. Every POST counts against
-    the per-client and global job rates."""
+    the per-client and global job rates, and only job creation spends them."""
 
     def __init__(self, app: ASGIApp, *, token: str, limiter: RateLimiter) -> None:
         self.app = app
@@ -165,9 +172,11 @@ class AdmissionMiddleware:
             if not hmac.compare_digest(supplied, f"Bearer {self.token}".encode()):
                 await _send_error(send, 401, "unauthorized")
                 return
-        if scope["method"] == "POST":
+        if scope["method"] == "POST" and _route_path(scope).rstrip("/") == JOBS_PATH:
             client = scope.get("client")
             if not self.limiter.allow(client_key(client[0]) if client else "unknown"):
+                if self.limiter.global_exhausted:
+                    logger.warning("Global job limit reached; refusing new jobs for now")
                 await _send_error(send, 429, "rate_limited")
                 return
         await self.app(scope, receive, send)

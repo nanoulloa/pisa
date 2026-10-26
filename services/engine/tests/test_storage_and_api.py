@@ -125,6 +125,8 @@ def test_bodies_over_the_limit_are_cut_off_while_they_arrive(settings: Settings)
 
 def test_jobs_are_rate_limited_per_client(settings: Settings, clips: dict[str, Path]) -> None:
     client = TestClient(create_app(settings.model_copy(update={"jobs_per_hour": 2})))
+    for _ in range(5):  # POSTs that create no job spend no budget.
+        assert client.post("/not-a-route", content=b"").status_code in (404, 405)
     for _ in range(2):
         _upload(client, clips["free_fall"])
     with clips["free_fall"].open("rb") as video:
