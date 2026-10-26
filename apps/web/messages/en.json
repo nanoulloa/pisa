@@ -1,0 +1,24 @@
+{
+  "Metadata": {
+    "title": "Pisa",
+    "description": "A reality check for viral videos: is what you see physically possible?"
+  },
+  "Home": {
+    "tagline": "AI can fake pixels. It can't fake physics.",
+    "lede": "Send a video of something falling, thrown or bouncing. Pisa measures its motion and tells you whether real gravity could have produced it.",
+    "cta": "Check a video",
+    "verdictsTitle": "Three possible answers"
+  },
+  "Verdict": {
+    "physically_impossible": "Physically impossible",
+    "consistent_with_real_physics": "Consistent with real physics",
+    "inconclusive": "Inconclusive"
+  },
+  "Check": {
+    "title": "Check a video",
+    "scope": "Pisa checks falls, throws and bounces. It does not check face swaps, lip-sync or cloned voices."
+  },
+  "LocaleSwitcher": {
+    "label": "Language"
+  }
+}

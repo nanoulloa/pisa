@@ -1,0 +1,24 @@
+{
+  "Metadata": {
+    "title": "Pisa",
+    "description": "病毒视频的现实检验：你看到的画面在物理上可能吗？"
+  },
+  "Home": {
+    "tagline": "AI 能伪造像素，却伪造不了物理。",
+    "lede": "发送一段物体下落、被抛出或弹跳的视频。Pisa 会测量它的运动，告诉你真实的重力能否产生这样的画面。",
+    "cta": "检查视频",
+    "verdictsTitle": "三种可能的结论"
+  },
+  "Verdict": {
+    "physically_impossible": "物理上不可能",
+    "consistent_with_real_physics": "符合真实物理",
+    "inconclusive": "无法判定"
+  },
+  "Check": {
+    "title": "检查视频",
+    "scope": "Pisa 检查下落、抛掷和弹跳。它不检查换脸、对口型或克隆声音。"
+  },
+  "LocaleSwitcher": {
+    "label": "语言"
+  }
+}

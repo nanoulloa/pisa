@@ -1,0 +1,24 @@
+{
+  "Metadata": {
+    "title": "Pisa",
+    "description": "Um teste de realidade para vídeos virais: o que você vê é fisicamente possível?"
+  },
+  "Home": {
+    "tagline": "A IA consegue falsificar pixels. Não consegue falsificar a física.",
+    "lede": "Envie um vídeo de algo caindo, sendo arremessado ou quicando. O Pisa mede o movimento e diz se a gravidade real poderia tê-lo produzido.",
+    "cta": "Verificar um vídeo",
+    "verdictsTitle": "Três respostas possíveis"
+  },
+  "Verdict": {
+    "physically_impossible": "Fisicamente impossível",
+    "consistent_with_real_physics": "Consistente com a física real",
+    "inconclusive": "Inconclusivo"
+  },
+  "Check": {
+    "title": "Verificar um vídeo",
+    "scope": "O Pisa verifica quedas, arremessos e quiques. Não verifica troca de rostos, sincronia labial nem vozes clonadas."
+  },
+  "LocaleSwitcher": {
+    "label": "Idioma"
+  }
+}
