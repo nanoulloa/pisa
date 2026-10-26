@@ -77,9 +77,9 @@ def web() -> Any:
     timeout=120,
 )
 def delete_expired_evidence() -> None:
-    """Evidence videos show the user's frames, so they are deleted 24 hours after the check."""
-    from pisa_engine.api import evidence_store_for
-    from pisa_engine.render.store import delete_expired
+    """Evidence videos show the user's frames, so they are deleted 24 hours after the check.
+    WhatsApp message ids are forgotten once Meta has stopped retrying deliveries."""
+    from pisa_engine.api import sweep_expired
     from pisa_engine.settings import get_settings
 
-    delete_expired(evidence_store_for(get_settings()))
+    sweep_expired(get_settings())
