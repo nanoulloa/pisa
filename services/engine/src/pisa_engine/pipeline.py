@@ -1,9 +1,11 @@
 """Runs one job through the stages, recording each stage as it starts so clients show real progress.
 
-ingest → plan → track → stabilize → measure → test → verdict → explain. The planner says
-which objects move freely and when; only those windows are tracked and measured. The verdict
-always comes from the measurements. The explainer only words it, and when it cannot (paid
-calls off, a failed call, a number it made up), clients fall back to their templated copy.
+ingest → plan → track → stabilize → measure → test → verdict → explain → render. The planner
+says which objects move freely and when; only those windows are tracked and measured. The
+verdict always comes from the measurements. The explainer only words it, and when it cannot
+(paid calls off, a failed call, a number it made up), clients fall back to their templated
+copy. The render stage draws the evidence video, which is kept for 24 hours; like the
+explanation, it never fails a job.
 """
 
 from __future__ import annotations
@@ -12,12 +14,15 @@ import asyncio
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pisa_contracts import (
     AnalysisResult,
     CostEntry,
     ErrorInfo,
+    Evidence,
+    EvidenceVideo,
     Explanation,
     IngestResult,
     Job,
@@ -35,11 +40,15 @@ from pisa_engine.ingest.normalize import IngestError, normalize
 from pisa_engine.jobs import JobStore
 from pisa_engine.model_api import costs
 from pisa_engine.model_api.spend import PaidCallsDisabledError, SpendCapExceededError
+from pisa_engine.physics.implied_g import Scale
 from pisa_engine.physics.results import measurement, result
 from pisa_engine.physics.scale import best_scale
 from pisa_engine.physics.suite import run_tests
-from pisa_engine.physics.trajectory import Flight, from_track, segment_flight
+from pisa_engine.physics.trajectory import from_track, segment_flight
 from pisa_engine.planning.planner import Planner
+from pisa_engine.render.ghost import OwnedFlight, evidence_series, ghosts
+from pisa_engine.render.store import EVIDENCE_TTL, EvidenceStore
+from pisa_engine.render.video import render_evidence
 from pisa_engine.tracking.segmenter import Segmenter, frame_time
 from pisa_engine.tracking.windows import Window, event_windows, reference_windows, track_windows
 from pisa_engine.verdict import decide
@@ -60,6 +69,7 @@ class PipelineDeps:
     store: JobStore
     planner: Planner
     explainer: Explainer
+    evidence: EvidenceStore
 
 
 async def run_job(job: Job, source: Path, work_dir: Path, deps: PipelineDeps) -> Job:
@@ -76,6 +86,7 @@ async def _run(
     tracks: TrackSet | None = None
     stabilization: Stabilization | None = None
     results: list[TestResult] = []
+    scene: _Scene | None = None
     try:
         await progress.enter("ingest")
         ingest = await asyncio.to_thread(normalize, source, video)
@@ -114,15 +125,18 @@ async def _run(
             await progress.enter("test")
             scale = best_scale(plan.references, measured.samples_by_phrase)
             slow_motion = plan.camera.slow_motion_suspected
-            results = measured.unmeasured + run_tests(
-                measured.flights, scale=scale, slow_motion=slow_motion
-            )
+            flights = [owned.flight for owned in measured.flights]
+            results = measured.unmeasured + run_tests(flights, scale=scale, slow_motion=slow_motion)
+            scene = _Scene(objects, path, measured.flights, scale, slow_motion)
 
         await progress.enter("verdict")
         verdict = _verdict(plan, results)
 
         await progress.enter("explain")
         explanation = await _explain(deps.explainer, job, verdict, results, plan)
+
+        await progress.enter("render")
+        evidence = await _evidence(deps.evidence, job, video, ingest, scene, work_dir)
     except IngestError as error:
         return await progress.fail(error.code)
     except PaidCallsDisabledError:
@@ -144,6 +158,7 @@ async def _run(
         tests=results,
         verdict=verdict,
         explanation=explanation,
+        evidence=evidence,
         costs=list(spent),
     )
     await asyncio.to_thread(deps.store.save_result, analysis)
@@ -156,9 +171,20 @@ async def _run(
 
 @dataclass(frozen=True, slots=True)
 class _Measured:
-    flights: list[Flight]
+    flights: list[OwnedFlight]
     unmeasured: list[TestResult]
     samples_by_phrase: dict[str, list[TrackSample]]
+
+
+@dataclass(frozen=True, slots=True)
+class _Scene:
+    """What the render stage needs from the measurement."""
+
+    objects: list[TrackedObject]
+    camera: CameraPath
+    flights: list[OwnedFlight]
+    scale: Scale | None
+    slow_motion: bool
 
 
 def _measure(
@@ -173,7 +199,7 @@ def _measure(
     insufficient-data result instead, so the verdict can say why. Reference objects that are
     not part of any event only lend their size.
     """
-    flights: list[Flight] = []
+    flights: list[OwnedFlight] = []
     unmeasured: list[TestResult] = []
     samples_by_phrase: dict[str, list[TrackSample]] = defaultdict(list)
     start_s = ingest.timebase.start_s
@@ -196,7 +222,8 @@ def _measure(
                 inside = [s for s in shot.samples if window.contains(s.t_s - start_s)]
                 if inside:
                     piece = shot.model_copy(update={"samples": inside})
-                    flights.append(segment_flight(from_track(piece)))
+                    flight = segment_flight(from_track(piece))
+                    flights.append(OwnedFlight(obj.phrase, obj.object_id, flight))
     return _Measured(flights, unmeasured, dict(samples_by_phrase))
 
 
@@ -218,6 +245,47 @@ async def _explain(
     except Exception:
         logger.warning("No explanation; clients fall back to templates", exc_info=True)
         return None
+
+
+async def _evidence(
+    store: EvidenceStore,
+    job: Job,
+    video: Path,
+    ingest: IngestResult,
+    scene: _Scene | None,
+    work_dir: Path,
+) -> Evidence | None:
+    """Ghosts for every measured flight and, while it lasts, the evidence video. Never fails
+    the job: without a video, the result still has the measured flights and their ghosts."""
+    if scene is None:
+        return None
+    found = ghosts(scene.flights, scale=scene.scale, slow_motion=scene.slow_motion)
+    if not found:
+        return None
+    clip: EvidenceVideo | None = None
+    try:
+        rendered = await asyncio.to_thread(
+            render_evidence,
+            video,
+            ingest.timebase,
+            scene.camera,
+            scene.objects,
+            found,
+            work_dir / "evidence.mp4",
+        )
+        if rendered is not None:
+            await asyncio.to_thread(store.put, job.id, rendered.path)
+            clip = EvidenceVideo(
+                width=rendered.width,
+                height=rendered.height,
+                duration_s=rendered.duration_s,
+                playback_rate=rendered.playback_rate,
+                size_bytes=rendered.size_bytes,
+                expires_at=datetime.now(UTC) + EVIDENCE_TTL,
+            )
+    except Exception:
+        logger.warning("No evidence video", exc_info=True, extra={"job_id": str(job.id)})
+    return Evidence(video=clip, series=evidence_series(found))
 
 
 class _Progress:

@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import io
 import logging
+from pathlib import Path
 
 import pytest
 
+from pisa_engine.api import _job_store, evidence_store_for
+from pisa_engine.jobs import StorageJobStore, SupabaseJobStore
 from pisa_engine.logs import REDACTED, JsonFormatter
+from pisa_engine.render.store import LocalEvidenceStore, SupabaseEvidenceStore
 from pisa_engine.settings import Settings
 
 FAKE_KEY = "LLM_000_not-a-real-key"
@@ -53,3 +57,17 @@ def test_logs_redact_secrets_in_messages_and_tracebacks() -> None:
     assert FAKE_KEY not in output
     assert output.count(REDACTED) == 2  # The message and the exception text.
     assert '"job_id": "job-1"' in output
+
+
+def test_local_store_overrides_a_configured_supabase(tmp_path: Path) -> None:
+    auto = Settings(
+        _env_file=None,
+        SUPABASE_URL="https://project.supabase.co",
+        SUPABASE_SECRET_KEY="sb_secret_not-real",  # noqa: S106 (a placeholder, not a key)
+        PISA_DATA_DIR=str(tmp_path),
+    )
+    assert isinstance(_job_store(auto), SupabaseJobStore)
+    assert isinstance(evidence_store_for(auto), SupabaseEvidenceStore)
+    local = auto.model_copy(update={"store": "local"})
+    assert isinstance(_job_store(local), StorageJobStore)
+    assert isinstance(evidence_store_for(local), LocalEvidenceStore)

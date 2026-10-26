@@ -32,6 +32,7 @@ from pisa_engine.model_api.client import MetaModelApiClient
 from pisa_engine.model_api.spend import JsonlSpendLedger, PaidCallsDisabledError, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
 from pisa_engine.planning.muse_spark import MuseSparkPlanner
+from pisa_engine.render.store import LocalEvidenceStore
 from pisa_engine.settings import get_settings
 from pisa_engine.storage import LocalStorage
 from pisa_engine.tracking.sam import Sam31Segmenter
@@ -101,6 +102,7 @@ async def _full(
         store=store,
         planner=planner,
         explainer=MuseSparkExplainer(client),
+        evidence=LocalEvidenceStore(out / "evidence"),
     )
     locale: Locale = args.locale
     job = Job(

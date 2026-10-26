@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import shutil
+import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from functools import cache
@@ -14,7 +15,7 @@ from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, FastAPI, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
@@ -27,6 +28,12 @@ from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
 from pisa_engine.planning.muse_spark import MuseSparkPlanner
 from pisa_engine.planning.planner import Planner, WholeClipPlanner
+from pisa_engine.render.store import (
+    EvidenceStore,
+    LocalEvidenceStore,
+    SupabaseEvidenceStore,
+    delete_expired,
+)
 from pisa_engine.settings import Settings, get_settings
 from pisa_engine.storage import LocalStorage
 from pisa_engine.tracking.fake import ColorSegmenter
@@ -38,6 +45,8 @@ logger = logging.getLogger(__name__)
 _CHUNK_BYTES = 1 << 20
 # Room for multipart boundaries and form fields around the video itself.
 _FORM_OVERHEAD_BYTES = 64 * 1024
+# Expired evidence is also swept when jobs arrive, at most this often per process.
+_SWEEP_EVERY_S = 600.0
 
 
 def create_app(
@@ -45,6 +54,7 @@ def create_app(
     segmenter: Segmenter | None = None,
     planner: Planner | None = None,
     explainer: Explainer | None = None,
+    evidence: EvidenceStore | None = None,
 ) -> FastAPI:
     config = settings or get_settings()
     configure_logging(
@@ -56,6 +66,18 @@ def create_app(
         ],
     )
     store = _job_store(config)
+    evidence_store = evidence or evidence_store_for(config)
+    last_sweep = [0.0]
+
+    def sweep_expired_evidence() -> None:
+        """Best effort: the scheduled sweep (modal_app.py) is the guarantee."""
+        if time.monotonic() - last_sweep[0] < _SWEEP_EVERY_S:
+            return
+        last_sweep[0] = time.monotonic()
+        try:
+            delete_expired(evidence_store)
+        except Exception:
+            logger.warning("Could not sweep expired evidence", exc_info=True)
 
     @cache
     def meta_client() -> MetaModelApiClient:
@@ -67,6 +89,7 @@ def create_app(
         store=store,
         planner=planner or _planner(config, meta_client),
         explainer=explainer or _explainer(config, meta_client),
+        evidence=evidence_store,
     )
     rate = RateLimiter(config.jobs_per_hour, window_s=3600, global_limit=config.jobs_per_hour_total)
     slots = asyncio.Semaphore(config.max_concurrent_jobs)
@@ -131,6 +154,7 @@ def create_app(
             raise
         logger.info("Job created", extra={"job_id": str(job.id), "stage": "ingest"})
         background.add_task(run_when_free, job, source, work_dir)
+        background.add_task(sweep_expired_evidence)
         return job
 
     @app.get("/jobs/{job_id}", response_model=None)
@@ -145,14 +169,40 @@ def create_app(
             return _error(404, "result_not_ready")
         return result
 
+    @app.get("/jobs/{job_id}/evidence.mp4", response_model=None)
+    def get_evidence(job_id: UUID) -> Any:
+        """The evidence video while it lasts: the file, or a signed link valid for an hour."""
+        result = store.get_result(job_id)
+        video = result.evidence.video if result and result.evidence else None
+        if video is None:
+            return _error(404, "evidence_not_found")
+        if datetime.now(UTC) >= video.expires_at:
+            return _error(404, "evidence_expired")
+        location = evidence_store.locate(job_id)
+        if location is None:
+            return _error(404, "evidence_expired")
+        if isinstance(location, Path):
+            return FileResponse(location, media_type="video/mp4")
+        return RedirectResponse(location, status_code=307)
+
     return app
 
 
+def evidence_store_for(config: Settings) -> EvidenceStore:
+    if _uses_supabase(config):
+        return SupabaseEvidenceStore(config.supabase_url, config.supabase_secret_key)
+    return LocalEvidenceStore(config.data_dir / "evidence")
+
+
 def _job_store(config: Settings) -> JobStore:
-    key = config.supabase_secret_key
-    if config.supabase_url and key.get_secret_value():
-        return SupabaseJobStore(config.supabase_url, key)
+    if _uses_supabase(config):
+        return SupabaseJobStore(config.supabase_url, config.supabase_secret_key)
     return StorageJobStore(LocalStorage(config.data_dir))
+
+
+def _uses_supabase(config: Settings) -> bool:
+    configured = bool(config.supabase_url and config.supabase_secret_key.get_secret_value())
+    return configured and config.store == "auto"
 
 
 _ClientFactory = Callable[[], MetaModelApiClient]

@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     # Behind one trusted proxy (Modal), the client address is the last X-Forwarded-For entry.
     trust_proxy: bool = Field(default=False, validation_alias="PISA_TRUST_PROXY")
 
+    # "auto" keeps jobs, results and evidence in Supabase when it is configured; "local" keeps
+    # them on disk even then (tests, and local runs that must not touch production).
+    store: Literal["auto", "local"] = Field(default="auto", validation_alias="PISA_STORE")
     # With both set, jobs and results live in Supabase Postgres instead of local files.
     supabase_url: str = Field(default="", validation_alias="SUPABASE_URL")
     supabase_secret_key: SecretStr = Field(
