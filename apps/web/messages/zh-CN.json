@@ -197,7 +197,36 @@
     },
     "policy": "判定规则 {version}",
     "limits": "Pisa 检查物体如何下落、飞行和弹跳。它不检查人脸、对口型或声音。",
-    "checkAnother": "检查另一个视频"
+    "checkAnother": "检查另一个视频",
+    "evidence": {
+      "object": "Pisa 跟踪的物体",
+      "points": "测量到的位置",
+      "ghost": {
+        "fit": "真实重力允许的最接近的路径",
+        "earth_gravity": "地球重力会把它带到的位置",
+        "partner": "如果两者一起下落，它会在的位置",
+        "elastic_bounce": "真实物理允许的最高弹跳"
+      },
+      "slowed": "以一半速度播放。",
+      "kept": "Pisa 会将此视频保留 24 小时，然后删除。测量结果会保留。",
+      "expired": "为保护你的隐私，证据视频已在检查 24 小时后删除。下方的测量结果会保留。"
+    },
+    "chart": {
+      "label": "高度随时间变化的图表。点：测量值。线：{ghost}。",
+      "measured": "测量值",
+      "axes": "时间向右推进，高度向上增加。"
+    },
+    "share": {
+      "title": "分享结果",
+      "share": "分享",
+      "whatsapp": "通过 WhatsApp 发送",
+      "download": "下载图片",
+      "text": "Pisa 检查了这个视频：{verdict}。"
+    },
+    "card": {
+      "alt": "Pisa 结果：{verdict}",
+      "pending": "Pisa 检查病毒视频中的运动在物理上是否可能。"
+    }
   },
   "Errors": {
     "unsupported_format": "Pisa 无法读取这个文件。请换成 MP4 或 MOV。",

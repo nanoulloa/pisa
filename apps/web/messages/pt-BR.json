@@ -197,7 +197,36 @@
     },
     "policy": "Política de veredito {version}",
     "limits": "O Pisa verifica como os objetos caem, voam e quicam. Não verifica rostos, sincronia labial nem vozes.",
-    "checkAnother": "Verificar outro vídeo"
+    "checkAnother": "Verificar outro vídeo",
+    "evidence": {
+      "object": "O objeto que o Pisa acompanhou",
+      "points": "Onde ele foi medido",
+      "ghost": {
+        "fit": "O caminho mais próximo que a gravidade real permite",
+        "earth_gravity": "Aonde a gravidade da Terra o levaria",
+        "partner": "Onde ele estaria se os dois caíssem juntos",
+        "elastic_bounce": "O quique mais alto que a física real permite"
+      },
+      "slowed": "Reproduzido na metade da velocidade.",
+      "kept": "O Pisa guarda este vídeo por 24 horas e depois o apaga. As medições ficam.",
+      "expired": "O vídeo de evidência foi apagado 24 horas depois da verificação, para proteger sua privacidade. As medições abaixo ficam."
+    },
+    "chart": {
+      "label": "Gráfico da altura ao longo do tempo. Pontos: o que foi medido. Linha: {ghost}.",
+      "measured": "Medido",
+      "axes": "O tempo avança para a direita e a altura sobe."
+    },
+    "share": {
+      "title": "Compartilhar o resultado",
+      "share": "Compartilhar",
+      "whatsapp": "Enviar pelo WhatsApp",
+      "download": "Baixar a imagem",
+      "text": "O Pisa verificou este vídeo: {verdict}."
+    },
+    "card": {
+      "alt": "Resultado do Pisa: {verdict}",
+      "pending": "O Pisa verifica se o movimento de um vídeo viral é fisicamente possível."
+    }
   },
   "Errors": {
     "unsupported_format": "Este arquivo não é um vídeo que o Pisa consiga ler. Tente um MP4 ou MOV.",

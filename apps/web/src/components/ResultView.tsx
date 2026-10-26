@@ -1,34 +1,15 @@
 "use client";
 
-import type { AnalysisResult, Measurement, Plan, TestId, TestResult, Verdict } from "@pisa/contracts";
+import type { AnalysisResult, Measurement, Plan, TestResult } from "@pisa/contracts";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import { explanationKey, measuredValue, measurement } from "@/lib/result";
 
+import { EvidenceVideo } from "./EvidenceVideo";
+import { ShareButtons } from "./ShareButtons";
+import { TrajectoryChart } from "./TrajectoryChart";
 import { VerdictIcon } from "./VerdictIcon";
-
-const EXPLANATIONS = [
-  "slows_down_while_falling",
-  "acceleration_grows",
-  "accelerates_upward",
-  "pair_falls_apart",
-  "bounce_gains_energy",
-  "gravity_changes",
-  "gravity_too_weak",
-  "gravity_too_strong",
-  "impossible",
-  "consistent",
-  "weak_violation",
-  "no_measurable_acceleration",
-  "depth_change",
-  "camera_motion",
-  "too_few_samples",
-  "no_free_flight",
-  "too_unclear",
-  "no_measurable_events",
-] as const;
-
-type Explanation = (typeof EXPLANATIONS)[number];
 
 const MEASUREMENT_NAMES = [
   "acceleration_px_s2",
@@ -167,9 +148,16 @@ export function ResultView({ result }: { result: AnalysisResult }) {
         <p>
           {result.explanation?.locale === locale
             ? result.explanation.text
-            : t(`explanations.${explanation(verdict, result.tests)}`)}
+            : t(`explanations.${explanationKey(verdict, result.tests)}`)}
         </p>
       </div>
+      {result.evidence?.video && result.evidence.series[0] && (
+        <EvidenceVideo
+          id={result.job.id}
+          video={result.evidence.video}
+          model={result.evidence.series[0].model}
+        />
+      )}
       {verdict.label === "consistent_with_real_physics" && (
         <p className="note">{t("consistentNote")}</p>
       )}
@@ -186,6 +174,7 @@ export function ResultView({ result }: { result: AnalysisResult }) {
 
       <details className="technical">
         <summary>{t("detailsSummary")}</summary>
+        {result.evidence?.series[0] && <TrajectoryChart series={result.evidence.series[0]} />}
         {result.plan && <PlanDetails plan={result.plan} />}
         {result.tests.map((test, index) => (
           <section key={index} className="technical-test">
@@ -223,31 +212,12 @@ export function ResultView({ result }: { result: AnalysisResult }) {
       </details>
 
       <p className="hint">{t("limits")}</p>
+      <ShareButtons id={result.job.id} verdict={verdictLabels(verdict.label)} />
       <Link className="button-primary" href="/check">
         {t("checkAnother")}
       </Link>
     </article>
   );
-}
-
-function explanation(verdict: Verdict, tests: TestResult[]): Explanation {
-  if (verdict.label === "consistent_with_real_physics") return "consistent";
-  // The tests' own reasons are more specific than the verdict's, so they come first.
-  const reasons = [...tests.map((test) => test.reason_code), verdict.reason_code];
-  if (verdict.label === "physically_impossible") {
-    // Explain the strongest violation among the tests that decided the verdict.
-    const decisive: readonly TestId[] = verdict.decisive_tests;
-    const violation = tests
-      .filter((test) => test.outcome === "violation" && decisive.includes(test.test))
-      .sort((a, b) => b.confidence - a.confidence)[0]?.reason_code;
-    return isExplanation(violation) ? violation : "impossible";
-  }
-  if (verdict.reason_code === "weak_violation") {
-    // Gravity of the wrong strength is also what slow or fast playback looks like: say so.
-    const gravity = tests.find((test) => test.test === "implied_g" && test.outcome === "violation");
-    return isExplanation(gravity?.reason_code) ? gravity.reason_code : "weak_violation";
-  }
-  return reasons.find(isExplanation) ?? "no_measurable_events";
 }
 
 /** What the planner saw: the windows that were measured, the camera, the size reference. */
@@ -286,26 +256,9 @@ function PlanDetails({ plan }: { plan: Plan }) {
   );
 }
 
-function isExplanation(code: string | null | undefined): code is Explanation {
-  return code !== null && code !== undefined && (EXPLANATIONS as readonly string[]).includes(code);
-}
-
 function accelerationState(test: TestResult | undefined): "steady" | "changing" | "unmeasured" {
   if (test === undefined || test.outcome === "insufficient_data") return "unmeasured";
   return test.outcome === "pass" ? "steady" : "changing";
-}
-
-/** A measurement from the given test, preferring a violation over a pass. */
-function measuredValue(tests: TestResult[], id: TestId, name: string): number | undefined {
-  const measured = tests.filter(
-    (test) => test.test === id && (test.outcome === "pass" || test.outcome === "violation"),
-  );
-  const shown = measured.find((test) => test.outcome === "violation") ?? measured[0];
-  return shown ? measurement(shown, name) : undefined;
-}
-
-function measurement(test: TestResult, name: string): number | undefined {
-  return test.measurements.find((m) => m.name === name)?.value;
 }
 
 function measurementName(

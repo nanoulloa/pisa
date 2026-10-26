@@ -197,7 +197,36 @@
     },
     "policy": "Verdict policy {version}",
     "limits": "Pisa checks how objects fall, fly and bounce. It doesn't check faces, lip-sync or voices.",
-    "checkAnother": "Check another video"
+    "checkAnother": "Check another video",
+    "evidence": {
+      "object": "The object Pisa tracked",
+      "points": "Where it was measured",
+      "ghost": {
+        "fit": "The closest path real gravity allows",
+        "earth_gravity": "Where Earth's gravity would take it",
+        "partner": "Where it would be if both fell together",
+        "elastic_bounce": "The highest bounce real physics allows"
+      },
+      "slowed": "Played at half speed.",
+      "kept": "Pisa keeps this video for 24 hours, then deletes it. The measurements stay.",
+      "expired": "The evidence video was deleted 24 hours after the check, to protect your privacy. The measurements below stay."
+    },
+    "chart": {
+      "label": "Chart of height over time. Dots: measured. Line: {ghost}.",
+      "measured": "Measured",
+      "axes": "Time runs to the right, height goes up."
+    },
+    "share": {
+      "title": "Share the result",
+      "share": "Share",
+      "whatsapp": "Send on WhatsApp",
+      "download": "Download the image",
+      "text": "Pisa checked this video: {verdict}."
+    },
+    "card": {
+      "alt": "Pisa result: {verdict}",
+      "pending": "Pisa checks whether the motion in a viral video is physically possible."
+    }
   },
   "Errors": {
     "unsupported_format": "This file isn't a video Pisa can read. Try an MP4 or MOV.",

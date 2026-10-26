@@ -4,14 +4,51 @@
     {
       "name": "web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--workspace", "@pisa/web"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--workspace",
+        "@pisa/web"
+      ],
       "port": 3000
     },
     {
       "name": "engine",
       "runtimeExecutable": "uv",
-      "runtimeArgs": ["run", "uvicorn", "pisa_engine.api:app", "--reload", "--port", "8000"],
+      "runtimeArgs": [
+        "run",
+        "uvicorn",
+        "pisa_engine.api:app",
+        "--reload",
+        "--port",
+        "8000"
+      ],
       "port": 8000
+    },
+    {
+      "name": "engine-local",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "PISA_STORE=local",
+        "PISA_DATA_DIR=.pisa/preview-data",
+        "PISA_WEB_ORIGINS=http://localhost:3100",
+        "uv",
+        "run",
+        "uvicorn",
+        "pisa_engine.api:app",
+        "--port",
+        "8100"
+      ],
+      "port": 8100
+    },
+    {
+      "name": "web-preview",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "NEXT_PUBLIC_ENGINE_URL=http://localhost:8100 npm run build --workspace @pisa/web && npm run start --workspace @pisa/web -- --port 3100"
+      ],
+      "port": 3100
     }
   ]
 }
