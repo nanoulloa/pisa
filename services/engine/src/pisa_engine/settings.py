@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     max_concurrent_jobs: int = Field(default=2, gt=0, validation_alias="PISA_MAX_CONCURRENT_JOBS")
     # New jobs per client IP per hour.
     jobs_per_hour: int = Field(default=20, gt=0, validation_alias="PISA_JOBS_PER_HOUR")
+    # New jobs per hour from everyone together: the backstop no address rotation can get around.
+    jobs_per_hour_total: int = Field(default=500, gt=0, validation_alias="PISA_JOBS_PER_HOUR_TOTAL")
     # When set, POST /jobs requires "Authorization: Bearer <token>" (the web server holds it).
     engine_token: SecretStr = Field(default=SecretStr(""), validation_alias="PISA_ENGINE_TOKEN")
 

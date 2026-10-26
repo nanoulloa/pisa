@@ -148,6 +148,10 @@ def test_engine_token_is_required_when_configured(
             headers={"Authorization": "Bearer s3cret-engine-token"},
         )
     assert accepted.status_code == 202
+    # Every route but the health check needs the token, so path variants cannot slip past.
+    assert client.get(f"/jobs/{accepted.json()['id']}").status_code == 401
+    assert client.post("/jobs/", content=b"").status_code == 401
+    assert client.get("/healthz").status_code == 200
 
 
 def test_unknown_jobs_and_locales(client: TestClient, clips: dict[str, Path]) -> None:

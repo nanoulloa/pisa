@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
 from pisa_engine.jobs import JobStore
-from pisa_engine.limits import BodySizeLimitMiddleware, JobAdmissionMiddleware, RateLimiter
+from pisa_engine.limits import AdmissionMiddleware, BodySizeLimitMiddleware, RateLimiter
 from pisa_engine.model_api.client import MetaModelApiClient
 from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
@@ -37,7 +37,7 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
     deps = PipelineDeps(
         segmenter=segmenter or _segmenter(config), store=store, phrase=config.default_phrase
     )
-    rate = RateLimiter(config.jobs_per_hour, window_s=3600)
+    rate = RateLimiter(config.jobs_per_hour, window_s=3600, global_limit=config.jobs_per_hour_total)
     slots = asyncio.Semaphore(config.max_concurrent_jobs)
 
     async def run_when_free(job: Job, source: Path, work_dir: Path) -> None:
@@ -50,10 +50,7 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
     )
     # Added last, so it runs first: refused requests never send their body.
     app.add_middleware(
-        JobAdmissionMiddleware,
-        path="/jobs",
-        token=config.engine_token.get_secret_value(),
-        limiter=rate,
+        AdmissionMiddleware, token=config.engine_token.get_secret_value(), limiter=rate
     )
     app.add_middleware(
         CORSMiddleware,

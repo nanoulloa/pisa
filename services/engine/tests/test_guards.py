@@ -73,17 +73,32 @@ def test_prices() -> None:
         token_cost_usd("some-new-model", 1, 1)
 
 
-def test_rate_limiter_window_and_memory_bounds() -> None:
+def test_rate_limiter_window_per_client_and_global_limit() -> None:
     now = [0.0]
-    limiter = RateLimiter(2, window_s=60, max_keys=3, clock=lambda: now[0])
+    limiter = RateLimiter(2, window_s=60, global_limit=4, max_keys=5, clock=lambda: now[0])
     assert limiter.allow("a")
     assert limiter.allow("a")
-    assert not limiter.allow("a")
+    assert not limiter.allow("a")  # Per client.
+    assert limiter.allow("b")
+    assert limiter.allow("c")
+    assert not limiter.allow("d")  # Global: 4 jobs already in the window.
     now[0] = 61
     assert limiter.allow("a")  # The window moved on.
-    for key in ("b", "c", "d", "e"):
-        limiter.allow(key)
-    assert len(limiter) == 3  # Least recently seen clients are forgotten first.
+
+
+def test_rotating_addresses_cannot_evict_an_active_client() -> None:
+    now = [0.0]
+    limiter = RateLimiter(1, window_s=60, global_limit=3, max_keys=4, clock=lambda: now[0])
+    assert limiter.allow("victim-of-limit")
+    for i in range(100):
+        limiter.allow(f"rotating-{i}")
+    assert not limiter.allow("victim-of-limit")  # Still remembered, still at its limit.
+    assert len(limiter) <= 4
+
+
+def test_rate_limiter_rejects_unsafe_sizes() -> None:
+    with pytest.raises(ValueError, match="max_keys"):
+        RateLimiter(1, window_s=60, global_limit=10, max_keys=10)
 
 
 def test_ipv6_clients_are_grouped_by_their_64_prefix() -> None:

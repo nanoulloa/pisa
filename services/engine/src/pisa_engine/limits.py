@@ -80,10 +80,12 @@ async def _send_error(send: Send, status: int, code: str) -> None:
 
 
 class RateLimiter:
-    """At most `limit` events per `window_s` seconds for each key. In memory, one process.
+    """At most `limit` events per `window_s` seconds for each key, and `global_limit` in total.
 
-    Tracks at most `max_keys` clients; the least recently seen are forgotten first, and keys
-    with no events left in the window are dropped.
+    In memory, one process. The global limit also bounds memory and makes eviction safe:
+    only keys seen within the window can hold events, and there are at most `global_limit`
+    of them, so with `max_keys` above that the least recently seen key is always expired.
+    Rotating through many addresses therefore cannot push an active client out.
     """
 
     def __init__(
@@ -91,23 +93,33 @@ class RateLimiter:
         limit: int,
         window_s: float,
         *,
+        global_limit: int,
         max_keys: int = 10_000,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
+        if max_keys <= global_limit:
+            raise ValueError(
+                "max_keys must exceed global_limit, or eviction could drop active keys"
+            )
         self._limit = limit
+        self._global_limit = global_limit
         self._window_s = window_s
         self._max_keys = max_keys
         self._clock = clock
+        self._all: deque[float] = deque()
         self._events: OrderedDict[str, deque[float]] = OrderedDict()
 
     def allow(self, key: str) -> bool:
         now = self._clock()
+        _expire(self._all, now - self._window_s)
+        if len(self._all) >= self._global_limit:
+            return False
         events = self._events.pop(key, deque())
-        while events and now - events[0] >= self._window_s:
-            events.popleft()
+        _expire(events, now - self._window_s)
         allowed = len(events) < self._limit
         if allowed:
             events.append(now)
+            self._all.append(now)
         if events:
             self._events[key] = events  # Re-inserted last: most recently seen.
             while len(self._events) > self._max_keys:
@@ -116,6 +128,11 @@ class RateLimiter:
 
     def __len__(self) -> int:
         return len(self._events)
+
+
+def _expire(events: deque[float], before: float) -> None:
+    while events and events[0] <= before:
+        events.popleft()
 
 
 def client_key(host: str) -> str:
@@ -129,17 +146,18 @@ def client_key(host: str) -> str:
     return str(address)
 
 
-class JobAdmissionMiddleware:
-    """Checks the bearer token and the per-client rate before a job upload is read at all."""
+class AdmissionMiddleware:
+    """Runs before any body is read. With a token configured, every route except the health
+    check needs it, so no path variant can slip past an allowlist. Every POST counts against
+    the per-client and global job rates."""
 
-    def __init__(self, app: ASGIApp, *, path: str, token: str, limiter: RateLimiter) -> None:
+    def __init__(self, app: ASGIApp, *, token: str, limiter: RateLimiter) -> None:
         self.app = app
-        self.path = path
         self.token = token
         self.limiter = limiter
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http" or scope["method"] != "POST" or scope["path"] != self.path:
+        if scope["type"] != "http" or _route_path(scope) == "/healthz":
             await self.app(scope, receive, send)
             return
         if self.token:
@@ -147,8 +165,16 @@ class JobAdmissionMiddleware:
             if not hmac.compare_digest(supplied, f"Bearer {self.token}".encode()):
                 await _send_error(send, 401, "unauthorized")
                 return
-        client = scope.get("client")
-        if not self.limiter.allow(client_key(client[0]) if client else "unknown"):
-            await _send_error(send, 429, "rate_limited")
-            return
+        if scope["method"] == "POST":
+            client = scope.get("client")
+            if not self.limiter.allow(client_key(client[0]) if client else "unknown"):
+                await _send_error(send, 429, "rate_limited")
+                return
         await self.app(scope, receive, send)
+
+
+def _route_path(scope: Scope) -> str:
+    """The path the router matches: the request path without the app's mount prefix."""
+    path: str = scope["path"]
+    root: str = scope.get("root_path", "")
+    return path[len(root) :] if root and path.startswith(root) else path
