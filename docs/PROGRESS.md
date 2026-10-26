@@ -11,7 +11,7 @@
 - **Contracts:** `PlanReason`, `Explanation` in the result, and the schema shipped inside the Python package for the planner.
 - **Web:** the model's sentence when present (with a note in the technical panel), a gravity card in m/s², explanations for slow or fast playback and for clips with nothing to measure, and what the planner watched. Four languages.
 - **Spike ready:** `services/engine/spikes/plan/run_plan.py` runs the planner alone or the whole pipeline with every real model on our own clips. It stops at the kill switch.
-- **Tests:** 141 engine tests, including the request shapes for every Meta call, the hand-toss case with and without a window, T4 with a scale, number checks in four languages, and uploads deleted on failure. 11 Playwright tests.
+- **Tests:** 142 engine tests, including the request shapes for every Meta call, the hand-toss case with and without a window, T4 with a scale, number checks in four languages, and uploads deleted on failure. 11 Playwright tests.
 
 ### Next (day 5)
 

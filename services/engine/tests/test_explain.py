@@ -75,7 +75,7 @@ def test_facts_hold_what_people_understand_and_no_pixels() -> None:
     assert by_test["bounce_energy"]["speed_kept_after_bounce_percent"] == 70
     assert by_test["implied_g"]["gravity_m_s2"] == 1.6
     assert by_test["implied_g"]["times_weaker_than_earth"] == 6.1
-    assert facts["moving_objects"] == ["red ball"]
+    assert "red ball" not in text  # No free text from the planner reaches the explainer.
     assert facts["constants"]["earth_gravity_m_s2"] == 9.81
 
 

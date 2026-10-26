@@ -1,7 +1,9 @@
 """What the explainer may say, and the check that it said nothing else.
 
 The facts are a small JSON of the verdict and the measurements people can understand (no
-pixels, no fit statistics), each number already rounded the way it may be quoted. The check
+pixels, no fit statistics), each number already rounded the way it may be quoted. They hold
+no free text: the planner's phrases come from a model that watched an untrusted video, so
+nothing a video shows or says can reach the explainer's prompt. The check
 reads every number written in the text, in the conventions of its language, and accepts it
 only if it is one of the facts, rounded no more finely than given.
 """
@@ -32,7 +34,6 @@ def explanation_facts(
         "not_measured_because": sorted(
             {r.reason_code for r in results if r.outcome == "insufficient_data" and r.reason_code}
         ),
-        "moving_objects": sorted({p for e in plan.events for p in e.object_phrases}),
         "slow_motion_suspected": plan.camera.slow_motion_suspected,
         "constants": {
             "earth_gravity_m_s2": EARTH_G,

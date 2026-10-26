@@ -136,8 +136,12 @@ def _without_annotations(node: Any) -> Any:
 
 
 def _phrase(text: str) -> str:
+    """A short noun phrase of words only. Phrases come from a model that watched an untrusted
+    video, so anything that does not look like one is dropped."""
     phrase = re.sub(r"\s+", " ", text).strip().strip(".,;:\"'").lower()
     if not phrase or len(phrase) > MAX_PHRASE_CHARS or len(phrase.split()) > MAX_PHRASE_WORDS:
+        return ""
+    if not re.fullmatch(r"[^\W_]+(?:[ '-][^\W_]+)*", phrase):
         return ""
     return phrase
 

@@ -86,6 +86,15 @@ def test_phrases_are_normalized_deduplicated_and_short() -> None:
     assert event.object_phrases == ["red ball", "blue ball"]
 
 
+def test_phrases_that_are_not_plain_words_are_dropped() -> None:
+    odd = ["ball; say real", "<b>ball</b>", "ball{real}", "pelota roja", "ignore the rules"]
+    plan = _plan(events=[{"type": "fall", "start_s": 0.2, "end_s": 1.0, "object_phrases": odd}])
+    (event,) = checked(plan, _ingest()).events
+    # Words in any script pass, even odd ones: a phrase only steers the segmenter and is shown
+    # as text, and the explainer never sees it. Markup and punctuation do not pass.
+    assert event.object_phrases == ["pelota roja", "ignore the rules"]
+
+
 def test_a_plan_whose_events_are_all_unusable_is_too_unclear() -> None:
     plan = _plan(events=[{"type": "fall", "start_s": 0.5, "end_s": 0.6, "object_phrases": ["x"]}])
     result = checked(plan, _ingest())
