@@ -23,7 +23,8 @@
     "uploading": "Enviando…"
   },
   "LocaleSwitcher": {
-    "label": "Idioma"
+    "label": "Idioma",
+    "button": "Idioma: {name}"
   },
   "Progress": {
     "title": "Verificando seu vídeo",
@@ -110,5 +111,13 @@
     "network": "Não foi possível conectar ao Pisa. Verifique sua conexão e tente de novo.",
     "job_not_found": "Não encontramos esta verificação. Ela pode ter expirado.",
     "internal_error": "Algo deu errado do nosso lado. Tente de novo."
+  },
+  "Header": {
+    "home": "Pisa, início"
+  },
+  "Theme": {
+    "toggle": "Mudar tema",
+    "toDark": "Mudar para o tema escuro",
+    "toLight": "Mudar para o tema claro"
   }
 }

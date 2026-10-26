@@ -27,7 +27,7 @@ gen: ## Regenerate contract types, brand tokens CSS and logo SVGs
 	uv run python brand/logo/generate.py
 
 gen-check: gen ## Fail if generated types are out of date
-	git diff --exit-code -- packages/contracts brand
+	git diff --exit-code -- packages/contracts brand apps/web/src/app/icon.svg apps/web/public/brand
 
 lint: ## Lint and check formatting
 	uv run ruff check .

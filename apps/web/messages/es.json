@@ -23,7 +23,8 @@
     "uploading": "Subiendo…"
   },
   "LocaleSwitcher": {
-    "label": "Idioma"
+    "label": "Idioma",
+    "button": "Idioma: {name}"
   },
   "Progress": {
     "title": "Revisando tu video",
@@ -110,5 +111,13 @@
     "network": "No se puede conectar con Pisa. Revisa tu conexión y vuelve a intentarlo.",
     "job_not_found": "No encontramos esta revisión. Puede que haya caducado.",
     "internal_error": "Algo falló de nuestro lado. Vuelve a intentarlo."
+  },
+  "Header": {
+    "home": "Pisa, inicio"
+  },
+  "Theme": {
+    "toggle": "Cambiar tema",
+    "toDark": "Cambiar a tema oscuro",
+    "toLight": "Cambiar a tema claro"
   }
 }

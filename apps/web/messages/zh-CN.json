@@ -23,7 +23,8 @@
     "uploading": "正在上传…"
   },
   "LocaleSwitcher": {
-    "label": "语言"
+    "label": "语言",
+    "button": "语言：{name}"
   },
   "Progress": {
     "title": "正在检查你的视频",
@@ -110,5 +111,13 @@
     "network": "无法连接到 Pisa。请检查网络后再试。",
     "job_not_found": "找不到这次检查，可能已经过期。",
     "internal_error": "我们这边出了问题。请再试一次。"
+  },
+  "Header": {
+    "home": "Pisa 首页"
+  },
+  "Theme": {
+    "toggle": "切换主题",
+    "toDark": "切换到深色主题",
+    "toLight": "切换到浅色主题"
   }
 }

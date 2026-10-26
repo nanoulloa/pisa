@@ -1,6 +1,7 @@
 """Builds every logo SVG from one construction, so the geometry stays exact.
 
-Run: uv run python brand/logo/generate.py
+Run: uv run python brand/logo/generate.py (part of `make gen`). Also writes the web app's
+favicon and header mark, so the web always shows the current mark.
 
 Master grid: 64 x 64 units, 4-unit module. The tower leans 4 degrees (the real
 tower's lean); the drop line is exactly vertical. Small sizes (16 and 32 px) are
@@ -14,6 +15,7 @@ import math
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
+WEB = OUT.parents[1] / "apps" / "web"
 INK = "#0F3D3E"
 PAPER = "#FBFCFC"
 LIME = "#D4E64A"
@@ -162,6 +164,12 @@ def main() -> None:
     }
     for name, svg in files.items():
         (OUT / name).write_text(svg, encoding="utf-8")
+
+    # The web app's favicon, and the 32 px cut it shows in the header (as a CSS mask, so it
+    # takes the text color of either theme).
+    for target in (WEB / "src/app/icon.svg", WEB / "public/brand/mark-32.svg"):
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(files["favicon-32.svg"], encoding="utf-8")
 
 
 if __name__ == "__main__":

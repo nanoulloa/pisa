@@ -23,7 +23,8 @@
     "uploading": "Uploading…"
   },
   "LocaleSwitcher": {
-    "label": "Language"
+    "label": "Language",
+    "button": "Language: {name}"
   },
   "Progress": {
     "title": "Checking your video",
@@ -110,5 +111,13 @@
     "network": "Pisa can't be reached. Check your connection and try again.",
     "job_not_found": "We couldn't find this check. It may have expired.",
     "internal_error": "Something went wrong on our side. Try again."
+  },
+  "Header": {
+    "home": "Pisa, home"
+  },
+  "Theme": {
+    "toggle": "Change theme",
+    "toDark": "Switch to dark theme",
+    "toLight": "Switch to light theme"
   }
 }
