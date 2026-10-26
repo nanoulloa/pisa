@@ -1,5 +1,27 @@
 # Progress
 
+## Day 5 · Tuesday, Oct 27 (same session)
+
+### Done
+
+- **Ghost:** every measured flight gets one. It leaves with its object and follows the closest gravity path, or the law a test found broken: the highest bounce physics allows, the shared acceleration of a pair, or Earth's gravity. On real clips it runs on top of the object.
+- **Evidence video:** the measured events plus half a second, at half speed when short, with the object's ring, the measured points and the translucent lime ghost, mapped through the camera path so it stays on the object in handheld clips. H.264 under 16 MB.
+- **Storage and privacy:** a private Supabase bucket, one-hour signed links, refused after 24 hours, swept hourly by a Modal schedule and when jobs arrive. Checked for real: upload, signed link with byte ranges, no access without the link, deletion.
+- **Web:** the video under the verdict with a legend that does not rely on color, the trajectory chart in the technical panel, and share buttons (the card as an image where the device allows it, WhatsApp, download).
+- **Share card:** 4:5 for WhatsApp and 1.91:1 for link previews, drawn from the stored result in all four languages, Chinese included, with no frame of the video.
+- **Fix:** local browser tests had kept writing test jobs to Supabase; `PISA_STORE=local` now keeps them on disk.
+- **Tests:** 157 engine tests, including each ghost on real and fake motion, the drawn ghost's position in rendered frames (shaken camera included) and the Storage API calls; 5 new web unit tests; 11 Playwright tests, which now fetch the video, the card and the preview.
+
+### Next (day 6)
+
+- WhatsApp bot end to end: webhook with signature check, quick localized acknowledgment, the evidence video and card as the reply.
+- First real run with Muse Spark and SAM when paid calls are switched on, and moving the spend ledger to Supabase before that happens on Modal.
+
+### Blocked
+
+- Real model runs wait for the founder to switch on paid calls.
+- Real clips from the shot list.
+
 ## Day 4 · Monday, Oct 26 (same session)
 
 ### Done

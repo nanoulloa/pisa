@@ -78,3 +78,19 @@ One entry per decision that would be expensive to undo: context, decision, why.
 
 **Context.** The spend guard needs a call's worst-case cost before sending it, and Meta does not document how many tokens a second of video takes. **Decision.** The planner counts the exact request's input tokens with `POST /v1/responses/input_tokens` (which includes media) and holds 1.2 times that plus the output cap. The explainer sends no media and bounds its input tokens by the request's size in bytes. **Why.** A fixed guess per frame could be far off in either direction; a count is exact and costs nothing billed. Counting is gated like a paid call because it sends the same data.
 
+## 2026-10-27 · The ghost follows a stricter law only where a test found a violation
+
+**Context.** The ghost is the hero of the evidence: where real physics would put the object. A ghost under Earth's gravity needs a scale, and every scale has a range; on a real fall the ghost would drift a few percent away from the object even though T4 passes, which would make real videos look suspicious. **Decision.** Every ghost leaves with its object, at the position and speed of the object's own fit, and follows the closest constant-gravity path unless a test reported a violation: then it follows that law (all the arriving speed after a bounce that gains energy, the shared acceleration of a pair that falls apart, Earth's gravity when T4 excludes it). **Why.** The picture must agree with the verdict. On a real clip the ghost runs on top of the object; on a fake it parts exactly where the measured law breaks.
+
+## 2026-10-27 · Evidence video kept 24 hours, behind signed links
+
+**Context.** The evidence video is the original clip with drawings on it, so it carries the user's frames. The brief keeps raw videos for 24 hours and measurements forever. Supabase Storage lifecycle rules only expire old versions, not current files, and deleting rows with SQL orphans the files. **Decision.** Videos go to a private bucket with a 16 MB limit. The engine sweeps expired ones hourly from a Modal schedule (and when jobs arrive) through the Storage API, refuses to serve a video past its `expires_at` even before the sweep, and hands clients one-hour signed links. **Why.** The privacy promise holds even if a sweep is late, and no link to a user's video stays valid for long.
+
+## 2026-10-27 · The share card is drawn by the web app
+
+**Context.** The card must look like the product in all four languages, including Chinese, and work as a WhatsApp image and a link preview. **Decision.** `next/og` draws it from the stored result with the page's own messages and logic, in a 4:5 card and a 1.91:1 Open Graph image, with font subsets fetched from Google Fonts. It contains no frame of the video. **Why.** One source for wording and design, no font files in the engine, Chinese without a 10 MB font, and a card that may live as long as the result.
+
+## 2026-10-27 · Local runs can be kept off Supabase explicitly
+
+**Context.** The day-3 fix that blanked `SUPABASE_URL` for browser tests did nothing: settings ignore empty environment variables, so local test runs kept writing jobs to the production project (CI was never affected; it has no `.env`). **Decision.** `PISA_STORE=local` keeps jobs, results and evidence on disk whatever `.env` says. The browser tests and the local preview configurations set it. **Why.** Test data belongs on the test machine, and a guard that silently does nothing is worse than none.
+

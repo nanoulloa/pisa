@@ -31,7 +31,7 @@ flowchart TB
     JOB -- reply --> WA
 ```
 
-Status after day 4: every stage from upload to explanation runs locally, end to end in CI, and deployed. The deployed engine uses the free offline stages (whole-clip planner, color segmenter, templated explanations) until paid calls are switched on; the Muse Spark planner and explainer and SAM 3.1 are built and tested offline against the request and response shapes in Meta's documentation; none has been called for real yet. The WhatsApp webhook is next.
+Status after day 5: every stage from upload to the evidence video and share card runs locally, end to end in CI, and deployed. The deployed engine uses the free offline stages (whole-clip planner, color segmenter, templated explanations) until paid calls are switched on; the Muse Spark planner and explainer and SAM 3.1 are built and tested offline against the request and response shapes in Meta's documentation; none has been called for real yet. The WhatsApp webhook is next.
 
 ### Deployment (all on free plans, no payment method anywhere)
 
@@ -57,7 +57,7 @@ Each stage has typed inputs and outputs from `packages/contracts/schema/pisa.sch
 | 5 | Test | flights, scale → `TestResult` T1 to T5 | `pisa_engine/physics/suite.py` |
 | 6 | Verdict | `TestResult[]` → `Verdict` | `pisa_engine/verdict.py` (policy 0.1.0) |
 | 7 | Explain | verdict and measurements → `Explanation` in the job's language, or none | `pisa_engine/explain` |
-| 8 | Render | clip + fits → evidence video, share card | day 5 |
+| 8 | Render | flights, scale, camera path → ghosts, `Evidence` (video kept 24 h, series for charts) | `pisa_engine/render` |
 
 ### Ingest
 
@@ -108,6 +108,18 @@ T1, T2, T3 and T5 need no scale and no true frame rate, so slow motion cannot fo
 ### Explain
 
 `MuseSparkExplainer` sends Muse Spark the facts, never the video: the verdict, and only the measurements a reader understands, already rounded (ratios, the share of speed a bounce keeps, gravity in m/s², a few constants such as Earth's g). It asks for two or three plain sentences in the job's language, with minimal reasoning. The answer is kept only if every number written in it, read in the conventions of its language (decimal comma in Spanish and Portuguese), is one of the facts rounded no more finely than given. Otherwise, or when the call fails or paid calls are off, there is no explanation and the clients use their templated copy, which exists in all four languages. The stage never fails a job.
+
+### Render
+
+`ghosts()` gives every measured flight a ghost: it leaves with its object (same place, same speed, from the object's own fit) and then follows a law. It follows a stricter law only where that law's test found a violation, so on a real clip every ghost runs on top of its object: after a bounce that gains energy, the highest bounce physics allows (`elastic_bounce`); for two objects released together that fall apart, their shared acceleration (`partner`); when a size reference shows gravity that is not Earth's, Earth's gravity at the measured scale (`earth_gravity`); otherwise the closest constant-gravity path (`fit`). Ghosts are ranked by how far they part from their objects, and the result keeps the first six as `EvidenceSeries` for charts.
+
+`render_evidence()` cuts the clip to the measured events plus half a second, plays events shorter than 4 s at half speed, scales to at most 1280 px, and draws the tracked object's two-tone ring, the points measured so far, and the translucent lime ghost with its path. Ghosts live in stabilized coordinates; each frame maps them back through the inverse of its camera transform. Output is H.264 (main profile, at most 2 Mbit/s) under WhatsApp's 16 MB.
+
+The video shows the user's frames, so it follows the raw video's rule: it is kept for 24 hours in the private Supabase bucket `evidence` (16 MB, MP4 only), then deleted through the Storage API by a Modal function that runs hourly, and also swept when jobs arrive. `GET /jobs/{id}/evidence.mp4` answers with a signed link valid for one hour, or 404 once `expires_at` has passed even if the sweep has not run yet. Locally the video stays on disk. `PISA_STORE=local` keeps jobs, results and evidence on disk even when `.env` configures Supabase.
+
+### Share card
+
+The web app draws the card with `next/og` from the stored result, so it uses the same messages, verdict logic (`src/lib/result.ts`) and tokens as the page: the verdict with its shape, the sentence under it, the most telling flight with its ghost on the ink surface, the number that says the most, and the tagline. It holds only derived data, never a frame of the video, so it outlives the evidence video. Two sizes: `/[locale]/result/[id]/card` (1080 × 1350, 4:5, to send as an image) and the result page's Open Graph image (1200 × 630, for link previews). Fonts come from Google Fonts with only the glyphs the card needs, which keeps Chinese out of the 500 KB bundle limit.
 
 ## Meta Model API access
 
