@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
-from pisa_engine.jobs import JobStore
+from pisa_engine.jobs import JobStore, StorageJobStore, SupabaseJobStore
 from pisa_engine.limits import AdmissionMiddleware, BodySizeLimitMiddleware, RateLimiter
 from pisa_engine.model_api.client import MetaModelApiClient
 from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
@@ -33,7 +33,7 @@ _FORM_OVERHEAD_BYTES = 64 * 1024
 
 def create_app(settings: Settings | None = None, segmenter: Segmenter | None = None) -> FastAPI:
     config = settings or get_settings()
-    store = JobStore(LocalStorage(config.data_dir))
+    store = _job_store(config)
     deps = PipelineDeps(
         segmenter=segmenter or _segmenter(config), store=store, phrase=config.default_phrase
     )
@@ -41,16 +41,24 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
     slots = asyncio.Semaphore(config.max_concurrent_jobs)
 
     async def run_when_free(job: Job, source: Path, work_dir: Path) -> None:
-        async with slots:
-            await run_job(job, source, work_dir, deps)
+        try:
+            async with slots:
+                await run_job(job, source, work_dir, deps)
+        finally:
+            # Privacy: the uploaded video and its normalized copy are deleted as soon as the
+            # job ends. Only derived measurements are kept.
+            shutil.rmtree(work_dir, ignore_errors=True)
 
     app = FastAPI(title="Pisa engine", version=__version__)
     app.add_middleware(
         BodySizeLimitMiddleware, max_bytes=config.max_upload_bytes + _FORM_OVERHEAD_BYTES
     )
-    # Added last, so it runs first: refused requests never send their body.
+    # Runs before the size check and the app, so refused requests never send their body.
     app.add_middleware(
-        AdmissionMiddleware, token=config.engine_token.get_secret_value(), limiter=rate
+        AdmissionMiddleware,
+        token=config.engine_token.get_secret_value(),
+        limiter=rate,
+        trust_proxy=config.trust_proxy,
     )
     app.add_middleware(
         CORSMiddleware,
@@ -102,6 +110,13 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
         return result
 
     return app
+
+
+def _job_store(config: Settings) -> JobStore:
+    key = config.supabase_secret_key
+    if config.supabase_url and key.get_secret_value():
+        return SupabaseJobStore(config.supabase_url, key)
+    return StorageJobStore(LocalStorage(config.data_dir))
 
 
 def _segmenter(config: Settings) -> Segmenter:

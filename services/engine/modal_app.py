@@ -1,0 +1,59 @@
+"""The engine API on Modal. Deploy with `make deploy-engine`.
+
+Sized for Modal's free $1/month without a payment method: one CPU core, at most two
+containers, scale to zero when idle. Paid Meta API calls stay off here until the spend
+ledger moves to Supabase (a local ledger would not be shared between containers).
+
+Secrets come from the Modal secret "pisa-engine": SUPABASE_URL, SUPABASE_SECRET_KEY and
+PISA_WEB_ORIGINS.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import modal
+
+REQUIREMENTS = Path(__file__).parent / "requirements.modal.txt"
+
+
+def _pinned_requirements() -> list[str]:
+    """Exact versions exported from uv.lock by `make deploy-engine`."""
+    lines = REQUIREMENTS.read_text(encoding="utf-8").splitlines()
+    return [line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#")]
+
+
+image = (
+    modal.Image.debian_slim(python_version="3.12")
+    .apt_install("ffmpeg")
+    .uv_pip_install(*_pinned_requirements())
+    .env(
+        {
+            "PISA_SEGMENTER": "fake",
+            "PISA_PAID_CALLS_ENABLED": "false",
+            "PISA_DATA_DIR": "/root/pisa-data",
+            "PISA_SPEND_LEDGER_PATH": "/root/pisa-data/spend.jsonl",
+            "PISA_TRUST_PROXY": "true",
+        }
+    )
+    .add_local_python_source("pisa_engine", "pisa_contracts")
+)
+
+app = modal.App("pisa-engine", image=image)
+
+
+@app.function(
+    secrets=[modal.Secret.from_name("pisa-engine")],
+    cpu=1.0,
+    memory=2048,
+    timeout=300,
+    max_containers=2,
+    scaledown_window=120,
+)
+@modal.concurrent(max_inputs=8)
+@modal.asgi_app()
+def web() -> Any:
+    from pisa_engine.api import create_app
+
+    return create_app()

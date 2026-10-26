@@ -35,10 +35,10 @@ async def run_job(job: Job, source: Path, work_dir: Path, deps: PipelineDeps) ->
     """Analyze `source`. Returns the final job; the result is saved to the store."""
     progress = _Progress(job, deps.store)
     try:
-        progress.enter("ingest")
+        await progress.enter("ingest")
         ingest = await asyncio.to_thread(normalize, source, work_dir / "normalized.mp4")
 
-        progress.enter("track")
+        await progress.enter("track")
         objects = await deps.segmenter.track(
             work_dir / "normalized.mp4", deps.phrase, ingest.timebase, policy=job.data_policy
         )
@@ -49,37 +49,37 @@ async def run_job(job: Job, source: Path, work_dir: Path, deps: PipelineDeps) ->
             objects=objects,
         )
 
-        progress.enter("measure")
+        await progress.enter("measure")
         phases = [phase for obj in objects for phase in flight_phases(from_track(obj))]
 
-        progress.enter("test")
+        await progress.enter("test")
         results: list[TestResult] = [free_fall_shape(phase) for phase in phases]
 
-        progress.enter("verdict")
+        await progress.enter("verdict")
         verdict = decide(results)
     except IngestError as error:
-        return progress.fail(error.code)
+        return await progress.fail(error.code)
     except PaidCallsDisabledError:
-        return progress.fail("paid_calls_disabled")
+        return await progress.fail("paid_calls_disabled")
     except SpendCapExceededError:
-        return progress.fail("spend_cap_reached")
+        return await progress.fail("spend_cap_reached")
     except Exception:
         logger.exception("Job failed", extra={"job_id": str(job.id), "stage": progress.stage})
-        return progress.fail("internal_error")
+        return await progress.fail("internal_error")
 
-    done = progress.finish()
-    deps.store.save_result(
-        AnalysisResult(
-            job=done,
-            ingest=ingest,
-            plan=None,
-            tracks=tracks,
-            tests=results,
-            verdict=verdict,
-            costs=[],
-        )
+    # Save the result before marking the job done, so a client that sees "done" finds it.
+    done = progress.job.model_copy(update={"status": "done"})
+    result = AnalysisResult(
+        job=done,
+        ingest=ingest,
+        plan=None,
+        tracks=tracks,
+        tests=results,
+        verdict=verdict,
+        costs=[],
     )
-    return done
+    await asyncio.to_thread(deps.store.save_result, result)
+    return await progress.finish()
 
 
 class _Progress:
@@ -88,18 +88,18 @@ class _Progress:
         self.stage: Stage | None = None
         self._store = store
 
-    def enter(self, stage: Stage) -> None:
+    async def enter(self, stage: Stage) -> None:
         self.stage = stage
-        self._save(self.job.model_copy(update={"status": "running", "stage": stage}))
+        await self._save(self.job.model_copy(update={"status": "running", "stage": stage}))
 
-    def fail(self, code: str) -> Job:
+    async def fail(self, code: str) -> Job:
         error = ErrorInfo(code=code, stage=self.stage)
-        return self._save(self.job.model_copy(update={"status": "failed", "error": error}))
+        return await self._save(self.job.model_copy(update={"status": "failed", "error": error}))
 
-    def finish(self) -> Job:
-        return self._save(self.job.model_copy(update={"status": "done"}))
+    async def finish(self) -> Job:
+        return await self._save(self.job.model_copy(update={"status": "done"}))
 
-    def _save(self, job: Job) -> Job:
+    async def _save(self, job: Job) -> Job:
         self.job = job
-        self._store.save(job)
+        await asyncio.to_thread(self._store.save, job)
         return job

@@ -30,3 +30,6 @@ coverage/
 next-env.d.ts
 test-results/
 playwright-report/
+
+# Generated at deploy time from uv.lock
+services/engine/requirements.modal.txt

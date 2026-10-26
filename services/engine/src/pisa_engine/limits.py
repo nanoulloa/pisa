@@ -158,10 +158,13 @@ class AdmissionMiddleware:
     check needs it, so no path variant can slip past an allowlist. Every POST counts against
     the per-client and global job rates, and only job creation spends them."""
 
-    def __init__(self, app: ASGIApp, *, token: str, limiter: RateLimiter) -> None:
+    def __init__(
+        self, app: ASGIApp, *, token: str, limiter: RateLimiter, trust_proxy: bool = False
+    ) -> None:
         self.app = app
         self.token = token
         self.limiter = limiter
+        self.trust_proxy = trust_proxy
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http" or _route_path(scope) == "/healthz":
@@ -172,14 +175,25 @@ class AdmissionMiddleware:
             if not hmac.compare_digest(supplied, f"Bearer {self.token}".encode()):
                 await _send_error(send, 401, "unauthorized")
                 return
-        if scope["method"] == "POST" and _route_path(scope).rstrip("/") == JOBS_PATH:
-            client = scope.get("client")
-            if not self.limiter.allow(client_key(client[0]) if client else "unknown"):
-                if self.limiter.global_exhausted:
-                    logger.warning("Global job limit reached; refusing new jobs for now")
-                await _send_error(send, 429, "rate_limited")
-                return
+        creates_job = scope["method"] == "POST" and _route_path(scope).rstrip("/") == JOBS_PATH
+        if creates_job and not self.limiter.allow(client_key(self._client_host(scope))):
+            if self.limiter.global_exhausted:
+                logger.warning("Global job limit reached; refusing new jobs for now")
+            await _send_error(send, 429, "rate_limited")
+            return
         await self.app(scope, receive, send)
+
+    def _client_host(self, scope: Scope) -> str:
+        """The caller's address. Behind one trusted proxy, the last X-Forwarded-For entry is the
+        one the proxy added; earlier entries come from the client and can be forged."""
+        if self.trust_proxy:
+            raw: bytes = dict(scope["headers"]).get(b"x-forwarded-for", b"")
+            forwarded = raw.decode("latin-1")
+            hops = [hop.strip() for hop in forwarded.split(",") if hop.strip()]
+            if hops:
+                return hops[-1]
+        client = scope.get("client")
+        return str(client[0]) if client else "unknown"
 
 
 def _route_path(scope: Scope) -> str:

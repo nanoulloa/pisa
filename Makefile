@@ -4,7 +4,7 @@
 SCHEMA := packages/contracts/schema/pisa.schema.json
 PY_MODELS := packages/contracts/python/src/pisa_contracts/models.py
 
-.PHONY: help setup gen gen-check lint typecheck test e2e check dev-engine dev-web
+.PHONY: help setup gen gen-check lint typecheck test e2e check dev-engine dev-web deploy-engine
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -53,3 +53,8 @@ dev-engine: ## Run the engine API on :8000
 
 dev-web: ## Run the web app on :3000
 	npm run dev --workspace @pisa/web
+
+deploy-engine: ## Deploy the engine API to Modal (needs `uvx modal setup` and the "pisa-engine" secret)
+	uv export --package pisa-engine --no-dev --no-hashes --no-emit-workspace --frozen \
+		--output-file services/engine/requirements.modal.txt
+	uv run modal deploy services/engine/modal_app.py

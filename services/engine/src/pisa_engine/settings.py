@@ -9,7 +9,10 @@ from typing import Literal
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+_HERE = Path(__file__).resolve()
+# services/engine/src/pisa_engine/settings.py -> repo root. Deployed images have no repo around
+# the package, so fall back to the package folder.
+REPO_ROOT = _HERE.parents[4] if len(_HERE.parents) > 4 else _HERE.parent
 
 
 class Settings(BaseSettings):
@@ -58,6 +61,14 @@ class Settings(BaseSettings):
     jobs_per_hour_total: int = Field(default=500, gt=0, validation_alias="PISA_JOBS_PER_HOUR_TOTAL")
     # When set, POST /jobs requires "Authorization: Bearer <token>" (the web server holds it).
     engine_token: SecretStr = Field(default=SecretStr(""), validation_alias="PISA_ENGINE_TOKEN")
+    # Behind one trusted proxy (Modal), the client address is the last X-Forwarded-For entry.
+    trust_proxy: bool = Field(default=False, validation_alias="PISA_TRUST_PROXY")
+
+    # With both set, jobs and results live in Supabase Postgres instead of local files.
+    supabase_url: str = Field(default="", validation_alias="SUPABASE_URL")
+    supabase_secret_key: SecretStr = Field(
+        default=SecretStr(""), validation_alias="SUPABASE_SECRET_KEY"
+    )
 
 
 @lru_cache(maxsize=1)

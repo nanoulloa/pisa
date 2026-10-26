@@ -178,3 +178,79 @@ def test_local_storage_round_trip(tmp_path: Path) -> None:
 def test_local_storage_rejects_keys_outside_its_root(tmp_path: Path, key: str) -> None:
     with pytest.raises(ValueError, match="relative paths"):
         LocalStorage(tmp_path).put_bytes(key, b"")
+
+
+def test_supabase_job_store_round_trip_through_the_rest_api() -> None:
+    import json as json_lib
+    from datetime import UTC, datetime
+    from uuid import uuid4
+
+    import httpx
+
+    from pisa_contracts import Job
+    from pisa_engine.jobs import SupabaseJobStore
+
+    rows: dict[str, dict[str, object]] = {}
+    seen: list[httpx.Request] = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        assert request.url.path == "/rest/v1/jobs"
+        if request.method == "POST":
+            assert "resolution=merge-duplicates" in request.headers["Prefer"]
+            row = json_lib.loads(request.content)
+            rows[row["id"]] = row
+            return httpx.Response(201)
+        job_id = request.url.params["id"].removeprefix("eq.")
+        return httpx.Response(200, json=[rows[job_id]] if job_id in rows else [])
+
+    store = SupabaseJobStore(
+        "https://example.supabase.co",
+        SecretStr("sb_secret_not-real"),
+        transport=httpx.MockTransport(respond),
+    )
+    job = Job(
+        id=uuid4(),
+        created_at=datetime.now(UTC),
+        source="web",
+        locale="pt-BR",
+        data_policy="user",
+        status="running",
+        stage="track",
+        error=None,
+    )
+    store.save(job)
+    assert store.get(job.id) == job
+    assert store.get(uuid4()) is None
+    assert seen[0].headers["apikey"] == "sb_secret_not-real"
+    assert "Authorization" not in seen[0].headers  # New-style secret keys are not JWTs.
+
+
+def test_uploaded_videos_are_deleted_when_the_job_ends(
+    settings: Settings, clips: dict[str, Path]
+) -> None:
+    client = TestClient(create_app(settings))
+    created = _upload(client, clips["free_fall"])
+    assert client.get(f"/jobs/{created['id']}").json()["status"] == "done"
+    assert not (settings.data_dir / "work" / str(created["id"])).exists()
+
+
+def test_behind_a_proxy_the_limit_follows_the_address_the_proxy_saw(
+    settings: Settings, clips: dict[str, Path]
+) -> None:
+    proxied = settings.model_copy(update={"jobs_per_hour": 1, "trust_proxy": True})
+    client = TestClient(create_app(proxied))
+
+    def post(forwarded_for: str) -> int:
+        with clips["free_fall"].open("rb") as video:
+            response = client.post(
+                "/jobs",
+                files={"video": ("clip.mp4", video, "video/mp4")},
+                headers={"X-Forwarded-For": forwarded_for},
+            )
+        return int(response.status_code)
+
+    assert post("1.1.1.1, 203.0.113.5") == 202
+    # A forged first hop does not help: the proxy-added last hop is the same client.
+    assert post("9.9.9.9, 203.0.113.5") == 429
+    assert post("203.0.113.6") == 202
