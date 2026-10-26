@@ -190,10 +190,18 @@ class AdmissionMiddleware:
             raw: bytes = dict(scope["headers"]).get(b"x-forwarded-for", b"")
             forwarded = raw.decode("latin-1")
             hops = [hop.strip() for hop in forwarded.split(",") if hop.strip()]
-            if hops:
+            if hops and _is_ip(hops[-1]):
                 return hops[-1]
         client = scope.get("client")
         return str(client[0]) if client else "unknown"
+
+
+def _is_ip(value: str) -> bool:
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return True
 
 
 def _route_path(scope: Scope) -> str:

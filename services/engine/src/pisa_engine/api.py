@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -25,6 +26,8 @@ from pisa_engine.storage import LocalStorage
 from pisa_engine.tracking.fake import ColorSegmenter
 from pisa_engine.tracking.sam import Sam31Segmenter
 from pisa_engine.tracking.segmenter import Segmenter
+
+logger = logging.getLogger(__name__)
 
 _CHUNK_BYTES = 1 << 20
 # Room for multipart boundaries and form fields around the video itself.
@@ -90,10 +93,15 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
         work_dir = config.data_dir / "work" / str(job.id)
         work_dir.mkdir(parents=True, exist_ok=True)
         source = work_dir / "source"
-        if not await _save_upload(video, source, config.max_upload_bytes):
-            shutil.rmtree(work_dir, ignore_errors=True)
-            return _error(413, "file_too_large")
-        store.save(job)
+        try:
+            if not await _save_upload(video, source, config.max_upload_bytes):
+                shutil.rmtree(work_dir, ignore_errors=True)
+                return _error(413, "file_too_large")
+            await asyncio.to_thread(store.save, job)
+        except BaseException:
+            shutil.rmtree(work_dir, ignore_errors=True)  # Never keep a video we will not analyze.
+            raise
+        logger.info("Job created", extra={"job_id": str(job.id), "stage": "ingest"})
         background.add_task(run_when_free, job, source, work_dir)
         return job
 
