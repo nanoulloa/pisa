@@ -1,0 +1,22 @@
+name: Install ffmpeg
+description: >
+  Installs ffmpeg from Ubuntu with its .deb files cached between runs. Some runners download
+  from the Ubuntu mirror at about 100 kB/s, which turns a 20-second install into 10 minutes.
+runs:
+  using: composite
+  steps:
+    - name: Restore ffmpeg packages
+      uses: actions/cache@v6
+      with:
+        path: ~/apt-archives
+        key: apt-ffmpeg-${{ runner.os }}-${{ runner.arch }}-noble-v1
+    - name: Install ffmpeg
+      shell: bash
+      run: |
+        sudo rm -f /var/lib/man-db/auto-update  # Skip rebuilding the man page index.
+        mkdir -p ~/apt-archives/partial
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          -o Acquire::Retries=3 -o Dir::Cache::Archives="$HOME/apt-archives" ffmpeg
+        sudo chown -R "$USER" ~/apt-archives  # apt writes as root; the cache saves as the runner.
+        ffmpeg -version | sed -n 1p  # sed reads to the end, so pipefail never sees SIGPIPE.
