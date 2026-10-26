@@ -415,6 +415,13 @@ button.button-primary {
   font-weight: 700;
 }
 
+.plan-list {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
 .technical-test h2 {
   font-size: 1rem;
   margin: 1.25rem 0 0.5rem;

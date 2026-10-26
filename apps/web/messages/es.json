@@ -97,7 +97,11 @@
       "pair_falls_apart": "Dos objetos soltados a la vez caen a ritmos distintos. Con gravedad real caen juntos, como mostró Galileo.",
       "bounce_gains_energy": "El objeto sale del rebote más rápido de lo que llegó. Un rebote real siempre pierde algo de energía.",
       "gravity_changes": "La gravedad cambia de fuerza de un vuelo al siguiente. En un video real, incluso en cámara lenta, se mantiene igual.",
-      "camera_motion": "La cámara se mueve demasiado para medir el objeto contra el fondo."
+      "camera_motion": "La cámara se mueve demasiado para medir el objeto contra el fondo.",
+      "gravity_too_weak": "El objeto cae como si la gravedad fuera más débil que en la Tierra. Un video en cámara lenta se ve exactamente así, por eso Pisa no lo llama imposible.",
+      "gravity_too_strong": "El objeto cae como si la gravedad fuera más fuerte que en la Tierra. Un video acelerado se ve así, por eso Pisa no lo llama imposible.",
+      "no_free_flight": "En este video nada cae, vuela ni rebota por sí solo, así que no hay movimiento que Pisa pueda revisar.",
+      "too_unclear": "Algo cae, vuela o rebota, pero es demasiado pequeño, borroso, oculto o breve para seguirlo."
     },
     "consistentNote": "Esto no prueba que el video sea real. Significa que el movimiento que medimos no rompe ninguna de las leyes que revisamos.",
     "cards": {
@@ -124,11 +128,34 @@
       "gravityDetail": "La gravedad más fuerte entre la más débil, en los vuelos de un mismo objeto. Un video real da 1×, incluso en cámara lenta.",
       "cameraTitle": "Cámara",
       "cameraValue": "Estabilizada",
-      "cameraDetail": "La cámara se movió hasta {value} px. Las posiciones se midieron contra el fondo."
+      "cameraDetail": "La cámara se movió hasta {value} px. Las posiciones se midieron contra el fondo.",
+      "impliedGTitle": "Gravedad medida",
+      "impliedGValue": "{value} m/s²",
+      "impliedGDetail": "La gravedad real en la Tierra es {earth} m/s². La cámara lenta la hace parecer más débil."
     },
     "detailsSummary": "Detalles técnicos",
     "confidence": "confianza {value}",
     "stabilization": "Movimiento de cámara: hasta {max} px. Cuadros descartados por poco fiables: {unreliable} de {frames}.",
+    "modelExplanation": "La frase bajo el veredicto la escribió Muse Spark a partir de estas mediciones. Cada número que contiene se comparó con ellas.",
+    "plan": {
+      "title": "Qué observó Pisa",
+      "event": "{type}, de {start} s a {end} s: {objects}",
+      "eventTypes": {
+        "fall": "Caída",
+        "throw": "Lanzamiento",
+        "bounce": "Rebote",
+        "pair_drop": "Dos objetos soltados a la vez"
+      },
+      "camera": "Cámara: {motion}.",
+      "cameraMotion": {
+        "static": "fija",
+        "handheld": "en mano",
+        "pan": "en paneo",
+        "unknown": "no está claro"
+      },
+      "slowMotion": "Parece cámara lenta, así que no se usa la gravedad en m/s².",
+      "reference": "Referencia de tamaño: {phrase}, de {min} a {max} m."
+    },
     "tests": {
       "free_fall_shape": "T1 Forma de la caída",
       "galileo_pair": "T2 Par de Galileo",

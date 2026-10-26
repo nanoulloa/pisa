@@ -97,7 +97,11 @@
       "pair_falls_apart": "Two objects released together fall at different rates. Under real gravity they fall side by side, as Galileo showed.",
       "bounce_gains_energy": "The object leaves the bounce faster than it arrived. A real bounce always loses some energy.",
       "gravity_changes": "Gravity changes strength from one flight to the next. In a real video, even in slow motion, it stays the same.",
-      "camera_motion": "The camera moves too much to measure the object against the background."
+      "camera_motion": "The camera moves too much to measure the object against the background.",
+      "gravity_too_weak": "The object falls as if gravity were weaker than on Earth. A slow-motion video looks exactly like this, so Pisa does not call it impossible.",
+      "gravity_too_strong": "The object falls as if gravity were stronger than on Earth. A sped-up video looks like this, so Pisa does not call it impossible.",
+      "no_free_flight": "Nothing in this video falls, flies or bounces on its own, so there is no motion Pisa can check.",
+      "too_unclear": "Something falls, flies or bounces, but it is too small, blurred, hidden or brief to follow."
     },
     "consistentNote": "This doesn't prove the video is real. It means the motion we measured breaks no law we check.",
     "cards": {
@@ -124,11 +128,34 @@
       "gravityDetail": "Strongest over weakest gravity across flights of one object. Real videos give 1×, even in slow motion.",
       "cameraTitle": "Camera",
       "cameraValue": "Steadied",
-      "cameraDetail": "The camera moved up to {value} px. Positions were measured against the background."
+      "cameraDetail": "The camera moved up to {value} px. Positions were measured against the background.",
+      "impliedGTitle": "Gravity measured",
+      "impliedGValue": "{value} m/s²",
+      "impliedGDetail": "Real gravity on Earth is {earth} m/s². Slow motion makes it look weaker."
     },
     "detailsSummary": "Technical details",
     "confidence": "confidence {value}",
     "stabilization": "Camera motion: up to {max} px. Frames dropped as unreliable: {unreliable} of {frames}.",
+    "modelExplanation": "The sentence under the verdict was written by Muse Spark from these measurements. Every number in it was checked against them.",
+    "plan": {
+      "title": "What Pisa watched",
+      "event": "{type}, from {start} s to {end} s: {objects}",
+      "eventTypes": {
+        "fall": "Fall",
+        "throw": "Throw",
+        "bounce": "Bounce",
+        "pair_drop": "Two objects dropped together"
+      },
+      "camera": "Camera: {motion}.",
+      "cameraMotion": {
+        "static": "still",
+        "handheld": "handheld",
+        "pan": "panning",
+        "unknown": "not clear"
+      },
+      "slowMotion": "Slow motion suspected, so gravity in m/s² is not used.",
+      "reference": "Size reference: {phrase}, {min} to {max} m."
+    },
     "tests": {
       "free_fall_shape": "T1 Free-fall shape",
       "galileo_pair": "T2 Galileo pair",

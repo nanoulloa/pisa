@@ -97,7 +97,11 @@
       "pair_falls_apart": "两个同时松手的物体以不同的速率下落。在真实重力下，它们会并排落下，正如伽利略所证明的。",
       "bounce_gains_energy": "物体弹起时比落下时还快。真实的弹跳总会损失一些能量。",
       "gravity_changes": "重力的强度在前后两段飞行之间发生了变化。在真实视频里，即使是慢动作，重力也保持不变。",
-      "camera_motion": "镜头晃动太大，无法以背景为参照测量物体。"
+      "camera_motion": "镜头晃动太大，无法以背景为参照测量物体。",
+      "gravity_too_weak": "物体下落得好像重力比地球上弱。慢动作视频看起来正是这样，所以 Pisa 不判定它不可能。",
+      "gravity_too_strong": "物体下落得好像重力比地球上强。加速播放的视频看起来就是这样，所以 Pisa 不判定它不可能。",
+      "no_free_flight": "这个视频里没有物体自行下落、飞行或弹跳，所以 Pisa 没有可以检查的运动。",
+      "too_unclear": "有物体在下落、飞行或弹跳，但它太小、太模糊、被遮挡或太短暂，无法跟踪。"
     },
     "consistentNote": "这并不能证明视频是真的。它表示我们测量到的运动没有违反我们检查的任何定律。",
     "cards": {
@@ -124,11 +128,34 @@
       "gravityDetail": "同一物体各段飞行中最强与最弱重力之比。真实视频即使是慢动作，这个比值也是 1 倍。",
       "cameraTitle": "镜头",
       "cameraValue": "已稳定",
-      "cameraDetail": "镜头最多移动了 {value} 像素。位置是以背景为参照测量的。"
+      "cameraDetail": "镜头最多移动了 {value} 像素。位置是以背景为参照测量的。",
+      "impliedGTitle": "测得的重力",
+      "impliedGValue": "{value} 米/秒²",
+      "impliedGDetail": "地球上的真实重力是 {earth} 米/秒²。慢动作会让它看起来更弱。"
     },
     "detailsSummary": "技术细节",
     "confidence": "置信度 {value}",
     "stabilization": "镜头移动：最多 {max} 像素。因不可靠而舍弃的帧：{frames} 帧中的 {unreliable} 帧。",
+    "modelExplanation": "判定下方的说明由 Muse Spark 根据这些测量结果写成，其中每个数字都已与测量结果核对。",
+    "plan": {
+      "title": "Pisa 观察到的内容",
+      "event": "{type}，从 {start} 秒到 {end} 秒：{objects}",
+      "eventTypes": {
+        "fall": "下落",
+        "throw": "抛掷",
+        "bounce": "弹跳",
+        "pair_drop": "两个物体同时松手"
+      },
+      "camera": "镜头：{motion}。",
+      "cameraMotion": {
+        "static": "固定",
+        "handheld": "手持",
+        "pan": "摇镜",
+        "unknown": "不明确"
+      },
+      "slowMotion": "疑似慢动作，因此不使用以米/秒²计的重力。",
+      "reference": "尺寸参照：{phrase}，{min} 到 {max} 米。"
+    },
     "tests": {
       "free_fall_shape": "T1 下落形状",
       "galileo_pair": "T2 伽利略双球",

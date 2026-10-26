@@ -1,7 +1,7 @@
 "use client";
 
-import type { AnalysisResult, Measurement, TestId, TestResult, Verdict } from "@pisa/contracts";
-import { useFormatter, useTranslations } from "next-intl";
+import type { AnalysisResult, Measurement, Plan, TestId, TestResult, Verdict } from "@pisa/contracts";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
 
@@ -14,6 +14,8 @@ const EXPLANATIONS = [
   "pair_falls_apart",
   "bounce_gains_energy",
   "gravity_changes",
+  "gravity_too_weak",
+  "gravity_too_strong",
   "impossible",
   "consistent",
   "weak_violation",
@@ -21,6 +23,8 @@ const EXPLANATIONS = [
   "depth_change",
   "camera_motion",
   "too_few_samples",
+  "no_free_flight",
+  "too_unclear",
   "no_measurable_events",
 ] as const;
 
@@ -54,6 +58,7 @@ const MEASUREMENT_NAMES = [
 ] as const;
 
 const MAX_CARDS = 4;
+const EARTH_G = 9.81;
 
 type Card = { key: string; title: string; value: string; detail: string };
 
@@ -61,6 +66,7 @@ export function ResultView({ result }: { result: AnalysisResult }) {
   const t = useTranslations("Result");
   const verdictLabels = useTranslations("Verdict");
   const format = useFormatter();
+  const locale = useLocale();
   const verdict = result.verdict;
   if (verdict === null) return null;
 
@@ -73,8 +79,18 @@ export function ResultView({ result }: { result: AnalysisResult }) {
   const ratio = (value: number) =>
     t("cards.ratioValue", { value: format.number(value, { maximumFractionDigits: 2 }) });
 
-  // The laws a clip was checked against come first, then the fall itself, then the context.
+  // Gravity in m/s² says the most in one number, then the laws a clip was checked against,
+  // then the fall itself, then the context.
   const cards: Card[] = [];
+  const impliedG = measuredValue(result.tests, "implied_g", "implied_g");
+  if (impliedG !== undefined) {
+    cards.push({
+      key: "implied-g",
+      title: t("cards.impliedGTitle"),
+      value: t("cards.impliedGValue", { value: format.number(impliedG, { maximumFractionDigits: 1 }) }),
+      detail: t("cards.impliedGDetail", { earth: format.number(EARTH_G) }),
+    });
+  }
   const restitution = measuredValue(result.tests, "bounce_energy", "restitution");
   if (restitution !== undefined) {
     cards.push({
@@ -148,7 +164,11 @@ export function ResultView({ result }: { result: AnalysisResult }) {
       <div className={`verdict verdict-${verdict.label}`}>
         <VerdictIcon label={verdict.label} />
         <h1 id="verdict-title">{verdictLabels(verdict.label)}</h1>
-        <p>{t(`explanations.${explanation(verdict, result.tests)}`)}</p>
+        <p>
+          {result.explanation?.locale === locale
+            ? result.explanation.text
+            : t(`explanations.${explanation(verdict, result.tests)}`)}
+        </p>
       </div>
       {verdict.label === "consistent_with_real_physics" && (
         <p className="note">{t("consistentNote")}</p>
@@ -166,6 +186,7 @@ export function ResultView({ result }: { result: AnalysisResult }) {
 
       <details className="technical">
         <summary>{t("detailsSummary")}</summary>
+        {result.plan && <PlanDetails plan={result.plan} />}
         {result.tests.map((test, index) => (
           <section key={index} className="technical-test">
             <h2>
@@ -197,6 +218,7 @@ export function ResultView({ result }: { result: AnalysisResult }) {
             })}
           </p>
         )}
+        {result.explanation?.locale === locale && <p className="hint">{t("modelExplanation")}</p>}
         <p className="hint">{t("policy", { version: verdict.policy_version })}</p>
       </details>
 
@@ -220,8 +242,48 @@ function explanation(verdict: Verdict, tests: TestResult[]): Explanation {
       .sort((a, b) => b.confidence - a.confidence)[0]?.reason_code;
     return isExplanation(violation) ? violation : "impossible";
   }
-  if (verdict.reason_code === "weak_violation") return "weak_violation";
+  if (verdict.reason_code === "weak_violation") {
+    // Gravity of the wrong strength is also what slow or fast playback looks like: say so.
+    const gravity = tests.find((test) => test.test === "implied_g" && test.outcome === "violation");
+    return isExplanation(gravity?.reason_code) ? gravity.reason_code : "weak_violation";
+  }
   return reasons.find(isExplanation) ?? "no_measurable_events";
+}
+
+/** What the planner saw: the windows that were measured, the camera, the size reference. */
+function PlanDetails({ plan }: { plan: Plan }) {
+  const t = useTranslations("Result.plan");
+  const format = useFormatter();
+  const seconds = (value: number) => format.number(value, { maximumFractionDigits: 2 });
+  if (!plan.measurable) return null;
+  return (
+    <section className="technical-test">
+      <h2>{t("title")}</h2>
+      <ul className="plan-list">
+        {plan.events.map((event, index) => (
+          <li key={index}>
+            {t("event", {
+              type: t(`eventTypes.${event.type}`),
+              start: seconds(event.start_s),
+              end: seconds(event.end_s),
+              objects: event.object_phrases.join(", "),
+            })}
+          </li>
+        ))}
+        <li>{t("camera", { motion: t(`cameraMotion.${plan.camera.motion}`) })}</li>
+        {plan.camera.slow_motion_suspected && <li>{t("slowMotion")}</li>}
+        {plan.references.map((reference, index) => (
+          <li key={`ref-${index}`}>
+            {t("reference", {
+              phrase: reference.phrase,
+              min: format.number(reference.size_min_m, { maximumFractionDigits: 3 }),
+              max: format.number(reference.size_max_m, { maximumFractionDigits: 3 }),
+            })}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 function isExplanation(code: string | null | undefined): code is Explanation {
