@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { UploadForm } from "@/components/UploadForm";
 import { resolveLocale } from "@/i18n/locale";
 
 export default async function CheckPage({ params }: PageProps<"/[locale]/check">) {
@@ -10,6 +11,7 @@ export default async function CheckPage({ params }: PageProps<"/[locale]/check">
     <main className="page">
       <h1>{t("title")}</h1>
       <p className="lede">{t("scope")}</p>
+      <UploadForm />
     </main>
   );
 }

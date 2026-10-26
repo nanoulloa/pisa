@@ -16,9 +16,99 @@
   },
   "Check": {
     "title": "Check a video",
-    "scope": "Pisa checks falls, throws and bounces. It does not check face swaps, lip-sync or cloned voices."
+    "scope": "Pisa checks falls, throws and bounces. It does not check face swaps, lip-sync or cloned voices.",
+    "chooseFile": "Choose a video",
+    "fileHint": "MP4 or MOV, up to 60 seconds and 50 MB.",
+    "submit": "Check this video",
+    "uploading": "Uploading…"
   },
   "LocaleSwitcher": {
     "label": "Language"
+  },
+  "Progress": {
+    "title": "Checking your video",
+    "steps": {
+      "watching": "Watching",
+      "tracking": "Tracking",
+      "measuring": "Measuring",
+      "explaining": "Explaining"
+    },
+    "state": "{state, select, done {done} current {in progress} other {waiting}}",
+    "tryAgain": "Try another video"
+  },
+  "Result": {
+    "eyebrow": "Result",
+    "explanations": {
+      "slows_down_while_falling": "The object slows down while it is still falling. Gravity and air can't do that.",
+      "acceleration_grows": "The object speeds up faster and faster as it falls. Gravity pulls steadily, so real falls don't do that.",
+      "accelerates_upward": "The object speeds up toward the sky, as if gravity pulled upward.",
+      "impossible": "The way this object moves breaks a law of physics that every real fall follows.",
+      "consistent": "The object speeds up at a steady rate as it falls, the way real gravity makes things fall.",
+      "weak_violation": "Something in the motion looks off, but not clearly enough to call it impossible.",
+      "no_measurable_acceleration": "The object moves at a steady speed, so there is no fall to measure.",
+      "depth_change": "The object moves toward or away from the camera, which bends its path on screen too much to measure.",
+      "too_few_samples": "The object is visible in too few frames to measure its motion.",
+      "no_measurable_events": "Pisa couldn't find a fall, throw or bounce it could measure in this video."
+    },
+    "consistentNote": "This doesn't prove the video is real. It means the motion we measured breaks no law we check.",
+    "cards": {
+      "framesTitle": "Frames measured",
+      "framesDetail": "At {fps} frames per second",
+      "accelerationTitle": "Acceleration",
+      "acceleration": {
+        "steady": "Steady",
+        "changing": "Not steady",
+        "unmeasured": "Not measurable"
+      },
+      "accelerationDetail": "Real falls speed up at a steady rate.",
+      "fitTitle": "Gap to real physics",
+      "fitValue": "{value} px",
+      "fitDetail": "Average distance between the measured path and the closest steady-gravity path.",
+      "phasesTitle": "Flights measured",
+      "phasesDetail": "Stretches of free flight between release, bounces and landing."
+    },
+    "detailsSummary": "Technical details",
+    "confidence": "confidence {value}",
+    "tests": {
+      "free_fall_shape": "T1 Free-fall shape",
+      "galileo_pair": "T2 Galileo pair",
+      "bounce_energy": "T3 Bounce energy",
+      "implied_g": "T4 Implied gravity",
+      "time_base_consistency": "T5 Time-base consistency"
+    },
+    "outcomes": {
+      "pass": "passes",
+      "violation": "violation",
+      "insufficient_data": "not enough data",
+      "not_applicable": "does not apply"
+    },
+    "measurements": {
+      "acceleration_px_s2": "Acceleration",
+      "acceleration_start_px_s2": "Acceleration at the start",
+      "acceleration_end_px_s2": "Acceleration at the end",
+      "bic_gain_constant_acceleration": "Evidence for acceleration (BIC gain)",
+      "bic_gain_changing_acceleration": "Evidence for changing acceleration (BIC gain)",
+      "residual_rms_px": "Residual, RMS",
+      "area_ratio": "Size change (largest over smallest)",
+      "samples": "Samples",
+      "duration_s": "Duration"
+    },
+    "policy": "Verdict policy {version}",
+    "limits": "Pisa checks how objects fall, fly and bounce. It doesn't check faces, lip-sync or voices.",
+    "checkAnother": "Check another video"
+  },
+  "Errors": {
+    "unsupported_format": "This file isn't a video Pisa can read. Try an MP4 or MOV.",
+    "video_too_long": "This video is longer than 60 seconds. Trim it to the moment that matters and try again.",
+    "file_too_large": "This file is larger than 50 MB.",
+    "unknown_duration": "Pisa couldn't tell how long this video is. Try exporting it again as MP4.",
+    "resolution_too_high": "This video's resolution is too high. Try a version at 4K or less.",
+    "transcode_failed": "Pisa couldn't prepare this video for measuring. Try exporting it again as MP4.",
+    "empty_window": "There is nothing to measure in the part of the video that was selected.",
+    "paid_calls_disabled": "Tracking is paused right now. Try again later.",
+    "spend_cap_reached": "Pisa has reached its analysis limit for now. Try again later.",
+    "network": "Pisa can't be reached. Check your connection and try again.",
+    "job_not_found": "We couldn't find this check. It may have expired.",
+    "internal_error": "Something went wrong on our side. Try again."
   }
 }

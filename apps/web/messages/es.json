@@ -16,9 +16,99 @@
   },
   "Check": {
     "title": "Revisar un video",
-    "scope": "Pisa revisa caídas, lanzamientos y rebotes. No revisa cambios de rostro, sincronización de labios ni voces clonadas."
+    "scope": "Pisa revisa caídas, lanzamientos y rebotes. No revisa cambios de rostro, sincronización de labios ni voces clonadas.",
+    "chooseFile": "Elige un video",
+    "fileHint": "MP4 o MOV, de hasta 60 segundos y 50 MB.",
+    "submit": "Revisar este video",
+    "uploading": "Subiendo…"
   },
   "LocaleSwitcher": {
     "label": "Idioma"
+  },
+  "Progress": {
+    "title": "Revisando tu video",
+    "steps": {
+      "watching": "Observando",
+      "tracking": "Siguiendo",
+      "measuring": "Midiendo",
+      "explaining": "Explicando"
+    },
+    "state": "{state, select, done {listo} current {en curso} other {en espera}}",
+    "tryAgain": "Probar con otro video"
+  },
+  "Result": {
+    "eyebrow": "Resultado",
+    "explanations": {
+      "slows_down_while_falling": "El objeto frena mientras todavía va cayendo. Ni la gravedad ni el aire pueden hacer eso.",
+      "acceleration_grows": "El objeto acelera cada vez más mientras cae. La gravedad tira de forma constante, así que una caída real no hace eso.",
+      "accelerates_upward": "El objeto acelera hacia el cielo, como si la gravedad tirara hacia arriba.",
+      "impossible": "La forma en que se mueve este objeto rompe una ley de la física que cumple toda caída real.",
+      "consistent": "El objeto acelera a un ritmo constante mientras cae, como hace caer las cosas la gravedad real.",
+      "weak_violation": "Algo en el movimiento no cuadra, pero no con la claridad suficiente para llamarlo imposible.",
+      "no_measurable_acceleration": "El objeto se mueve a velocidad constante, así que no hay una caída que medir.",
+      "depth_change": "El objeto se acerca o se aleja de la cámara, y eso deforma demasiado su trayectoria en pantalla para medirla.",
+      "too_few_samples": "El objeto aparece en muy pocos cuadros para medir su movimiento.",
+      "no_measurable_events": "Pisa no encontró en este video una caída, un lanzamiento o un rebote que pudiera medir."
+    },
+    "consistentNote": "Esto no prueba que el video sea real. Significa que el movimiento que medimos no rompe ninguna de las leyes que revisamos.",
+    "cards": {
+      "framesTitle": "Cuadros medidos",
+      "framesDetail": "A {fps} cuadros por segundo",
+      "accelerationTitle": "Aceleración",
+      "acceleration": {
+        "steady": "Constante",
+        "changing": "No constante",
+        "unmeasured": "No medible"
+      },
+      "accelerationDetail": "En una caída real, la velocidad aumenta a un ritmo constante.",
+      "fitTitle": "Distancia a la física real",
+      "fitValue": "{value} px",
+      "fitDetail": "Distancia promedio entre la trayectoria medida y la trayectoria de gravedad constante más cercana.",
+      "phasesTitle": "Vuelos medidos",
+      "phasesDetail": "Tramos de vuelo libre entre la liberación, los rebotes y el aterrizaje."
+    },
+    "detailsSummary": "Detalles técnicos",
+    "confidence": "confianza {value}",
+    "tests": {
+      "free_fall_shape": "T1 Forma de la caída",
+      "galileo_pair": "T2 Par de Galileo",
+      "bounce_energy": "T3 Energía del rebote",
+      "implied_g": "T4 Gravedad implícita",
+      "time_base_consistency": "T5 Coherencia de la base de tiempo"
+    },
+    "outcomes": {
+      "pass": "pasa",
+      "violation": "violación",
+      "insufficient_data": "datos insuficientes",
+      "not_applicable": "no aplica"
+    },
+    "measurements": {
+      "acceleration_px_s2": "Aceleración",
+      "acceleration_start_px_s2": "Aceleración al inicio",
+      "acceleration_end_px_s2": "Aceleración al final",
+      "bic_gain_constant_acceleration": "Evidencia de aceleración (ganancia de BIC)",
+      "bic_gain_changing_acceleration": "Evidencia de aceleración variable (ganancia de BIC)",
+      "residual_rms_px": "Residuo, RMS",
+      "area_ratio": "Cambio de tamaño (mayor entre menor)",
+      "samples": "Muestras",
+      "duration_s": "Duración"
+    },
+    "policy": "Política de veredicto {version}",
+    "limits": "Pisa revisa cómo caen, vuelan y rebotan los objetos. No revisa rostros, sincronización de labios ni voces.",
+    "checkAnother": "Revisar otro video"
+  },
+  "Errors": {
+    "unsupported_format": "Este archivo no es un video que Pisa pueda leer. Prueba con un MP4 o MOV.",
+    "video_too_long": "Este video dura más de 60 segundos. Recórtalo al momento que importa y vuelve a intentarlo.",
+    "file_too_large": "Este archivo pesa más de 50 MB.",
+    "unknown_duration": "Pisa no pudo saber cuánto dura este video. Prueba a exportarlo de nuevo como MP4.",
+    "resolution_too_high": "La resolución de este video es demasiado alta. Prueba con una versión de 4K o menos.",
+    "transcode_failed": "Pisa no pudo preparar este video para medirlo. Prueba a exportarlo de nuevo como MP4.",
+    "empty_window": "No hay nada que medir en la parte del video seleccionada.",
+    "paid_calls_disabled": "El seguimiento está en pausa por ahora. Vuelve a intentarlo más tarde.",
+    "spend_cap_reached": "Pisa alcanzó su límite de análisis por ahora. Vuelve a intentarlo más tarde.",
+    "network": "No se puede conectar con Pisa. Revisa tu conexión y vuelve a intentarlo.",
+    "job_not_found": "No encontramos esta revisión. Puede que haya caducado.",
+    "internal_error": "Algo falló de nuestro lado. Vuelve a intentarlo."
   }
 }

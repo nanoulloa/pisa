@@ -56,9 +56,18 @@ jobs:
         run: npm run test --workspaces --if-present
       - name: Build
         run: npm run build --workspace @pisa/web
+        env:
+          NEXT_PUBLIC_ENGINE_URL: http://localhost:8100
+      # The browser tests run the real engine (free color segmenter, never a paid API).
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: true
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: uv sync --all-packages --locked
       - name: Install Playwright Chromium
         run: npx --workspace @pisa/web playwright install --with-deps chromium
-      - name: Playwright smoke test
+      - name: Playwright end-to-end tests
         run: npm run e2e --workspace @pisa/web
 
   secrets:

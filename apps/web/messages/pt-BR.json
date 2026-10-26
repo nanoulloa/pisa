@@ -16,9 +16,99 @@
   },
   "Check": {
     "title": "Verificar um vídeo",
-    "scope": "O Pisa verifica quedas, arremessos e quiques. Não verifica troca de rostos, sincronia labial nem vozes clonadas."
+    "scope": "O Pisa verifica quedas, arremessos e quiques. Não verifica troca de rostos, sincronia labial nem vozes clonadas.",
+    "chooseFile": "Escolha um vídeo",
+    "fileHint": "MP4 ou MOV, de até 60 segundos e 50 MB.",
+    "submit": "Verificar este vídeo",
+    "uploading": "Enviando…"
   },
   "LocaleSwitcher": {
     "label": "Idioma"
+  },
+  "Progress": {
+    "title": "Verificando seu vídeo",
+    "steps": {
+      "watching": "Assistindo",
+      "tracking": "Rastreando",
+      "measuring": "Medindo",
+      "explaining": "Explicando"
+    },
+    "state": "{state, select, done {concluído} current {em andamento} other {aguardando}}",
+    "tryAgain": "Tentar outro vídeo"
+  },
+  "Result": {
+    "eyebrow": "Resultado",
+    "explanations": {
+      "slows_down_while_falling": "O objeto desacelera enquanto ainda está caindo. Nem a gravidade nem o ar fazem isso.",
+      "acceleration_grows": "O objeto acelera cada vez mais enquanto cai. A gravidade puxa de forma constante, então uma queda real não faz isso.",
+      "accelerates_upward": "O objeto acelera em direção ao céu, como se a gravidade puxasse para cima.",
+      "impossible": "O jeito como este objeto se move quebra uma lei da física que toda queda real segue.",
+      "consistent": "O objeto acelera a um ritmo constante enquanto cai, do jeito que a gravidade real faz as coisas caírem.",
+      "weak_violation": "Algo no movimento parece errado, mas não com clareza suficiente para chamá-lo de impossível.",
+      "no_measurable_acceleration": "O objeto se move a uma velocidade constante, então não há queda para medir.",
+      "depth_change": "O objeto se aproxima ou se afasta da câmera, e isso distorce demais a trajetória na tela para medi-la.",
+      "too_few_samples": "O objeto aparece em poucos quadros para medir o movimento.",
+      "no_measurable_events": "O Pisa não encontrou neste vídeo uma queda, um arremesso ou um quique que pudesse medir."
+    },
+    "consistentNote": "Isso não prova que o vídeo é real. Significa que o movimento que medimos não quebra nenhuma das leis que verificamos.",
+    "cards": {
+      "framesTitle": "Quadros medidos",
+      "framesDetail": "A {fps} quadros por segundo",
+      "accelerationTitle": "Aceleração",
+      "acceleration": {
+        "steady": "Constante",
+        "changing": "Não constante",
+        "unmeasured": "Não mensurável"
+      },
+      "accelerationDetail": "Numa queda real, a velocidade aumenta a um ritmo constante.",
+      "fitTitle": "Distância da física real",
+      "fitValue": "{value} px",
+      "fitDetail": "Distância média entre a trajetória medida e a trajetória de gravidade constante mais próxima.",
+      "phasesTitle": "Voos medidos",
+      "phasesDetail": "Trechos de voo livre entre a soltura, os quiques e a aterrissagem."
+    },
+    "detailsSummary": "Detalhes técnicos",
+    "confidence": "confiança {value}",
+    "tests": {
+      "free_fall_shape": "T1 Forma da queda",
+      "galileo_pair": "T2 Par de Galileu",
+      "bounce_energy": "T3 Energia do quique",
+      "implied_g": "T4 Gravidade implícita",
+      "time_base_consistency": "T5 Coerência da base de tempo"
+    },
+    "outcomes": {
+      "pass": "passa",
+      "violation": "violação",
+      "insufficient_data": "dados insuficientes",
+      "not_applicable": "não se aplica"
+    },
+    "measurements": {
+      "acceleration_px_s2": "Aceleração",
+      "acceleration_start_px_s2": "Aceleração no início",
+      "acceleration_end_px_s2": "Aceleração no fim",
+      "bic_gain_constant_acceleration": "Evidência de aceleração (ganho de BIC)",
+      "bic_gain_changing_acceleration": "Evidência de aceleração variável (ganho de BIC)",
+      "residual_rms_px": "Resíduo, RMS",
+      "area_ratio": "Mudança de tamanho (maior sobre menor)",
+      "samples": "Amostras",
+      "duration_s": "Duração"
+    },
+    "policy": "Política de veredito {version}",
+    "limits": "O Pisa verifica como os objetos caem, voam e quicam. Não verifica rostos, sincronia labial nem vozes.",
+    "checkAnother": "Verificar outro vídeo"
+  },
+  "Errors": {
+    "unsupported_format": "Este arquivo não é um vídeo que o Pisa consiga ler. Tente um MP4 ou MOV.",
+    "video_too_long": "Este vídeo tem mais de 60 segundos. Corte-o no momento que importa e tente de novo.",
+    "file_too_large": "Este arquivo tem mais de 50 MB.",
+    "unknown_duration": "O Pisa não conseguiu saber a duração deste vídeo. Tente exportá-lo de novo como MP4.",
+    "resolution_too_high": "A resolução deste vídeo é alta demais. Tente uma versão em 4K ou menos.",
+    "transcode_failed": "O Pisa não conseguiu preparar este vídeo para a medição. Tente exportá-lo de novo como MP4.",
+    "empty_window": "Não há nada para medir no trecho do vídeo selecionado.",
+    "paid_calls_disabled": "O rastreamento está pausado no momento. Tente de novo mais tarde.",
+    "spend_cap_reached": "O Pisa atingiu o limite de análises por enquanto. Tente de novo mais tarde.",
+    "network": "Não foi possível conectar ao Pisa. Verifique sua conexão e tente de novo.",
+    "job_not_found": "Não encontramos esta verificação. Ela pode ter expirado.",
+    "internal_error": "Algo deu errado do nosso lado. Tente de novo."
   }
 }

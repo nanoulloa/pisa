@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# end-to-end fixtures and engine data
+/e2e/.clips
+/e2e/.data

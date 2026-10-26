@@ -42,8 +42,8 @@ test: ## Unit tests (never call paid APIs)
 	uv run pytest
 	npm run test --workspaces --if-present
 
-e2e: ## Build the web app and run the Playwright smoke test
-	npm run build --workspace @pisa/web
+e2e: ## Build the web app and run the browser tests against a local engine
+	NEXT_PUBLIC_ENGINE_URL=http://localhost:8100 npm run build --workspace @pisa/web
 	npm run e2e --workspace @pisa/web
 
 check: gen-check lint typecheck test ## Everything CI runs, except the browser smoke test

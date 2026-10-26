@@ -1,31 +1,9 @@
-/* Provisional tokens from the brief's palette. The brand board replaces them on Day 5. */
+/* Design tokens (colors for both themes, fonts) come from the brand. Day 5 adds the brand fonts. */
+@import "../../../../brand/tokens.css";
+
 :root {
-  --color-paper: #fbfcfc;
-  --color-ink: #0f3d3e;
-  --color-teal: #14746f;
-  --color-sage: #8eb69b;
-  --color-lime: #d6e84a;
-
-  --color-surface: var(--color-paper);
-  --color-text: var(--color-ink);
-  --color-action: var(--color-teal);
-  --color-on-action: #ffffff;
-  --color-focus: var(--color-ink);
-
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC",
     "Noto Sans SC", sans-serif;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface: #0a0c0c;
-    --color-text: #e9efed;
-    --color-action: var(--color-lime);
-    --color-on-action: #0a0c0c;
-    --color-focus: var(--color-lime);
-    color-scheme: dark;
-  }
 }
 
 *,
@@ -39,8 +17,7 @@ body {
   background: var(--color-surface);
   color: var(--color-text);
   font-family: var(--font-sans);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.5;
+  line-height: var(--line-height-latin);
 }
 
 a {
@@ -109,4 +86,265 @@ h1 {
 
 .verdict-list {
   padding-left: 1.25rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.error {
+  color: var(--color-verdict-impossible);
+  font-weight: 600;
+  margin: 0;
+}
+
+.button-primary[aria-disabled="true"],
+.button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.button-primary {
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--color-action-hover);
+}
+
+.button-secondary {
+  display: inline-block;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--color-text);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-control);
+}
+
+/* Upload */
+.upload {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.upload-label {
+  font-weight: 700;
+}
+
+.upload input[type="file"] {
+  max-width: 100%;
+  font: inherit;
+}
+
+/* Progress */
+.steps {
+  display: grid;
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-size: 1.25rem;
+  color: var(--color-text-muted);
+}
+
+.step-marker {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  flex: none;
+}
+
+.step-done {
+  color: var(--color-text);
+}
+
+.step-done .step-marker {
+  background: currentColor;
+}
+
+.step-current {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.step-current .step-marker {
+  background: var(--color-accent);
+  border-color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .step-current .step-marker {
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(0.7);
+  }
+}
+
+/* Result */
+.result {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.verdict {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 1.25rem;
+  border-radius: var(--radius-control);
+}
+
+.verdict h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+}
+
+.verdict p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.125rem;
+}
+
+.verdict-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verdict-physically_impossible {
+  background: var(--color-verdict-impossible-surface);
+  color: var(--color-verdict-impossible);
+}
+
+.verdict-consistent_with_real_physics {
+  background: var(--color-verdict-consistent-surface);
+  color: var(--color-verdict-consistent);
+}
+
+.verdict-inconclusive {
+  background: var(--color-verdict-inconclusive-surface);
+  color: var(--color-verdict-inconclusive);
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+.card-title {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-detail {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.technical summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.technical-test h2 {
+  font-size: 1rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.technical table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9375rem;
+}
+
+.technical th,
+.technical td {
+  text-align: left;
+  padding: 0.375rem 0.75rem 0.375rem 0;
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 400;
+}
+
+.technical td {
+  text-align: right;
 }

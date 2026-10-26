@@ -16,9 +16,99 @@
   },
   "Check": {
     "title": "检查视频",
-    "scope": "Pisa 检查下落、抛掷和弹跳。它不检查换脸、对口型或克隆声音。"
+    "scope": "Pisa 检查下落、抛掷和弹跳。它不检查换脸、对口型或克隆声音。",
+    "chooseFile": "选择视频",
+    "fileHint": "MP4 或 MOV，最长 60 秒，不超过 50 MB。",
+    "submit": "检查这个视频",
+    "uploading": "正在上传…"
   },
   "LocaleSwitcher": {
     "label": "语言"
+  },
+  "Progress": {
+    "title": "正在检查你的视频",
+    "steps": {
+      "watching": "观看",
+      "tracking": "追踪",
+      "measuring": "测量",
+      "explaining": "解释"
+    },
+    "state": "{state, select, done {已完成} current {进行中} other {等待中}}",
+    "tryAgain": "换一个视频"
+  },
+  "Result": {
+    "eyebrow": "结果",
+    "explanations": {
+      "slows_down_while_falling": "物体还在下落时却在减速。重力和空气都做不到这一点。",
+      "acceleration_grows": "物体下落时越来越快地加速。重力的拉力是恒定的，真实的下落不会这样。",
+      "accelerates_upward": "物体朝天空加速，好像重力在向上拉。",
+      "impossible": "这个物体的运动方式违反了每一次真实下落都遵守的物理定律。",
+      "consistent": "物体下落时以恒定的速率加速，和真实重力让物体下落的方式一致。",
+      "weak_violation": "运动中有些地方不对劲，但还不够明确，不能判定为不可能。",
+      "no_measurable_acceleration": "物体以恒定速度移动，没有可以测量的下落。",
+      "depth_change": "物体在靠近或远离镜头，屏幕上的轨迹因此变形太大，无法测量。",
+      "too_few_samples": "物体出现的帧数太少，无法测量它的运动。",
+      "no_measurable_events": "Pisa 在这个视频里没有找到可以测量的下落、抛掷或弹跳。"
+    },
+    "consistentNote": "这并不能证明视频是真的。它表示我们测量到的运动没有违反我们检查的任何定律。",
+    "cards": {
+      "framesTitle": "测量帧数",
+      "framesDetail": "每秒 {fps} 帧",
+      "accelerationTitle": "加速度",
+      "acceleration": {
+        "steady": "恒定",
+        "changing": "不恒定",
+        "unmeasured": "无法测量"
+      },
+      "accelerationDetail": "真实的下落以恒定的速率加速。",
+      "fitTitle": "与真实物理的差距",
+      "fitValue": "{value} 像素",
+      "fitDetail": "测量轨迹与最接近的恒定重力轨迹之间的平均距离。",
+      "phasesTitle": "测量到的飞行段",
+      "phasesDetail": "从释放、弹跳到落地之间的自由飞行段。"
+    },
+    "detailsSummary": "技术细节",
+    "confidence": "置信度 {value}",
+    "tests": {
+      "free_fall_shape": "T1 下落形状",
+      "galileo_pair": "T2 伽利略双球",
+      "bounce_energy": "T3 弹跳能量",
+      "implied_g": "T4 推算重力",
+      "time_base_consistency": "T5 时间基准一致性"
+    },
+    "outcomes": {
+      "pass": "通过",
+      "violation": "违反",
+      "insufficient_data": "数据不足",
+      "not_applicable": "不适用"
+    },
+    "measurements": {
+      "acceleration_px_s2": "加速度",
+      "acceleration_start_px_s2": "起始加速度",
+      "acceleration_end_px_s2": "结束加速度",
+      "bic_gain_constant_acceleration": "加速度证据（BIC 增益）",
+      "bic_gain_changing_acceleration": "变化加速度证据（BIC 增益）",
+      "residual_rms_px": "残差（均方根）",
+      "area_ratio": "尺寸变化（最大与最小之比）",
+      "samples": "样本数",
+      "duration_s": "时长"
+    },
+    "policy": "判定规则 {version}",
+    "limits": "Pisa 检查物体如何下落、飞行和弹跳。它不检查人脸、对口型或声音。",
+    "checkAnother": "检查另一个视频"
+  },
+  "Errors": {
+    "unsupported_format": "Pisa 无法读取这个文件。请换成 MP4 或 MOV。",
+    "video_too_long": "这个视频超过 60 秒。请剪到关键片段后再试。",
+    "file_too_large": "这个文件超过 50 MB。",
+    "unknown_duration": "Pisa 无法判断这个视频的时长。请重新导出为 MP4 再试。",
+    "resolution_too_high": "这个视频的分辨率太高。请换成 4K 或更低的版本。",
+    "transcode_failed": "Pisa 无法处理这个视频以进行测量。请重新导出为 MP4 再试。",
+    "empty_window": "所选片段里没有可以测量的内容。",
+    "paid_calls_disabled": "追踪功能暂时停用。请稍后再试。",
+    "spend_cap_reached": "Pisa 暂时达到了分析次数上限。请稍后再试。",
+    "network": "无法连接到 Pisa。请检查网络后再试。",
+    "job_not_found": "找不到这次检查，可能已经过期。",
+    "internal_error": "我们这边出了问题。请再试一次。"
   }
 }
