@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--workspace", "@pisa/web"],
+      "port": 3000
+    },
+    {
+      "name": "engine",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "uvicorn", "pisa_engine.api:app", "--reload", "--port", "8000"],
+      "port": 8000
+    }
+  ]
+}
