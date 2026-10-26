@@ -33,6 +33,20 @@ test("constant speed is inconclusive, and says why", async ({ page }) => {
   await expect(page.getByText("The object moves at a steady speed")).toBeVisible();
 });
 
+test("a real bounce keeps less than all of its speed, in Portuguese", async ({ page }) => {
+  await check(page, "pt-BR", "bounce", { file: "Escolha um vídeo", submit: "Verificar este vídeo" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Consistente com a física real");
+  await expect(page.getByText("Velocidade depois do quique")).toBeVisible();
+  await expect(page.getByText("70%", { exact: true })).toBeVisible();
+});
+
+test("two balls that fall apart give the fake away", async ({ page }) => {
+  await check(page, "en", "pair_falls_apart", english);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Physically impossible");
+  await expect(page.getByText("Two objects released together fall at different rates.")).toBeVisible();
+  await expect(page.getByText("1.64×", { exact: true })).toBeVisible();
+});
+
 test("a file that is not a video gets a clear error", async ({ page }) => {
   await page.goto("/en/check");
   await page.getByLabel(english.file).setInputFiles({

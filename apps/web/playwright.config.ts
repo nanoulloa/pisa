@@ -31,6 +31,7 @@ export default defineConfig({
         PISA_SEGMENTER: "fake",
         PISA_PAID_CALLS_ENABLED: "false",
         PISA_DATA_DIR: join(__dirname, "e2e/.data"),
+        SUPABASE_URL: "", // Local files only, even when a developer's .env points at Supabase.
         PISA_WEB_ORIGINS: `http://localhost:${webPort}`,
       },
     },

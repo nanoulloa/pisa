@@ -1,6 +1,6 @@
 "use client";
 
-import type { AnalysisResult, Measurement, TestResult, Verdict } from "@pisa/contracts";
+import type { AnalysisResult, Measurement, TestId, TestResult, Verdict } from "@pisa/contracts";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
@@ -11,11 +11,15 @@ const EXPLANATIONS = [
   "slows_down_while_falling",
   "acceleration_grows",
   "accelerates_upward",
+  "pair_falls_apart",
+  "bounce_gains_energy",
+  "gravity_changes",
   "impossible",
   "consistent",
   "weak_violation",
   "no_measurable_acceleration",
   "depth_change",
+  "camera_motion",
   "too_few_samples",
   "no_measurable_events",
 ] as const;
@@ -32,7 +36,26 @@ const MEASUREMENT_NAMES = [
   "area_ratio",
   "samples",
   "duration_s",
+  "acceleration_ratio",
+  "acceleration_first_px_s2",
+  "acceleration_second_px_s2",
+  "release_gap_s",
+  "z_score",
+  "restitution",
+  "restitution_se",
+  "speed_in_px_s",
+  "speed_out_px_s",
+  "acceleration_max_px_s2",
+  "acceleration_min_px_s2",
+  "flights",
+  "implied_g",
+  "earth_g_ratio",
+  "unreliable_share",
 ] as const;
+
+const MAX_CARDS = 4;
+
+type Card = { key: string; title: string; value: string; detail: string };
 
 export function ResultView({ result }: { result: AnalysisResult }) {
   const t = useTranslations("Result");
@@ -47,6 +70,77 @@ export function ResultView({ result }: { result: AnalysisResult }) {
   const timebase = result.ingest?.timebase;
   const fps = timebase ? timebase.fps_num / timebase.fps_den : 0;
   const residual = firstMeasured ? measurement(firstMeasured, "residual_rms_px") : undefined;
+  const ratio = (value: number) =>
+    t("cards.ratioValue", { value: format.number(value, { maximumFractionDigits: 2 }) });
+
+  // The laws a clip was checked against come first, then the fall itself, then the context.
+  const cards: Card[] = [];
+  const restitution = measuredValue(result.tests, "bounce_energy", "restitution");
+  if (restitution !== undefined) {
+    cards.push({
+      key: "bounce",
+      title: t("cards.bounceTitle"),
+      value: format.number(restitution, { style: "percent", maximumFractionDigits: 0 }),
+      detail: t("cards.bounceDetail"),
+    });
+  }
+  const pair = measuredValue(result.tests, "galileo_pair", "acceleration_ratio");
+  if (pair !== undefined) {
+    cards.push({
+      key: "pair",
+      title: t("cards.pairTitle"),
+      value: ratio(Math.max(pair, 1 / pair)),
+      detail: t("cards.pairDetail"),
+    });
+  }
+  const gravity = measuredValue(result.tests, "time_base_consistency", "acceleration_ratio");
+  if (gravity !== undefined) {
+    cards.push({
+      key: "gravity",
+      title: t("cards.gravityTitle"),
+      value: ratio(gravity),
+      detail: t("cards.gravityDetail"),
+    });
+  }
+  cards.push({
+    key: "acceleration",
+    title: t("cards.accelerationTitle"),
+    value: t(`cards.acceleration.${accelerationState(firstMeasured)}`),
+    detail: t("cards.accelerationDetail"),
+  });
+  const stabilization = result.stabilization;
+  if (stabilization?.applied) {
+    cards.push({
+      key: "camera",
+      title: t("cards.cameraTitle"),
+      value: t("cards.cameraValue"),
+      detail: t("cards.cameraDetail", {
+        value: format.number(stabilization.max_motion_px, { maximumFractionDigits: 0 }),
+      }),
+    });
+  }
+  if (residual !== undefined) {
+    cards.push({
+      key: "fit",
+      title: t("cards.fitTitle"),
+      value: t("cards.fitValue", { value: format.number(residual, { maximumFractionDigits: 2 }) }),
+      detail: t("cards.fitDetail"),
+    });
+  }
+  cards.push(
+    {
+      key: "phases",
+      title: t("cards.phasesTitle"),
+      value: format.number(shape.length),
+      detail: t("cards.phasesDetail"),
+    },
+    {
+      key: "frames",
+      title: t("cards.framesTitle"),
+      value: format.number(frames),
+      detail: t("cards.framesDetail", { fps: format.number(fps, { maximumFractionDigits: 2 }) }),
+    },
+  );
 
   return (
     <article className="page result" aria-labelledby="verdict-title">
@@ -61,32 +155,13 @@ export function ResultView({ result }: { result: AnalysisResult }) {
       )}
 
       <ul className="cards">
-        <li className="card">
-          <span className="card-title">{t("cards.framesTitle")}</span>
-          <span className="card-value">{format.number(frames)}</span>
-          <span className="card-detail">
-            {t("cards.framesDetail", { fps: format.number(fps, { maximumFractionDigits: 2 }) })}
-          </span>
-        </li>
-        <li className="card">
-          <span className="card-title">{t("cards.accelerationTitle")}</span>
-          <span className="card-value">{t(`cards.acceleration.${accelerationState(firstMeasured)}`)}</span>
-          <span className="card-detail">{t("cards.accelerationDetail")}</span>
-        </li>
-        {residual !== undefined && (
-          <li className="card">
-            <span className="card-title">{t("cards.fitTitle")}</span>
-            <span className="card-value">
-              {t("cards.fitValue", { value: format.number(residual, { maximumFractionDigits: 2 }) })}
-            </span>
-            <span className="card-detail">{t("cards.fitDetail")}</span>
+        {cards.slice(0, MAX_CARDS).map((card) => (
+          <li key={card.key} className="card">
+            <span className="card-title">{card.title}</span>
+            <span className="card-value">{card.value}</span>
+            <span className="card-detail">{card.detail}</span>
           </li>
-        )}
-        <li className="card">
-          <span className="card-title">{t("cards.phasesTitle")}</span>
-          <span className="card-value">{format.number(shape.length)}</span>
-          <span className="card-detail">{t("cards.phasesDetail")}</span>
-        </li>
+        ))}
       </ul>
 
       <details className="technical">
@@ -113,6 +188,15 @@ export function ResultView({ result }: { result: AnalysisResult }) {
             </div>
           </section>
         ))}
+        {stabilization && (
+          <p className="hint">
+            {t("stabilization", {
+              max: format.number(stabilization.max_motion_px, { maximumFractionDigits: 1 }),
+              unreliable: format.number(stabilization.unreliable_frames),
+              frames: format.number(stabilization.frames),
+            })}
+          </p>
+        )}
         <p className="hint">{t("policy", { version: verdict.policy_version })}</p>
       </details>
 
@@ -129,7 +213,11 @@ function explanation(verdict: Verdict, tests: TestResult[]): Explanation {
   // The tests' own reasons are more specific than the verdict's, so they come first.
   const reasons = [...tests.map((test) => test.reason_code), verdict.reason_code];
   if (verdict.label === "physically_impossible") {
-    const violation = tests.find((test) => test.outcome === "violation")?.reason_code;
+    // Explain the strongest violation among the tests that decided the verdict.
+    const decisive: readonly TestId[] = verdict.decisive_tests;
+    const violation = tests
+      .filter((test) => test.outcome === "violation" && decisive.includes(test.test))
+      .sort((a, b) => b.confidence - a.confidence)[0]?.reason_code;
     return isExplanation(violation) ? violation : "impossible";
   }
   if (verdict.reason_code === "weak_violation") return "weak_violation";
@@ -143,6 +231,15 @@ function isExplanation(code: string | null | undefined): code is Explanation {
 function accelerationState(test: TestResult | undefined): "steady" | "changing" | "unmeasured" {
   if (test === undefined || test.outcome === "insufficient_data") return "unmeasured";
   return test.outcome === "pass" ? "steady" : "changing";
+}
+
+/** A measurement from the given test, preferring a violation over a pass. */
+function measuredValue(tests: TestResult[], id: TestId, name: string): number | undefined {
+  const measured = tests.filter(
+    (test) => test.test === id && (test.outcome === "pass" || test.outcome === "violation"),
+  );
+  const shown = measured.find((test) => test.outcome === "violation") ?? measured[0];
+  return shown ? measurement(shown, name) : undefined;
 }
 
 function measurement(test: TestResult, name: string): number | undefined {
