@@ -70,6 +70,26 @@ class Settings(BaseSettings):
     # Behind one trusted proxy (Modal), the client address is the last X-Forwarded-For entry.
     trust_proxy: bool = Field(default=False, validation_alias="PISA_TRUST_PROXY")
 
+    # WhatsApp Cloud API. The bot is on when the token, the app secret and the phone number id
+    # are all set; the verify token answers Meta's webhook subscription check.
+    whatsapp_access_token: SecretStr = Field(
+        default=SecretStr(""), validation_alias="WHATSAPP_ACCESS_TOKEN"
+    )
+    whatsapp_app_secret: SecretStr = Field(
+        default=SecretStr(""), validation_alias="WHATSAPP_APP_SECRET"
+    )
+    whatsapp_verify_token: SecretStr = Field(
+        default=SecretStr(""), validation_alias="WHATSAPP_WEBHOOK_VERIFY_TOKEN"
+    )
+    whatsapp_phone_number_id: str = Field(default="", validation_alias="WHATSAPP_PHONE_NUMBER_ID")
+    whatsapp_graph_version: str = Field(
+        default="v26.0", validation_alias="WHATSAPP_GRAPH_API_VERSION"
+    )
+    # Where result links in replies point.
+    public_url: str = Field(
+        default="https://pisa-theta.vercel.app", validation_alias="PISA_PUBLIC_URL"
+    )
+
     # "auto" keeps jobs, results and evidence in Supabase when it is configured; "local" keeps
     # them on disk even then (tests, and local runs that must not touch production).
     store: Literal["auto", "local"] = Field(default="auto", validation_alias="PISA_STORE")

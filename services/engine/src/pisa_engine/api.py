@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import hmac
+import json
 import logging
 import shutil
 import time
@@ -13,9 +15,9 @@ from pathlib import Path
 from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import BackgroundTasks, FastAPI, Form, UploadFile
+from fastapi import BackgroundTasks, FastAPI, Form, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
@@ -39,6 +41,15 @@ from pisa_engine.storage import LocalStorage
 from pisa_engine.tracking.fake import ColorSegmenter
 from pisa_engine.tracking.sam import Sam31Segmenter
 from pisa_engine.tracking.segmenter import Segmenter
+from pisa_engine.whatsapp.bot import BotDeps, WhatsAppBot
+from pisa_engine.whatsapp.graph import GraphClient
+from pisa_engine.whatsapp.inbound import messages, valid_signature
+from pisa_engine.whatsapp.ledger import (
+    KEEP_FOR,
+    MemoryMessageLedger,
+    MessageLedger,
+    SupabaseMessageLedger,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +66,7 @@ def create_app(
     planner: Planner | None = None,
     explainer: Explainer | None = None,
     evidence: EvidenceStore | None = None,
+    graph: GraphClient | None = None,
 ) -> FastAPI:
     config = settings or get_settings()
     configure_logging(
@@ -63,6 +75,9 @@ def create_app(
             config.meta_api_key.get_secret_value(),
             config.supabase_secret_key.get_secret_value(),
             config.engine_token.get_secret_value(),
+            config.whatsapp_access_token.get_secret_value(),
+            config.whatsapp_app_secret.get_secret_value(),
+            config.whatsapp_verify_token.get_secret_value(),
         ],
     )
     store = _job_store(config)
@@ -94,14 +109,32 @@ def create_app(
     rate = RateLimiter(config.jobs_per_hour, window_s=3600, global_limit=config.jobs_per_hour_total)
     slots = asyncio.Semaphore(config.max_concurrent_jobs)
 
+    async def analyze(job: Job, source: Path, work_dir: Path) -> Job:
+        async with slots:
+            return await run_job(job, source, work_dir, deps)
+
     async def run_when_free(job: Job, source: Path, work_dir: Path) -> None:
         try:
-            async with slots:
-                await run_job(job, source, work_dir, deps)
+            await analyze(job, source, work_dir)
         finally:
             # Privacy: the uploaded video and its normalized copy are deleted as soon as the
             # job ends. Only derived measurements are kept.
             shutil.rmtree(work_dir, ignore_errors=True)
+
+    bot: WhatsAppBot | None = None
+    whatsapp_graph = graph or _graph(config)
+    if whatsapp_graph is not None:
+        bot = WhatsAppBot(
+            BotDeps(
+                graph=whatsapp_graph,
+                ledger=message_ledger_for(config),
+                jobs=store,
+                limiter=rate,
+                run=analyze,
+                data_dir=config.data_dir,
+                public_url=config.public_url,
+            )
+        )
 
     app = FastAPI(title="Pisa engine", version=__version__)
     app.add_middleware(
@@ -169,6 +202,42 @@ def create_app(
             return _error(404, "result_not_ready")
         return result
 
+    @app.get("/whatsapp/webhook", response_model=None)
+    def verify_whatsapp(request: Request) -> Any:
+        """Meta's subscription check: echo the challenge when the verify token matches."""
+        params = request.query_params
+        expected = config.whatsapp_verify_token.get_secret_value()
+        supplied = params.get("hub.verify_token", "")
+        challenge = params.get("hub.challenge", "")
+        if (
+            expected
+            and params.get("hub.mode") == "subscribe"
+            and hmac.compare_digest(supplied.encode(), expected.encode())
+            and challenge.isalnum()
+            and len(challenge) <= 128
+        ):
+            return PlainTextResponse(challenge)
+        return _error(403, "forbidden")
+
+    @app.post("/whatsapp/webhook", response_model=None)
+    async def receive_whatsapp(request: Request, background: BackgroundTasks) -> Any:
+        """Signed deliveries only. Answers at once; each message is handled in the background."""
+        if bot is None:
+            return _error(404, "whatsapp_not_configured")
+        body = await request.body()
+        secret = config.whatsapp_app_secret.get_secret_value()
+        if not valid_signature(body, request.headers.get("x-hub-signature-256"), secret):
+            logger.warning("WhatsApp delivery with a bad signature refused")
+            return _error(401, "invalid_signature")
+        try:
+            payload = json.loads(body)
+        except ValueError:
+            return _error(400, "invalid_payload")
+        if isinstance(payload, dict):
+            for message in messages(payload):
+                background.add_task(bot.handle, message)
+        return {"status": "received"}
+
     @app.get("/jobs/{job_id}/evidence.mp4", response_model=None)
     def get_evidence(job_id: UUID) -> Any:
         """The evidence video while it lasts: the file, or a signed link valid for an hour."""
@@ -186,6 +255,32 @@ def create_app(
         return RedirectResponse(location, status_code=307)
 
     return app
+
+
+def message_ledger_for(config: Settings) -> MessageLedger:
+    if _uses_supabase(config):
+        return SupabaseMessageLedger(config.supabase_url, config.supabase_secret_key)
+    return MemoryMessageLedger()
+
+
+def sweep_expired(config: Settings) -> None:
+    """Hourly: evidence videos past 24 hours, and WhatsApp message ids past Meta's retries."""
+    delete_expired(evidence_store_for(config))
+    message_ledger_for(config).forget_older_than(datetime.now(UTC) - KEEP_FOR)
+
+
+def _graph(config: Settings) -> GraphClient | None:
+    """The bot runs only when the token, the app secret and the phone number id are all set."""
+    token, app_secret = config.whatsapp_access_token, config.whatsapp_app_secret
+    if not (token.get_secret_value() and app_secret.get_secret_value()):
+        return None
+    if not config.whatsapp_phone_number_id:
+        return None
+    return GraphClient(
+        access_token=token,
+        phone_number_id=config.whatsapp_phone_number_id,
+        version=config.whatsapp_graph_version,
+    )
 
 
 def evidence_store_for(config: Settings) -> EvidenceStore:

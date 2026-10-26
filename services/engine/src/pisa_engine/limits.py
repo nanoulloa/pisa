@@ -21,6 +21,8 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 logger = logging.getLogger(__name__)
 
 JOBS_PATH = "/jobs"
+# No engine token on these: health checks, and Meta's webhook, which is signed instead.
+OPEN_PATHS = frozenset({"/healthz", "/whatsapp/webhook"})
 
 
 class _BodyTooLargeError(Exception):
@@ -172,7 +174,7 @@ class AdmissionMiddleware:
         self._log_salt = secrets.token_bytes(16)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http" or _route_path(scope) == "/healthz":
+        if scope["type"] != "http" or _route_path(scope) in OPEN_PATHS:
             await self.app(scope, receive, send)
             return
         if self.token:
