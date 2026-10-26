@@ -401,7 +401,8 @@ button.button-primary {
 .card-value {
   font-size: 1.5rem;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  /* One number per card: tabular figures would give the decimal separator a digit's width. */
+  font-variant-numeric: proportional-nums;
 }
 
 .card-detail {
