@@ -42,7 +42,12 @@ class Sam31Segmenter:
     async def track(
         self, video: Path, phrase: str, timebase: Timebase, *, policy: DataPolicy
     ) -> list[TrackedObject]:
-        file_id = await self._client.upload_file(video)
+        async with self._client.uploaded(video) as file_id:
+            return await self._track_file(file_id, phrase, timebase, policy=policy)
+
+    async def _track_file(
+        self, file_id: str, phrase: str, timebase: Timebase, *, policy: DataPolicy
+    ) -> list[TrackedObject]:
         body = {
             "model": self._model,
             "input": [

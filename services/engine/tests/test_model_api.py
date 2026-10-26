@@ -10,10 +10,12 @@ from typing import Any
 import httpx
 import numpy as np
 import pytest
+from meta_sam_parser import ResponsesStreamSourceError
 from meta_sam_parser._mask_codec import _encode_raster  # Test-only: builds one_bit payloads.
 from pydantic import SecretStr
 
 from pisa_contracts import Timebase
+from pisa_engine.model_api import costs
 from pisa_engine.model_api.client import MetaModelApiClient, ModelApiError
 from pisa_engine.model_api.policy import ContributorTierForbiddenError
 from pisa_engine.model_api.spend import (
@@ -156,7 +158,9 @@ async def test_sam_segmenter_turns_streamed_masks_into_centroids(tmp_path: Path)
 
     def respond(request: httpx.Request) -> httpx.Response:
         if request.url.path.endswith("/files"):
-            return httpx.Response(200, json={"id": "file-test"})
+            return httpx.Response(200, json={"id": "file-test", "expires_at": 1793050000})
+        if request.method == "DELETE":
+            return httpx.Response(200, json={"id": "file-test", "object": "file", "deleted": True})
         return _sse(_sam_events(lines))
 
     recorder = Recorder(respond)
@@ -176,7 +180,7 @@ async def test_sam_segmenter_turns_streamed_masks_into_centroids(tmp_path: Path)
     assert first.area_px == pytest.approx(36 * (25 / 12) * (21 / 10))
     assert first.confidence == pytest.approx(0.9)
 
-    upload, stream = recorder.requests
+    upload, stream, delete = recorder.requests
     body = json.loads(stream.content)
     assert body["model"] == "sam-3.1"
     assert body["stream"] is True
@@ -185,7 +189,66 @@ async def test_sam_segmenter_turns_streamed_masks_into_centroids(tmp_path: Path)
         {"type": "input_video", "file_id": "file-test"},
     ]
     assert upload.url.path == "/v1/files"
+    form = upload.content.decode("latin-1")
+    for field, value in [
+        ("purpose", "user_data"),
+        ("expires_after[anchor]", "created_at"),
+        ("expires_after[seconds]", "3600"),
+    ]:
+        assert f'name="{field}"\r\n\r\n{value}\r\n' in form
+    # Privacy: the video leaves Meta's storage as soon as SAM is done with it.
+    assert (delete.method, delete.url.path) == ("DELETE", "/v1/files/file-test")
     assert [entry.quantity for entry in ledger.entries] == [50]  # Billed minimum.
+
+
+async def test_uploads_are_deleted_even_when_the_call_fails(tmp_path: Path) -> None:
+    def respond(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/files"):
+            return httpx.Response(200, json={"id": "file-9", "expires_at": 1793050000})
+        if request.method == "DELETE":
+            return httpx.Response(200, json={"id": "file-9", "object": "file", "deleted": True})
+        return httpx.Response(500, json={"error": {"code": "server_error"}})
+
+    recorder = Recorder(respond)
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(b"\x00")
+    timebase = Timebase(fps_num=30, fps_den=1, start_s=0.0, frame_count=10)
+    with pytest.raises(ResponsesStreamSourceError) as error:  # The parser wraps stream errors.
+        await Sam31Segmenter(_client(recorder)).track(video, "ball", timebase, policy="user")
+    assert isinstance(error.value.__cause__, ModelApiError)
+    assert [r.method for r in recorder.requests] == ["POST", "POST", "DELETE"]
+
+
+async def test_token_counting_is_gated_and_reads_the_count() -> None:
+    recorder = Recorder(
+        lambda _: httpx.Response(200, json={"object": "response.input_tokens", "input_tokens": 812})
+    )
+    body = {"model": "muse-spark-1.3", "input": "hi"}
+    with pytest.raises(PaidCallsDisabledError):
+        await _client(recorder, enabled=False).count_input_tokens(body, policy="user")
+    with pytest.raises(ContributorTierForbiddenError):
+        await _client(recorder).count_input_tokens(
+            {**body, "model": "muse-spark-1.3-contributor"}, policy="user"
+        )
+    assert recorder.requests == []
+    assert await _client(recorder).count_input_tokens(body, policy="user") == 812
+    (request,) = recorder.requests
+    assert request.url.path == "/v1/responses/input_tokens"
+
+
+async def test_a_job_collects_what_its_calls_cost() -> None:
+    usage = {"input_tokens": 1000, "output_tokens": 100}
+    recorder = Recorder(lambda _: httpx.Response(200, json={"status": "completed", "usage": usage}))
+    client = _client(recorder)
+    body = {"model": "muse-spark-1.3", "input": "hi"}
+    await client.create_response(body, policy="user", worst_case_usd=0.01, stage="plan")
+    with costs.collecting() as spent:
+        await client.create_response(body, policy="user", worst_case_usd=0.01, stage="explain")
+    assert [(e.stage, e.unit) for e in spent] == [
+        ("explain", "input_tokens"),
+        ("explain", "output_tokens"),
+    ]
+    assert sum(e.usd for e in spent) == pytest.approx(0.001675)
 
 
 @pytest.mark.parametrize(
