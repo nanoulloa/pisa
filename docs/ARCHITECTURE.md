@@ -121,6 +121,12 @@ The video shows the user's frames, so it follows the raw video's rule: it is kep
 
 The web app draws the card with `next/og` from the stored result, so it uses the same messages, verdict logic (`src/lib/result.ts`) and tokens as the page: the verdict with its shape, the sentence under it, the most telling flight with its ghost on the ink surface, the number that says the most, and the tagline. It holds only derived data, never a frame of the video, so it outlives the evidence video. Two sizes: `/[locale]/result/[id]/card` (1080 × 1350, 4:5, to send as an image) and the result page's Open Graph image (1200 × 630, for link previews). Fonts come from Google Fonts with only the glyphs the card needs, which keeps Chinese out of the 500 KB bundle limit.
 
+### WhatsApp
+
+`POST /whatsapp/webhook` checks Meta's signature on the raw body, answers at once, and hands each message to `WhatsAppBot` in the background (`pisa_engine/whatsapp`). A video (or a video sent as a document) under 16 MB gets an acknowledgment, runs through the same pipeline as an upload, and gets one reply: the evidence video with a caption (verdict, the sentence under it, what the lime circle means, a note when WhatsApp marks the video as frequently forwarded, and the result link). Without an evidence video the reply is text whose link preview shows the share card. Text gets a welcome; anything else, a request for a video. `GET /whatsapp/webhook` answers Meta's subscription check. Both are open without the engine token, since Meta signs instead.
+
+Media is fetched by id (`GET /{media-id}`, a URL valid for 5 minutes) with the access token and streamed with a 16 MB cap. Graph calls are retried with backoff only when a repeat cannot send a message twice. Message ids are claimed once in Supabase, since Meta retries deliveries for days. All copy comes from `apps/web/messages` (namespace `WhatsApp` plus verdicts, errors and explanations), embedded by `make gen`. Setup steps are in [WHATSAPP.md](WHATSAPP.md).
+
 ## Meta Model API access
 
 All requests go through `MetaModelApiClient`, which checks two gates before anything leaves the machine:

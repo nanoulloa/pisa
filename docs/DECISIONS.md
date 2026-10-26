@@ -94,3 +94,15 @@ One entry per decision that would be expensive to undo: context, decision, why.
 
 **Context.** The day-3 fix that blanked `SUPABASE_URL` for browser tests did nothing: settings ignore empty environment variables, so local test runs kept writing jobs to the production project (CI was never affected; it has no `.env`). **Decision.** `PISA_STORE=local` keeps jobs, results and evidence on disk whatever `.env` says. The browser tests and the local preview configurations set it. **Why.** Test data belongs on the test machine, and a guard that silently does nothing is worse than none.
 
+## 2026-10-27 · WhatsApp replies in two messages, with the evidence attached
+
+**Context.** Meta gives each business number 1,000 free service replies a month and charges after that; the founder pays nothing. The brief asks for an acknowledgment and a result with the evidence video, verdict and link. **Decision.** Exactly two messages per check: a localized acknowledgment, then the evidence video (uploaded to WhatsApp, Main profile without B-frames as Android requires) whose caption carries the verdict, the sentence, what the ghost means and the link. Without a video, the result is one text whose link preview shows the share card. No payment method on the WhatsApp account. **Why.** About 500 checks a month stay free, and the user gets everything in the one message they will forward.
+
+## 2026-10-27 · One source for every word, including WhatsApp
+
+**Context.** The bot needs the verdicts, explanations and errors the web app already has, in the same four languages. **Decision.** The bot's copy lives in `apps/web/messages` under `WhatsApp` and is embedded into the engine by `make gen` with the verdicts, errors and explanations; CI fails if it drifts. Only plain `{name}` arguments are allowed there. The rule that picks the explanation is mirrored in Python with the same test cases as the web. **Why.** A translation fixed once is fixed everywhere, and the existing test that every locale has every key covers the bot too.
+
+## 2026-10-27 · Retry Graph calls only when a repeat cannot double-send
+
+**Context.** WhatsApp has no idempotency key for sending. A send that timed out or got a 5xx may have been delivered. **Decision.** Lookups, downloads and uploads retry on 5xx, timeouts and 429 with exponential backoff and jitter; sends retry only on 429 and connections that never opened. **Why.** A missing reply can be resent by the user; a duplicated verdict in a family group looks broken.
+

@@ -1,5 +1,26 @@
 # Progress
 
+## Day 6 · Tuesday, Oct 27 (same session)
+
+### Done
+
+- **WhatsApp bot, built and tested end to end against a fake Graph API:** signed webhook, Meta's subscription check, an acknowledgment, the same pipeline as uploads, and one reply with the evidence video (or a link whose preview is the share card). Deduplicated by message id, 20 checks per number per hour, 16 MB cap, phone numbers never stored.
+- **Language:** from the message's words when they show it, else from the phone's country code. All copy comes from the web app's messages in four languages, embedded by `make gen`.
+- **Evidence video for Android WhatsApp:** Main profile without B-frames, index first.
+- **`make sync-secrets`:** copies the engine's keys from `.env` to Modal, printing names only.
+- **Supabase:** `whatsapp_messages` (ids and times only), swept after 7 days.
+- **Tests:** 181 engine tests, 24 of them for WhatsApp: signatures, payload parsing, language, Graph requests and retries, deduplication, limits, and the whole conversation through the real pipeline.
+
+### Next
+
+- Founder: create the Meta app and test number ([WHATSAPP.md](WHATSAPP.md)), fill four lines of `.env`, run `make sync-secrets`, then connect the webhook. Then a real forward from a phone.
+- Day 7: record the real clips, generate AI clips from the same first frames, run the eval and calibrate.
+
+### Blocked
+
+- The WhatsApp test needs the founder's Meta account.
+- Real model runs wait for the founder to switch on paid calls.
+
 ## Day 5 · Tuesday, Oct 27 (same session)
 
 ### Done
