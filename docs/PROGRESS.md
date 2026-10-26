@@ -1,5 +1,34 @@
 # Progress
 
+## Day 2 · Monday, Oct 26 (started early, same session)
+
+### Done
+
+- **Physics:**
+  - Flight phases: rest before release and after landing removed, cut at bounces.
+  - T1 free-fall shape test: BIC across constant velocity, constant and changing acceleration. It convicts only what air drag cannot explain: slowing down while falling, or acceleration that grows. Depth changes are not judged.
+  - Verdict policy 0.1.0.
+- **Tests that matter most:** 600 noisy real falls are never called impossible; eased motion is always caught; air drag passes.
+- **Pipeline and API:** POST /jobs, GET /jobs/{id} and /jobs/{id}/result, with a local JSON job store. Each stage is recorded as it starts.
+- **Security hardening from four automated reviews:**
+  - Atomic spend reservations, with failed sent calls charged at their worst case.
+  - The body-size limit is enforced while the upload arrives.
+  - The token is checked on every route, with per-client and global job rates that only job creation spends.
+  - The concurrency limit holds.
+- **Web:** upload, progress driven by real stages, and a result page (verdict icon, label and sentence, measurement cards, technical panel, limits) in four languages, with colors from `brand/tokens.css`.
+- **End-to-end:** Playwright drives the built app against the real engine (free segmenter) and gets each of the three verdicts plus a clear error.
+
+### Next (day 3)
+
+- Stabilization for handheld clips; T2 Galileo pair, T3 bounce energy, T4 implied g, T5 time-base consistency; synthetic tests for each.
+- Deploy the skeleton (Vercel, Modal, Supabase) when the accounts exist; put the engine behind the web server with `PISA_ENGINE_TOKEN`.
+
+### Blocked
+
+- Real SAM 3.1 and Muse Spark runs: waiting for the $150 credits in Billing.
+- Real clips from the shot list.
+- Accounts: Supabase, Modal, Vercel.
+
 ## Day 1 · Monday, Oct 26
 
 ### Done

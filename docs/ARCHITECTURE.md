@@ -31,7 +31,7 @@ flowchart TB
     JOB -- reply --> WA
 ```
 
-Status on day 1: the engine package, contracts, web shell and CI exist and run locally. Supabase, Modal, the WhatsApp webhook and the deploys come on days 2 and 6.
+Status after day 2: the whole flow (upload, ingest, track, T1, verdict, result page) runs locally and end to end in CI, with a local JSON job store and the free color segmenter. Supabase, Modal, real SAM 3.1 calls, the WhatsApp webhook and the deploys are next.
 
 ## Pipeline
 
@@ -43,9 +43,9 @@ Each stage has typed inputs and outputs from `packages/contracts/schema/pisa.sch
 | 1 | Plan | normalized clip → `Plan` | day 4 |
 | 2 | Track | clip + phrase → `TrackSet` | `pisa_engine/tracking` |
 | 3 | Stabilize | frames + masks → stable-frame trajectories | day 3 |
-| 4 | Measure | `TrackSet` → flight phases | day 2 |
-| 5 | Test | phases → `TestResult` T1 to T5 | days 2 and 3 |
-| 6 | Verdict | `TestResult[]` → `Verdict` | day 2 |
+| 4 | Measure | `TrackSet` → flight phases | `pisa_engine/physics/trajectory.py` |
+| 5 | Test | phases → `TestResult` T1 to T5 | T1 in `pisa_engine/physics/shape.py`; T2 to T5 day 3 |
+| 6 | Verdict | `TestResult[]` → `Verdict` | `pisa_engine/verdict.py` (policy 0.1.0) |
 | 7 | Explain | `AnalysisResult` → localized text | day 4 |
 | 8 | Render | clip + fits → evidence video, share card | day 5 |
 
@@ -77,3 +77,9 @@ The key is a `SecretStr` read only from `MODEL_API_KEY`, used only in the Author
 - Synthetic clips with known gravity run through ingest and tracking; tests recover g within 1% from pixels.
 - Web: Vitest checks every locale has the same ICU keys and the agreed core terms; Playwright smoke-tests routing and the language switcher.
 - CI: ruff, mypy strict, pytest, contract drift, ESLint, tsc strict, Vitest, build, Playwright and gitleaks on every push.
+
+## Job API and limits
+
+`POST /jobs` (multipart: `video`, `locale`) answers 202 with the job and runs the pipeline in the background; `GET /jobs/{id}` returns the job with its current stage; `GET /jobs/{id}/result` returns the `AnalysisResult` once done. Errors are `{"error": {"code", "stage"}}` with codes the web app translates.
+
+ASGI middleware runs before any body is read: a size limit (by header and by counted bytes), the bearer token on every route but `/healthz` when `PISA_ENGINE_TOKEN` is set, and per-client plus global job rates. At most `PISA_MAX_CONCURRENT_JOBS` analyses run at once. See DECISIONS.md for the trade-offs.
