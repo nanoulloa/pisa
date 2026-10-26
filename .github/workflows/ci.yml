@@ -16,6 +16,7 @@ jobs:
   engine:
     name: Engine and contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -26,7 +27,11 @@ jobs:
         with:
           enable-cache: true
       - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+        timeout-minutes: 5
+        # Skipping man-db's index rebuild saves minutes; a stuck mirror fails fast instead of hanging.
+        run: |
+          sudo rm -f /var/lib/man-db/auto-update
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: npm ci
       - run: uv sync --all-packages --all-groups --locked
       - name: Generated contracts are up to date
@@ -41,6 +46,7 @@ jobs:
   web:
     name: Web
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -63,7 +69,11 @@ jobs:
         with:
           enable-cache: true
       - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+        timeout-minutes: 5
+        # Skipping man-db's index rebuild saves minutes; a stuck mirror fails fast instead of hanging.
+        run: |
+          sudo rm -f /var/lib/man-db/auto-update
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: uv sync --all-packages --locked
       - name: Install Playwright Chromium
         run: npx --workspace @pisa/web playwright install --with-deps chromium
@@ -73,6 +83,7 @@ jobs:
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
