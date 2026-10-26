@@ -4,10 +4,53 @@
     "description": "病毒视频的现实检验：你看到的画面在物理上可能吗？"
   },
   "Home": {
-    "tagline": "AI 能伪造像素，却伪造不了物理。",
     "lede": "发送一段物体下落、被抛出或弹跳的视频。Pisa 会测量它的运动，告诉你真实的重力能否产生这样的画面。",
     "cta": "检查视频",
-    "verdictsTitle": "三种可能的结论"
+    "verdictsTitle": "三种可能的结论",
+    "eyebrow": "病毒视频的物理检验",
+    "taglineLead": "AI 能伪造像素，",
+    "taglineTurn": "却伪造不了物理。",
+    "howLink": "工作原理",
+    "demo": {
+      "filmed": "实拍",
+      "filmedNote": "球和它的幽灵一起下落。",
+      "generated": "AI 生成",
+      "generatedNote": "下落得好像重力弱了 4.9 倍。",
+      "legend": "幽灵：真实重力下球应在的位置",
+      "caption": "示意图：同样 1.5 米的下落，分别在地球重力下，以及在生成视频常见的弱重力下。"
+    },
+    "steps": {
+      "title": "Pisa 如何检查视频",
+      "watching": "Pisa 找到物体下落、被抛出或弹跳的那一刻，并确认镜头足够稳定，可以测量。",
+      "tracking": "Meta 的 SAM 3.1 在每一帧中勾勒出物体，所以轨迹是测量出来的，不是猜出来的。",
+      "measuring": "用自由落体定律检验这条轨迹。空气可以让下落变慢，但真实的物体不会在空中减速。",
+      "explaining": "你会得到三种结论之一、支撑它的数字，以及可以亲眼看到的幽灵轨迹。"
+    },
+    "answers": {
+      "physically_impossible": "违反了运动定律：物体在空中减速，或者加速得比重力允许的更快。",
+      "consistent_with_real_physics": "我们检查的每条定律都成立。这不能证明视频是真的，只说明它的运动有可能是真的。",
+      "inconclusive": "视频中没有可以可靠测量的内容，所以 Pisa 会直说，而不是去猜。"
+    },
+    "why": {
+      "title": "为什么要测量，而不是问聊天机器人",
+      "gravityValue": "0.38–2.27 m/s²",
+      "gravityLabel": "当今生成模型的视频中，物体下落时的重力。地球上是 9.81。",
+      "gravitySource": "来源：arXiv 2512.02016",
+      "opinionValue": "0%",
+      "opinionLabel": "一个针对物理调优的视觉模型，对清晰的真实抛掷和弹跳视频判为合理的比例。测量运动则给出 0.96 到 0.99 的分数。",
+      "opinionSource": "来源：Morpheus，ICML 2026"
+    },
+    "scope": {
+      "title": "Pisa 检查什么",
+      "checksTitle": "检查",
+      "checks": "下落、抛掷、弹跳，以及两个物体同时下落。",
+      "skipsTitle": "不检查",
+      "skips": "换脸、对口型或克隆声音。"
+    },
+    "footer": {
+      "built": "为 Meta 全球 AI 开发者黑客松打造，使用 Muse Spark 和 SAM 3.1。",
+      "code": "源代码"
+    }
   },
   "Verdict": {
     "physically_impossible": "物理上不可能",
@@ -20,7 +63,8 @@
     "chooseFile": "选择视频",
     "fileHint": "MP4 或 MOV，最长 60 秒，不超过 50 MB。",
     "submit": "检查这个视频",
-    "uploading": "正在上传…"
+    "uploading": "正在上传…",
+    "privacy": "Pisa 使用 Meta 的 AI 模型分析视频。在 Pisa 使用黑客松额度期间，Meta 可能会用收到的内容改进其模型。分析一结束，Pisa 就会删除你的视频，只保留测量结果。"
   },
   "LocaleSwitcher": {
     "label": "语言",

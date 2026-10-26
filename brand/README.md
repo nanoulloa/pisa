@@ -34,7 +34,7 @@ An early Plumb drew the tower as one solid bar; next to a line ending in a dot i
 - The app icon is the only two-color version: paper on deep teal, sphere in lime, as the ghost in the product.
 - Below 48 px use the pixel cuts (`favicon-16.svg`, `favicon-32.svg`). They switch to paper in dark mode by themselves.
 - Keep clear space of one sphere diameter (11 units) on every side. Never rotate the mark: the lean is already in it.
-- The name "Pisa" is set separately in Bodoni Moda; the mark never contains letters.
+- The name "Pisa" is set separately in Cormorant Garamond italic; the mark never contains letters.
 
 ## Color
 
@@ -87,7 +87,8 @@ Color is never the only signal: each verdict has its own icon, a label in words 
 | Typeface | Tabular figures | Latin Extended-A | Decision |
 |---|---|---|---|
 | **Schibsted Grotesk** | Yes (`tnum`) | 99% | Interface, body and every number |
-| **Bodoni Moda** | Yes (`tnum`) | 100% | Display only, 32 px and up |
+| **Cormorant Garamond** (italic 500) | | | The wordmark and display accents, such as the second line of the headline. Chosen by the founder over Bodoni Moda, Cinzel and Italiana. |
+| Bodoni Moda | Yes (`tnum`) | 100% | First display choice, replaced by Cormorant Garamond for the wordmark |
 | **Noto Sans SC** | | | Simplified Chinese, line height 1.6 against 1.5 for Latin |
 | Public Sans | Yes | 97% | Alternative: clear but institutional |
 | Hanken Grotesk | Default only, no `tnum` | 99% | Alternative: no proportional figures for prose |

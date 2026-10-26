@@ -4,10 +4,53 @@
     "description": "Una prueba de realidad para videos virales: ¿lo que ves es físicamente posible?"
   },
   "Home": {
-    "tagline": "La IA puede falsificar píxeles. No puede falsificar la física.",
     "lede": "Envía un video de algo que cae, se lanza o rebota. Pisa mide su movimiento y te dice si la gravedad real pudo haberlo producido.",
     "cta": "Revisar un video",
-    "verdictsTitle": "Tres respuestas posibles"
+    "verdictsTitle": "Tres respuestas posibles",
+    "eyebrow": "Una prueba de física para videos virales",
+    "taglineLead": "La IA puede falsificar píxeles.",
+    "taglineTurn": "No puede falsificar la física.",
+    "howLink": "Cómo funciona",
+    "demo": {
+      "filmed": "Filmado",
+      "filmedNote": "La esfera y su fantasma caen juntos.",
+      "generated": "Generado con IA",
+      "generatedNote": "Cae como si la gravedad fuera 4,9 veces más débil.",
+      "legend": "Fantasma: donde la gravedad real pone la esfera",
+      "caption": "Ilustración: la misma caída de 1,5 m con la gravedad de la Tierra y con la gravedad débil que suelen mostrar los videos generados."
+    },
+    "steps": {
+      "title": "Cómo revisa Pisa un video",
+      "watching": "Pisa encuentra el momento en que algo cae, se lanza o rebota, y comprueba que la cámara esté lo bastante quieta para medir.",
+      "tracking": "SAM 3.1 de Meta delinea el objeto en cada cuadro, así que su trayectoria se mide, no se adivina.",
+      "measuring": "La trayectoria se pone a prueba con las leyes de la caída libre. El aire puede frenar una caída; nada real frena en el aire.",
+      "explaining": "Recibes una de tres respuestas, los números que la respaldan y el fantasma para verlo con tus propios ojos."
+    },
+    "answers": {
+      "physically_impossible": "Se rompe una ley del movimiento: el objeto frena en el aire, o acelera más de lo que permite la gravedad.",
+      "consistent_with_real_physics": "Se cumplen todas las leyes que revisamos. Eso no prueba que el video sea real, solo que su movimiento podría serlo.",
+      "inconclusive": "Nada en el video se puede medir con confianza, así que Pisa lo dice en vez de adivinar."
+    },
+    "why": {
+      "title": "Por qué medir en vez de preguntarle a un chatbot",
+      "gravityValue": "0,38–2,27 m/s²",
+      "gravityLabel": "La gravedad con la que caen los objetos en videos de los generadores actuales. En la Tierra es 9,81.",
+      "gravitySource": "Fuente: arXiv 2512.02016",
+      "opinionValue": "0 %",
+      "opinionLabel": "Lanzamientos y rebotes reales y limpios que un modelo de visión ajustado para física aceptó como plausibles. Medir el movimiento les dio entre 0,96 y 0,99.",
+      "opinionSource": "Fuente: Morpheus, ICML 2026"
+    },
+    "scope": {
+      "title": "Qué revisa Pisa",
+      "checksTitle": "Revisa",
+      "checks": "Caídas, lanzamientos, rebotes y dos objetos que caen a la vez.",
+      "skipsTitle": "No revisa",
+      "skips": "Cambios de rostro, sincronización de labios ni voces clonadas."
+    },
+    "footer": {
+      "built": "Hecho para el Meta Global AI Developer Hackathon con Muse Spark y SAM 3.1.",
+      "code": "Código fuente"
+    }
   },
   "Verdict": {
     "physically_impossible": "Físicamente imposible",
@@ -20,7 +63,8 @@
     "chooseFile": "Elige un video",
     "fileHint": "MP4 o MOV, de hasta 60 segundos y 50 MB.",
     "submit": "Revisar este video",
-    "uploading": "Subiendo…"
+    "uploading": "Subiendo…",
+    "privacy": "Pisa analiza los videos con modelos de IA de Meta. Mientras Pisa use créditos del hackathon, Meta puede usar lo que recibe para mejorar sus modelos. Pisa borra tu video en cuanto termina el análisis y solo guarda las mediciones."
   },
   "LocaleSwitcher": {
     "label": "Idioma",

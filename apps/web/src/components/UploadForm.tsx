@@ -53,6 +53,7 @@ export function UploadForm() {
       <p id="video-hint" className="hint">
         {t("fileHint")}
       </p>
+      <p className="privacy-note">{t("privacy")}</p>
       {error !== null && <ErrorMessage code={error} />}
       <button className="button-primary" type="submit" disabled={file === null || uploading}>
         {uploading ? t("uploading") : t("submit")}

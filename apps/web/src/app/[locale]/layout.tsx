@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, Schibsted_Grotesk } from "next/font/google";
+import { Cormorant_Garamond, Schibsted_Grotesk } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -18,9 +18,11 @@ const sans = Schibsted_Grotesk({
   display: "swap",
 });
 
-const display = Bodoni_Moda({
+const display = Cormorant_Garamond({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-bodoni",
+  weight: "500",
+  style: "italic",
+  variable: "--font-cormorant",
   display: "swap",
 });
 
@@ -54,7 +56,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                 {brand("title")}
               </span>
             </Link>
-            <div className="header-actions">
+            <div className="control-pill">
               <LocaleMenu />
               <ThemeToggle />
             </div>

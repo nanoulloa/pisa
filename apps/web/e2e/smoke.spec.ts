@@ -25,7 +25,7 @@ test("the language switcher keeps the page and translates it", async ({ page }) 
 
 test("Chinese renders the agreed verdict terms", async ({ page }) => {
   await page.goto("/zh-CN");
-  await expect(page.getByText("物理上不可能")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "物理上不可能" })).toBeVisible();
   await expect(page.getByRole("link", { name: "检查视频" })).toBeVisible();
 });
 
