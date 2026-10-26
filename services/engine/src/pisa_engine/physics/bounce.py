@@ -38,7 +38,7 @@ def bounce_energy(bounce: Bounce, thresholds: BounceThresholds | None = None) ->
         return result("bounce_energy", "insufficient_data", 0.0, [], "too_few_samples")
 
     before, after = fit_free_fall(bounce.before), fit_free_fall(bounce.after)
-    contact_t = _contact_time(before, after, bounce)
+    contact_t = contact_time(before, after, bounce)
     v_in, se_in = before.velocity(contact_t)
     v_out, se_out = after.velocity(contact_t)
     # Image y points down: arriving means moving down (positive), leaving means moving up.
@@ -69,7 +69,7 @@ def bounce_energy(bounce: Bounce, thresholds: BounceThresholds | None = None) ->
     return result("bounce_energy", "insufficient_data", 0.0, measurements, "too_noisy")
 
 
-def _contact_time(before: FreeFallFit, after: FreeFallFit, bounce: Bounce) -> float:
+def contact_time(before: FreeFallFit, after: FreeFallFit, bounce: Bounce) -> float:
     """Where the parabolas cross between the last frame before and the first frame after."""
     low, high = float(bounce.before.t[-1]), float(bounce.after.t[0])
     roots = np.roots(before.polynomial() - after.polynomial())
