@@ -1,0 +1,27 @@
+# Pisa developer commands. Run `make` to list them.
+.DEFAULT_GOAL := help
+
+SCHEMA := packages/contracts/schema/pisa.schema.json
+PY_MODELS := packages/contracts/python/src/pisa_contracts/models.py
+
+.PHONY: help setup gen gen-check
+
+help: ## List commands
+	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
+
+setup: ## Install Node and Python dependencies
+	npm install
+	uv sync --all-packages --all-groups
+
+gen: ## Regenerate TypeScript and Pydantic types from the JSON Schema
+	npm run gen --workspace @pisa/contracts
+	uv run datamodel-codegen \
+		--input $(SCHEMA) --input-file-type jsonschema --output $(PY_MODELS) \
+		--output-model-type pydantic_v2.BaseModel --target-python-version 3.12 \
+		--enum-field-as-literal all --use-union-operator --use-standard-collections \
+		--use-annotated --use-type-alias --field-constraints --use-field-description --use-schema-description \
+		--extra-fields forbid --disable-timestamp --formatters ruff-format \
+		--custom-file-header '# Generated from $(SCHEMA) by `make gen`. Do not edit by hand.'
+
+gen-check: gen ## Fail if generated types are out of date
+	git diff --exit-code -- packages/contracts

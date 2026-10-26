@@ -16,3 +16,11 @@ python_version = "3.12"
 strict = true
 warn_unreachable = true
 plugins = ["pydantic.mypy"]
+
+[dependency-groups]
+dev = [
+    "datamodel-code-generator>=0.86.0",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
