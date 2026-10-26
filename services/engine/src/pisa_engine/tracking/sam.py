@@ -6,7 +6,7 @@ One concept phrase per request. The streamed output is decoded with Meta's
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,9 +27,17 @@ from pisa_engine.tracking.segmenter import frame_time
 
 
 class Sam31Segmenter:
-    def __init__(self, client: MetaModelApiClient, *, model: str = "sam-3.1") -> None:
+    def __init__(
+        self,
+        client: MetaModelApiClient,
+        *,
+        model: str = "sam-3.1",
+        on_raw_output: Callable[[str], None] | None = None,
+    ) -> None:
+        """`on_raw_output` receives the full streamed text, for spikes and debugging."""
         self._client = client
         self._model = model
+        self._on_raw_output = on_raw_output
 
     async def track(
         self, video: Path, phrase: str, timebase: Timebase, *, policy: DataPolicy
@@ -52,6 +60,8 @@ class Sam31Segmenter:
         cost = sam_cost_usd(timebase.frame_count)
         events = self._client.stream_response(body, policy=policy, worst_case_usd=cost)
         result = await parse_responses_stream(events, video_segmentation_format()).final_result()
+        if self._on_raw_output is not None:
+            self._on_raw_output(result.raw_output)
         self._client.record(
             [
                 CostEntry(
