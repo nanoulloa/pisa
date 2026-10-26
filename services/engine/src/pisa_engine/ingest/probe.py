@@ -10,21 +10,32 @@ from typing import Any
 
 from pisa_contracts import VideoProbe
 
+# Videos are untrusted. Force the MP4/QuickTime demuxer with external data references off,
+# and allow only the local-file protocol, so a disguised playlist or concat script cannot
+# make ffmpeg open URLs or read other files.
+SAFE_INPUT_ARGS = ("-f", "mov", "-enable_drefs", "0", "-protocol_whitelist", "file")
+
 
 class ProbeError(RuntimeError):
     pass
 
 
+def ffmpeg_path(path: Path) -> str:
+    """An explicit file: URL, so a name like `http:x.mp4` is never read as another protocol."""
+    return f"file:{path.resolve()}"
+
+
 def probe(path: Path, *, count_frames: bool = False) -> VideoProbe:
-    """Describe the first video stream of `path`.
+    """Describe the first video stream of `path`, which must be MP4 or MOV.
 
     `count_frames` decodes the whole file to get an exact frame count.
     """
-    command = ["ffprobe", "-v", "error", "-print_format", "json", "-show_format", "-show_streams"]
+    command = ["ffprobe", "-v", "error", *SAFE_INPUT_ARGS, "-print_format", "json"]
+    command += ["-show_format", "-show_streams"]
     if count_frames:
         command.append("-count_frames")
     result = subprocess.run(  # noqa: S603 (fixed argv, no shell)
-        [*command, str(path)], capture_output=True, text=True, check=False
+        [*command, ffmpeg_path(path)], capture_output=True, text=True, check=False
     )
     if result.returncode != 0:
         raise ProbeError(f"ffprobe failed on {path.name}: {result.stderr.strip()}")

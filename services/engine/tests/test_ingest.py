@@ -88,3 +88,33 @@ def test_parse_probe_flags_variable_frame_rate() -> None:
     assert info.rotation_deg == 270
     assert (info.width, info.height) == (1080, 1920)
     assert (info.fps_num, info.fps_den) == (2997, 50)
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "ffconcat version 1.0\nfile '/etc/passwd'\n",
+        "#EXTM3U\n#EXT-X-TARGETDURATION:1\n#EXTINF:1,\nhttp://127.0.0.1:9/segment.ts\n",
+    ],
+    ids=["concat-script", "hls-playlist"],
+)
+def test_disguised_scripts_are_rejected_not_followed(content: str, tmp_path: Path) -> None:
+    disguised = tmp_path / "video.mp4"
+    disguised.write_text(content)
+    with pytest.raises(IngestError) as error:
+        normalize(disguised, tmp_path / "out.mp4")
+    assert error.value.code == "unsupported_format"
+    assert not (tmp_path / "out.mp4").exists()
+
+
+def test_videos_without_a_duration_are_rejected(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    no_duration = VideoProbe(
+        width=320, height=240, duration_s=0.0, fps_num=30, fps_den=1, is_vfr=False,
+        rotation_deg=0, frame_count=None, codec="h264", has_audio=False, size_bytes=1,
+    )  # fmt: skip
+    monkeypatch.setattr(normalize_module, "probe", lambda *_args, **_kwargs: no_duration)
+    with pytest.raises(IngestError) as error:
+        normalize(tmp_path / "in.mp4", tmp_path / "out.mp4")
+    assert error.value.code == "unknown_duration"
