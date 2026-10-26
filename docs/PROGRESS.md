@@ -1,5 +1,30 @@
 # Progress
 
+## Day 3 · Monday, Oct 26 (same session)
+
+### Done
+
+- **Physics, all pure and tested:**
+  - One constant-acceleration fit with standard errors from its covariance, shared by every test.
+  - T2 Galileo pair, T3 bounce energy, T4 implied g (Monte Carlo over scale and fit noise) and T5 time-base consistency, each convicting only past a physical and a statistical tolerance.
+  - Flights now keep their bounces; T3 reads speeds where the two parabolas meet.
+  - `physics/suite.py` decides which test runs on which flight.
+- **Stabilization:** optical flow on the background, RANSAC similarity transforms chained per shot, scene cuts, unreliable frames dropped, `camera_motion` when too many are. On 6 to 12 px of hand shake, g comes back within 1% (without it, 5 to 8% off).
+- **Synthetic clips:** bounces with any restitution, a second ball with its own gravity, textured backgrounds and a deterministic camera shake. The color segmenter now tracks several balls.
+- **Contracts:** `Stabilization` in `AnalysisResult`; scene cuts fill `ingest.scene_cuts_s`. A migration backfills older results.
+- **Web:** explanations for a pair falling apart, a bounce gaining energy, gravity changing between flights and camera motion; cards for bounce speed, the pair ratio, gravity across flights and the camera, at most four, laws first; labels for every new measurement. All in four languages.
+- **Tests:** 103 engine tests, including false-positive runs of 200 to 300 noisy real trajectories per law (no violations), and the whole API on rendered bounce, pair and shaky clips. 11 Playwright tests, now with a bounce in Portuguese and a pair falling apart.
+
+### Next (day 4)
+
+- Muse Spark planner (events, phrases, scale references, camera notes) and explainer with structured output and number validation. The planner's event windows also fix a known risk: until then, an object moved by hand is tested as if it were in free flight.
+- Move the spend ledger to Supabase before paid calls are switched on in Modal.
+
+### Blocked
+
+- Real SAM 3.1 and Muse Spark runs need the founder to switch on `PISA_PAID_CALLS_ENABLED` (credits are applied).
+- Real clips from the shot list.
+
 ## Day 2 · Monday, Oct 26 (started early, same session)
 
 ### Done
