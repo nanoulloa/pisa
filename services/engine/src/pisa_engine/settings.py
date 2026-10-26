@@ -46,7 +46,13 @@ class Settings(BaseSettings):
     data_dir: Path = Field(default=REPO_ROOT / ".pisa" / "data", validation_alias="PISA_DATA_DIR")
     # "fake" tracks the synthetic ball by color for free; "sam" calls SAM 3.1.
     segmenter: Literal["fake", "sam"] = Field(default="fake", validation_alias="PISA_SEGMENTER")
-    # Concept phrase sent to SAM until the planner (day 4) chooses one per clip.
+    # "fake" treats the whole clip as one fall of `default_phrase`; "muse_spark" watches it.
+    planner: Literal["fake", "muse_spark"] = Field(default="fake", validation_alias="PISA_PLANNER")
+    # "none" leaves the wording to the clients' templates; "muse_spark" writes it.
+    explainer: Literal["none", "muse_spark"] = Field(
+        default="none", validation_alias="PISA_EXPLAINER"
+    )
+    # Concept phrase for the offline planner.
     default_phrase: str = Field(default="ball", validation_alias="PISA_DEFAULT_PHRASE")
     max_upload_bytes: int = Field(
         default=50_000_000, gt=0, validation_alias="PISA_MAX_UPLOAD_BYTES"

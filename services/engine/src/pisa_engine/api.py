@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import shutil
+from collections.abc import Callable
 from datetime import UTC, datetime
+from functools import cache
 from pathlib import Path
 from typing import Annotated, Any
 from uuid import UUID, uuid4
@@ -16,12 +18,15 @@ from fastapi.responses import JSONResponse
 
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
+from pisa_engine.explain.explainer import Explainer, MuseSparkExplainer, NoExplainer
 from pisa_engine.jobs import JobStore, StorageJobStore, SupabaseJobStore
 from pisa_engine.limits import AdmissionMiddleware, BodySizeLimitMiddleware, RateLimiter
 from pisa_engine.logs import configure_logging
 from pisa_engine.model_api.client import MetaModelApiClient
 from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
+from pisa_engine.planning.muse_spark import MuseSparkPlanner
+from pisa_engine.planning.planner import Planner, WholeClipPlanner
 from pisa_engine.settings import Settings, get_settings
 from pisa_engine.storage import LocalStorage
 from pisa_engine.tracking.fake import ColorSegmenter
@@ -35,7 +40,12 @@ _CHUNK_BYTES = 1 << 20
 _FORM_OVERHEAD_BYTES = 64 * 1024
 
 
-def create_app(settings: Settings | None = None, segmenter: Segmenter | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None,
+    segmenter: Segmenter | None = None,
+    planner: Planner | None = None,
+    explainer: Explainer | None = None,
+) -> FastAPI:
     config = settings or get_settings()
     configure_logging(
         config.log_level,
@@ -46,8 +56,17 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
         ],
     )
     store = _job_store(config)
+
+    @cache
+    def meta_client() -> MetaModelApiClient:
+        """One client and one spend guard for every stage that pays, made on first use."""
+        return _meta_client(config)
+
     deps = PipelineDeps(
-        segmenter=segmenter or _segmenter(config), store=store, phrase=config.default_phrase
+        segmenter=segmenter or _segmenter(config, meta_client),
+        store=store,
+        planner=planner or _planner(config, meta_client),
+        explainer=explainer or _explainer(config, meta_client),
     )
     rate = RateLimiter(config.jobs_per_hour, window_s=3600, global_limit=config.jobs_per_hour_total)
     slots = asyncio.Semaphore(config.max_concurrent_jobs)
@@ -136,18 +155,44 @@ def _job_store(config: Settings) -> JobStore:
     return StorageJobStore(LocalStorage(config.data_dir))
 
 
-def _segmenter(config: Settings) -> Segmenter:
+_ClientFactory = Callable[[], MetaModelApiClient]
+
+
+def _segmenter(config: Settings, client: _ClientFactory) -> Segmenter:
     if config.segmenter == "fake":
         return ColorSegmenter()
+    return Sam31Segmenter(client(), model=config.sam_model)
+
+
+def _planner(config: Settings, client: _ClientFactory) -> Planner:
+    if config.planner == "fake":
+        return WholeClipPlanner(config.default_phrase)
+    return MuseSparkPlanner(
+        client(),
+        model=config.muse_spark_model,
+        contributor_model=config.muse_spark_contributor_model,
+    )
+
+
+def _explainer(config: Settings, client: _ClientFactory) -> Explainer:
+    if config.explainer == "none":
+        return NoExplainer()
+    return MuseSparkExplainer(
+        client(),
+        model=config.muse_spark_model,
+        contributor_model=config.muse_spark_contributor_model,
+    )
+
+
+def _meta_client(config: Settings) -> MetaModelApiClient:
     guard = SpendGuard(
         enabled=config.paid_calls_enabled,
         cap_usd=config.spend_cap_usd,
         ledger=JsonlSpendLedger(config.spend_ledger_path),
     )
-    client = MetaModelApiClient(
+    return MetaModelApiClient(
         api_key=config.meta_api_key, base_url=config.meta_api_base_url, guard=guard
     )
-    return Sam31Segmenter(client, model=config.sam_model)
 
 
 async def _save_upload(upload: UploadFile, path: Path, limit: int) -> bool:

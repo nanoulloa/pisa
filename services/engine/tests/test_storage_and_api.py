@@ -71,7 +71,7 @@ def test_upload_runs_the_pipeline_to_a_verdict(
 
     # TestClient runs background tasks before returning, so the job is already finished.
     job = client.get(f"/jobs/{created['id']}").json()
-    assert (job["status"], job["stage"], job["error"]) == ("done", "verdict", None)
+    assert (job["status"], job["stage"], job["error"]) == ("done", "explain", None)
 
     result = client.get(f"/jobs/{created['id']}/result").json()
     assert result["verdict"]["label"] == label

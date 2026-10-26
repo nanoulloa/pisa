@@ -89,3 +89,31 @@ def normalize(source: Path, output: Path, *, window: TimeWindow | None = None) -
         ),
         scene_cuts_s=[],
     )
+
+
+def trim_frames(clip: Path, timebase: Timebase, first: int, count: int, output: Path) -> Timebase:
+    """Frames [first, first + count) of a normalized clip, encoded the same way, and their
+    timebase. Used to send SAM only the frames an event needs: it bills per frame."""
+    fps = f"{timebase.fps_num}/{timebase.fps_den}"
+    command = [
+        "ffmpeg", "-v", "error", "-y",
+        *SAFE_INPUT_ARGS, "-i", ffmpeg_path(clip),
+        "-map", "0:v:0", "-an",
+        "-vf", f"trim=start_frame={first}:end_frame={first + count},setpts=PTS-STARTPTS",
+        "-fps_mode", "cfr", "-r", fps,
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+        "-movflags", "+faststart",
+        ffmpeg_path(output),
+    ]  # fmt: skip
+    result = subprocess.run(command, capture_output=True, text=True, check=False)  # noqa: S603
+    if result.returncode != 0:
+        raise IngestError("transcode_failed", result.stderr.strip())
+    trimmed = probe(output, count_frames=True)
+    if trimmed.frame_count != count:
+        raise IngestError("trim_failed", f"expected {count} frames, got {trimmed.frame_count}")
+    return Timebase(
+        fps_num=timebase.fps_num,
+        fps_den=timebase.fps_den,
+        start_s=timebase.start_s + first * timebase.fps_den / timebase.fps_num,
+        frame_count=count,
+    )

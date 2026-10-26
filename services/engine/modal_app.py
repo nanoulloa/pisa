@@ -37,6 +37,8 @@ image = (
     .env(
         {
             "PISA_SEGMENTER": "fake",
+            "PISA_PLANNER": "fake",
+            "PISA_EXPLAINER": "none",
             "PISA_PAID_CALLS_ENABLED": "false",
             "PISA_DATA_DIR": "/root/pisa-data",
             "PISA_SPEND_LEDGER_PATH": "/root/pisa-data/spend.jsonl",
