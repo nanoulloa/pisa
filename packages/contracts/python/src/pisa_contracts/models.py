@@ -389,6 +389,63 @@ class Explanation(BaseModel):
     model: str
 
 
+type GhostModel = Literal["fit", "earth_gravity", "partner", "elastic_bounce"]
+"""
+What the ghost follows. fit: the closest constant-gravity path through the measured points. earth_gravity: Earth's gravity at the measured scale. partner: the shared acceleration two objects released together must have. elastic_bounce: the highest bounce physics allows, keeping all the arriving speed.
+"""
+
+
+class EvidenceSeries(BaseModel):
+    """
+    One measured flight and its ghost at the same times, in stabilized image pixels (y points down), for charts.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    phrase: str
+    object_id: Annotated[int, Field(ge=0)]
+    model: GhostModel
+    t_s: list[float]
+    y_px: list[float]
+    ghost_y_px: list[float]
+    px_per_m: float | None
+    """
+    Geometric mean of the scale range, when a size reference gave one.
+    """
+
+
+class EvidenceVideo(BaseModel):
+    """
+    The evidence clip: the original frames with the tracked object outlined, its measured points and the ghost. Served by the engine at /jobs/{id}/evidence.mp4 until expires_at, then deleted, because it shows the user's video.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    width: Annotated[int, Field(ge=1)]
+    height: Annotated[int, Field(ge=1)]
+    duration_s: Annotated[float, Field(ge=0.0)]
+    playback_rate: Annotated[float, Field(ge=0.0)]
+    """
+    1 for real time; 0.5 when short events are slowed to half speed.
+    """
+    size_bytes: Annotated[int, Field(ge=0)]
+    expires_at: AwareDatetime
+
+
+class Evidence(BaseModel):
+    """
+    What the result shows as proof: the video (while it exists) and the measured flights with their ghosts, most telling first.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    video: EvidenceVideo | None
+    series: list[EvidenceSeries]
+
+
 class AnalysisResult(BaseModel):
     """
     Everything the result page and the WhatsApp reply need for one job.
@@ -405,4 +462,5 @@ class AnalysisResult(BaseModel):
     tests: list[TestResult]
     verdict: Verdict | None
     explanation: Explanation | None
+    evidence: Evidence | None
     costs: list[CostEntry]

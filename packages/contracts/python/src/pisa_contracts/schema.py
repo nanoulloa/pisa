@@ -795,6 +795,134 @@ SCHEMA: dict[str, Any] = json.loads(
     }
    }
   },
+  "GhostModel": {
+   "description": "What the ghost follows. fit: the closest constant-gravity path through the measured points. earth_gravity: Earth's gravity at the measured scale. partner: the shared acceleration two objects released together must have. elastic_bounce: the highest bounce physics allows, keeping all the arriving speed.",
+   "type": "string",
+   "enum": [
+    "fit",
+    "earth_gravity",
+    "partner",
+    "elastic_bounce"
+   ]
+  },
+  "EvidenceSeries": {
+   "description": "One measured flight and its ghost at the same times, in stabilized image pixels (y points down), for charts.",
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "phrase",
+    "object_id",
+    "model",
+    "t_s",
+    "y_px",
+    "ghost_y_px",
+    "px_per_m"
+   ],
+   "properties": {
+    "phrase": {
+     "type": "string"
+    },
+    "object_id": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "model": {
+     "$ref": "#/$defs/GhostModel"
+    },
+    "t_s": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    },
+    "y_px": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    },
+    "ghost_y_px": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    },
+    "px_per_m": {
+     "description": "Geometric mean of the scale range, when a size reference gave one.",
+     "type": [
+      "number",
+      "null"
+     ]
+    }
+   }
+  },
+  "EvidenceVideo": {
+   "description": "The evidence clip: the original frames with the tracked object outlined, its measured points and the ghost. Served by the engine at /jobs/{id}/evidence.mp4 until expires_at, then deleted, because it shows the user's video.",
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "width",
+    "height",
+    "duration_s",
+    "playback_rate",
+    "size_bytes",
+    "expires_at"
+   ],
+   "properties": {
+    "width": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "height": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "duration_s": {
+     "type": "number",
+     "minimum": 0
+    },
+    "playback_rate": {
+     "description": "1 for real time; 0.5 when short events are slowed to half speed.",
+     "type": "number",
+     "minimum": 0
+    },
+    "size_bytes": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "expires_at": {
+     "type": "string",
+     "format": "date-time"
+    }
+   }
+  },
+  "Evidence": {
+   "description": "What the result shows as proof: the video (while it exists) and the measured flights with their ghosts, most telling first.",
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "video",
+    "series"
+   ],
+   "properties": {
+    "video": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/EvidenceVideo"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "series": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/EvidenceSeries"
+     }
+    }
+   }
+  },
   "AnalysisResult": {
    "description": "Everything the result page and the WhatsApp reply need for one job.",
    "type": "object",
@@ -808,6 +936,7 @@ SCHEMA: dict[str, Any] = json.loads(
     "tests",
     "verdict",
     "explanation",
+    "evidence",
     "costs"
    ],
    "properties": {
@@ -874,6 +1003,16 @@ SCHEMA: dict[str, Any] = json.loads(
      "anyOf": [
       {
        "$ref": "#/$defs/Explanation"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "evidence": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/Evidence"
       },
       {
        "type": "null"

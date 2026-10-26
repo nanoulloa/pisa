@@ -66,6 +66,13 @@ export type VerdictLabel = "physically_impossible" | "consistent_with_real_physi
  * via the `definition` "CostUnit".
  */
 export type CostUnit = "input_tokens" | "output_tokens" | "frames";
+/**
+ * What the ghost follows. fit: the closest constant-gravity path through the measured points. earth_gravity: Earth's gravity at the measured scale. partner: the shared acceleration two objects released together must have. elastic_bounce: the highest bounce physics allows, keeping all the arriving speed.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "GhostModel".
+ */
+export type GhostModel = "fit" | "earth_gravity" | "partner" | "elastic_bounce";
 
 /**
  * Shared contracts between the Pisa engine (Python) and web app (TypeScript). Conventions: every property is required and optional values are nullable; times are in seconds, lengths in meters, image coordinates in pixels with the origin at the top-left and y pointing down.
@@ -373,6 +380,51 @@ export interface Explanation {
   model: string;
 }
 /**
+ * One measured flight and its ghost at the same times, in stabilized image pixels (y points down), for charts.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "EvidenceSeries".
+ */
+export interface EvidenceSeries {
+  phrase: string;
+  object_id: number;
+  model: GhostModel;
+  t_s: number[];
+  y_px: number[];
+  ghost_y_px: number[];
+  /**
+   * Geometric mean of the scale range, when a size reference gave one.
+   */
+  px_per_m: number | null;
+}
+/**
+ * The evidence clip: the original frames with the tracked object outlined, its measured points and the ghost. Served by the engine at /jobs/{id}/evidence.mp4 until expires_at, then deleted, because it shows the user's video.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "EvidenceVideo".
+ */
+export interface EvidenceVideo {
+  width: number;
+  height: number;
+  duration_s: number;
+  /**
+   * 1 for real time; 0.5 when short events are slowed to half speed.
+   */
+  playback_rate: number;
+  size_bytes: number;
+  expires_at: string;
+}
+/**
+ * What the result shows as proof: the video (while it exists) and the measured flights with their ghosts, most telling first.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "Evidence".
+ */
+export interface Evidence {
+  video: EvidenceVideo | null;
+  series: EvidenceSeries[];
+}
+/**
  * Everything the result page and the WhatsApp reply need for one job.
  *
  * This interface was referenced by `PisaContracts`'s JSON-Schema
@@ -387,5 +439,6 @@ export interface AnalysisResult {
   tests: TestResult[];
   verdict: Verdict | null;
   explanation: Explanation | null;
+  evidence: Evidence | null;
   costs: CostEntry[];
 }
