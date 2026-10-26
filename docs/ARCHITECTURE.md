@@ -41,7 +41,7 @@ Status after day 2: the whole flow (upload, ingest, track, T1, verdict, result p
 | Engine | Modal app `pisa-engine`, `https://nanoulloa--pisa-engine-web.us-east.modal.run` | 1 CPU, at most 2 containers, scales to zero. `make deploy-engine`. Secret `pisa-engine` holds the Supabase URL and secret key and the allowed web origins. |
 | Jobs and results | Supabase project `Pisa` (`supabase/migrations`) | RLS on with no policies: only the engine's secret key reads and writes. Videos never reach the database and are deleted from the engine when each job ends. |
 
-Modal hands the engine the real client address as the connection peer and drops forged `X-Forwarded-For` headers (checked by hashing this machine's public IP against the engine's log on 2026-10-26), so the rate limiter keys on the peer.
+Modal hands the engine the real client address as the connection peer and drops forged `X-Forwarded-For` headers (checked on 2026-10-26 by comparing this machine's hashed public IP with the engine's log; the logged hash has since been salted per process, so it no longer matches an unsalted hash and cannot be reversed), so the rate limiter keys on the peer.
 
 ## Pipeline
 

@@ -105,3 +105,30 @@ def test_ipv6_clients_are_grouped_by_their_64_prefix() -> None:
     assert client_key("2001:db8:1:2:aaaa::1") == client_key("2001:db8:1:2:bbbb::9")
     assert client_key("2001:db8:1:3::1") != client_key("2001:db8:1:2::1")
     assert client_key("203.0.113.7") == "203.0.113.7"
+
+
+def test_logged_client_hashes_are_salted_and_never_show_the_address(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    import hashlib
+    import logging
+
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from pisa_engine.limits import AdmissionMiddleware
+
+    app = FastAPI()
+
+    @app.post("/jobs")
+    def jobs() -> dict[str, str]:
+        return {}
+
+    limiter = RateLimiter(5, window_s=60, global_limit=10, max_keys=20)
+    app.add_middleware(AdmissionMiddleware, token="", limiter=limiter)
+    with caplog.at_level(logging.INFO, logger="pisa_engine.limits"):
+        TestClient(app, client=("203.0.113.9", 50000)).post("/jobs")
+    (record,) = [r for r in caplog.records if r.getMessage().startswith("Job request")]
+    unsalted = hashlib.sha256(b"203.0.113.9").hexdigest()[:12]
+    assert record.client != unsalted  # type: ignore[attr-defined]
+    assert "203.0.113.9" not in record.getMessage()

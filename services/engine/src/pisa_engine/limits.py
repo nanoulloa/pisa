@@ -11,6 +11,7 @@ import hmac
 import ipaddress
 import json
 import logging
+import secrets
 import time
 from collections import OrderedDict, deque
 from collections.abc import Callable
@@ -166,6 +167,9 @@ class AdmissionMiddleware:
         self.token = token
         self.limiter = limiter
         self.trust_proxy = trust_proxy
+        # Never logged and new for every process, so logged client hashes cannot be reversed
+        # by hashing every IPv4 address.
+        self._log_salt = secrets.token_bytes(16)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http" or _route_path(scope) == "/healthz":
@@ -181,8 +185,8 @@ class AdmissionMiddleware:
             host, source = self._client_host(scope)
             key = client_key(host)
             allowed = self.limiter.allow(key)
-            # A short hash, never the address itself: enough to see whether limits key correctly.
-            client = hashlib.sha256(key.encode()).hexdigest()[:12]
+            # A salted short hash, never the address: enough to see whether limits key correctly.
+            client = hmac.new(self._log_salt, key.encode(), hashlib.sha256).hexdigest()[:12]
             context = {"client": client, "client_source": source}
             logger.info("Job request %s", "admitted" if allowed else "refused", extra=context)
             if not allowed:
