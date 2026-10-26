@@ -16,7 +16,12 @@ from pydantic import SecretStr
 from pisa_contracts import Timebase
 from pisa_engine.model_api.client import MetaModelApiClient, ModelApiError
 from pisa_engine.model_api.policy import ContributorTierForbiddenError
-from pisa_engine.model_api.spend import InMemorySpendLedger, PaidCallsDisabledError, SpendGuard
+from pisa_engine.model_api.spend import (
+    InMemorySpendLedger,
+    PaidCallsDisabledError,
+    SpendCapExceededError,
+    SpendGuard,
+)
 from pisa_engine.tracking.sam import Sam31Segmenter
 
 pytestmark = pytest.mark.anyio
@@ -181,3 +186,44 @@ async def test_sam_segmenter_turns_streamed_masks_into_centroids(tmp_path: Path)
     ]
     assert upload.url.path == "/v1/files"
     assert [entry.quantity for entry in ledger.entries] == [50]  # Billed minimum.
+
+
+@pytest.mark.parametrize(
+    ("failure", "charged_usd"),
+    [
+        (lambda _request: httpx.Response(429, json={}), 0.0),  # Refused: not billed.
+        (lambda _request: httpx.Response(503, json={}), 0.01),  # May have run: worst case.
+        (httpx.ReadTimeout, 0.01),  # Sent, then lost: worst case.
+        (httpx.ConnectError, 0.0),  # Never left the machine.
+    ],
+)
+async def test_failed_calls_are_charged_unless_they_provably_never_ran(
+    failure: Callable[[httpx.Request], httpx.Response] | type[Exception], charged_usd: float
+) -> None:
+    def respond(request: httpx.Request) -> httpx.Response:
+        if isinstance(failure, type):
+            raise failure("simulated", request=request)
+        return failure(request)
+
+    ledger = InMemorySpendLedger()
+    guard = SpendGuard(enabled=True, cap_usd=0.015, ledger=ledger)
+    client = MetaModelApiClient(
+        api_key=SecretStr(FAKE_KEY),
+        base_url=BASE_URL,
+        guard=guard,
+        transport=httpx.MockTransport(respond),
+    )
+    with pytest.raises((ModelApiError, httpx.HTTPError)):
+        await client.create_response(
+            {"model": "muse-spark-1.3", "input": "hi"},
+            policy="user",
+            worst_case_usd=0.01,
+            stage="plan",
+        )
+    assert ledger.total_usd() == pytest.approx(charged_usd)
+    # The reservation is closed either way: a second call fits again only if nothing was charged.
+    if charged_usd == 0:
+        guard.reserve(0.01)
+    else:
+        with pytest.raises(SpendCapExceededError):
+            guard.reserve(0.01)

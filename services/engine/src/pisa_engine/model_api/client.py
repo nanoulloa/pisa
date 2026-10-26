@@ -22,6 +22,8 @@ from pisa_engine.model_api.pricing import UnknownPriceError, token_cost_usd
 from pisa_engine.model_api.spend import Reservation, SpendGuard
 
 DEFAULT_TIMEOUT = httpx.Timeout(30.0, read=300.0)
+# Failures that prove the request never reached the API, so nothing can have been billed.
+_NEVER_SENT = (httpx.ConnectError, httpx.ConnectTimeout)
 
 
 class ModelApiError(RuntimeError):
@@ -68,16 +70,21 @@ class MetaModelApiClient:
         self, body: Mapping[str, Any], *, policy: DataPolicy, worst_case_usd: float, stage: Stage
     ) -> dict[str, Any]:
         """POST /responses without streaming. Records the cost from the response's token usage."""
+        model = str(body.get("model"))
+        worst_case = [_worst_case(stage, model, worst_case_usd)]
         reservation = self._reserve(body, policy=policy, worst_case_usd=worst_case_usd)
         try:
             response = await self._http.post("responses", headers=self._auth_headers(), json=body)
+            self._check_status(response, reservation, worst_case)
             payload = self._json_or_raise(response)
-            self._guard.settle(
-                reservation, _token_costs(stage, str(body["model"]), payload, worst_case_usd)
-            )
+            self._guard.settle(reservation, _token_costs(stage, model, payload, worst_case_usd))
             return payload
-        finally:
+        except _NEVER_SENT:
             self._guard.release(reservation)
+            raise
+        except Exception:
+            self._guard.settle(reservation, worst_case)  # Sent, outcome unknown: assume billed.
+            raise
 
     async def stream_response(
         self,
@@ -100,12 +107,28 @@ class MetaModelApiClient:
             ) as response:
                 if response.status_code >= 400:
                     await response.aread()
-                    raise ModelApiError(response.status_code, response.text)
+                self._check_status(response, reservation, charge)
                 self._guard.settle(reservation, charge)
                 async for event in _server_sent_events(response.aiter_lines()):
                     yield event
-        finally:
+        except _NEVER_SENT:
             self._guard.release(reservation)
+            raise
+        except Exception:
+            self._guard.settle(reservation, charge)  # Sent, outcome unknown: assume billed.
+            raise
+
+    def _check_status(
+        self, response: httpx.Response, reservation: Reservation, charge: Sequence[CostEntry]
+    ) -> None:
+        """4xx: refused, not billed. 5xx: may have run, so charged at the worst case."""
+        if response.status_code < 400:
+            return
+        if response.status_code < 500:
+            self._guard.release(reservation)
+        else:
+            self._guard.settle(reservation, charge)
+        raise ModelApiError(response.status_code, response.text)
 
     def _reserve(
         self, body: Mapping[str, Any], *, policy: DataPolicy, worst_case_usd: float
@@ -180,6 +203,8 @@ def _token_costs(
             ]
         except UnknownPriceError:
             pass
-    return [
-        CostEntry(stage=stage, model=model, unit="output_tokens", quantity=0, usd=worst_case_usd)
-    ]
+    return [_worst_case(stage, model, worst_case_usd)]
+
+
+def _worst_case(stage: Stage, model: str, usd: float) -> CostEntry:
+    return CostEntry(stage=stage, model=model, unit="output_tokens", quantity=0, usd=usd)

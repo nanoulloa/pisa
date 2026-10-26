@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from pisa_contracts import CostEntry
+from pisa_engine.limits import RateLimiter, client_key
 from pisa_engine.model_api.policy import ContributorTierForbiddenError, ensure_model_allowed
 from pisa_engine.model_api.pricing import UnknownPriceError, sam_cost_usd, token_cost_usd
 from pisa_engine.model_api.spend import (
@@ -70,3 +71,22 @@ def test_prices() -> None:
     assert token_cost_usd("muse-spark-1.3", 15, 175) == pytest.approx(0.000763, abs=1e-6)
     with pytest.raises(UnknownPriceError):
         token_cost_usd("some-new-model", 1, 1)
+
+
+def test_rate_limiter_window_and_memory_bounds() -> None:
+    now = [0.0]
+    limiter = RateLimiter(2, window_s=60, max_keys=3, clock=lambda: now[0])
+    assert limiter.allow("a")
+    assert limiter.allow("a")
+    assert not limiter.allow("a")
+    now[0] = 61
+    assert limiter.allow("a")  # The window moved on.
+    for key in ("b", "c", "d", "e"):
+        limiter.allow(key)
+    assert len(limiter) == 3  # Least recently seen clients are forgotten first.
+
+
+def test_ipv6_clients_are_grouped_by_their_64_prefix() -> None:
+    assert client_key("2001:db8:1:2:aaaa::1") == client_key("2001:db8:1:2:bbbb::9")
+    assert client_key("2001:db8:1:3::1") != client_key("2001:db8:1:2::1")
+    assert client_key("203.0.113.7") == "203.0.113.7"

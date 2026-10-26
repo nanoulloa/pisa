@@ -3,21 +3,20 @@
 from __future__ import annotations
 
 import asyncio
-import hmac
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import BackgroundTasks, FastAPI, Form, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
 from pisa_engine.jobs import JobStore
-from pisa_engine.limits import BodySizeLimitMiddleware, RateLimiter
+from pisa_engine.limits import BodySizeLimitMiddleware, JobAdmissionMiddleware, RateLimiter
 from pisa_engine.model_api.client import MetaModelApiClient
 from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
@@ -49,6 +48,13 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
     app.add_middleware(
         BodySizeLimitMiddleware, max_bytes=config.max_upload_bytes + _FORM_OVERHEAD_BYTES
     )
+    # Added last, so it runs first: refused requests never send their body.
+    app.add_middleware(
+        JobAdmissionMiddleware,
+        path="/jobs",
+        token=config.engine_token.get_secret_value(),
+        limiter=rate,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[origin.strip() for origin in config.web_origins.split(",") if origin],
@@ -62,15 +68,10 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
 
     @app.post("/jobs", status_code=202, response_model=None)
     async def create_job(
-        request: Request,
         video: UploadFile,
         background: BackgroundTasks,
         locale: Annotated[Locale, Form()] = "en",
     ) -> Job | JSONResponse:
-        if not _authorized(request, config):
-            return _error(401, "unauthorized")
-        if not rate.allow(request.client.host if request.client else "unknown"):
-            return _error(429, "rate_limited")
         job = Job(
             id=uuid4(),
             created_at=datetime.now(UTC),
@@ -104,14 +105,6 @@ def create_app(settings: Settings | None = None, segmenter: Segmenter | None = N
         return result
 
     return app
-
-
-def _authorized(request: Request, config: Settings) -> bool:
-    token = config.engine_token.get_secret_value()
-    if not token:
-        return True
-    supplied = request.headers.get("authorization", "")
-    return hmac.compare_digest(supplied.encode(), f"Bearer {token}".encode())
 
 
 def _segmenter(config: Settings) -> Segmenter:
