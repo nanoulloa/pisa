@@ -60,7 +60,8 @@ def main() -> int:
     load_dotenv(ENV_FILE)
     if os.environ.get("PISA_PAID_CALLS_ENABLED", "").lower() != "true":
         print(
-            "Paid API calls are disabled (PISA_PAID_CALLS_ENABLED is not true). No request was sent.",
+            "Paid API calls are disabled (PISA_PAID_CALLS_ENABLED is not true). "
+            "No request was sent.",
             file=sys.stderr,
         )
         return 3
@@ -79,12 +80,14 @@ def main() -> int:
         if not value
     ]
     if missing:
-        print(
-            f"Missing values in {ENV_FILE.name}: {', '.join(missing)}", file=sys.stderr
-        )
+        print(f"Missing values in {ENV_FILE.name}: {', '.join(missing)}", file=sys.stderr)
         return 2
 
-    request = urllib.request.Request(
+    if not base_url.startswith("https://"):
+        print("META_MODEL_API_BASE_URL must be an https:// URL.", file=sys.stderr)
+        return 2
+
+    request = urllib.request.Request(  # noqa: S310 (scheme checked above)
         f"{base_url}/responses",
         data=json.dumps({"model": model, "input": PROMPT}).encode("utf-8"),
         headers={
@@ -94,7 +97,7 @@ def main() -> int:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_S) as response:
+        with urllib.request.urlopen(request, timeout=TIMEOUT_S) as response:  # noqa: S310
             status = response.status
             body: dict[str, Any] = json.loads(response.read())
     except urllib.error.HTTPError as error:

@@ -4,7 +4,7 @@
 SCHEMA := packages/contracts/schema/pisa.schema.json
 PY_MODELS := packages/contracts/python/src/pisa_contracts/models.py
 
-.PHONY: help setup gen gen-check
+.PHONY: help setup gen gen-check lint typecheck test check dev-engine
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -25,3 +25,21 @@ gen: ## Regenerate TypeScript and Pydantic types from the JSON Schema
 
 gen-check: gen ## Fail if generated types are out of date
 	git diff --exit-code -- packages/contracts
+
+lint: ## Lint and check formatting
+	uv run ruff check .
+	uv run ruff format --check .
+	npm run lint --workspaces --if-present
+
+typecheck: ## Strict type checks (mypy, tsc)
+	uv run mypy services/engine scripts packages/contracts/python/src
+	npm run typecheck --workspaces --if-present
+
+test: ## Unit tests (never call paid APIs)
+	uv run pytest
+	npm run test --workspaces --if-present
+
+check: gen-check lint typecheck test ## Everything CI runs, except the browser smoke test
+
+dev-engine: ## Run the engine API on :8000
+	uv run uvicorn pisa_engine.api:app --reload --port 8000

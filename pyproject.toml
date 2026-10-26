@@ -11,6 +11,9 @@ extend-exclude = ["packages/contracts/python/src/pisa_contracts/models.py"]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "S", "PT"]
 ignore = ["S101"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["pisa_contracts", "pisa_engine"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
@@ -24,3 +27,7 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.2",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["services/engine/tests"]
+addopts = ["--strict-markers", "-ra"]

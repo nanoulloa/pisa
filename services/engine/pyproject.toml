@@ -1,0 +1,27 @@
+[project]
+name = "pisa-engine"
+version = "0.1.0"
+description = "Pisa's measurement engine: ingest, tracking, physics tests and verdict."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "meta-sam-parser>=0.1.0",
+    "numpy>=2.5.4",
+    "opencv-python-headless>=5.0.0.93",
+    "pisa-contracts",
+    "pydantic-settings>=2.16.1",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10,<0.11"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+pisa-contracts = { workspace = true }
+
+[dependency-groups]
+spikes = [
+    "matplotlib>=3.11.2",
+]
