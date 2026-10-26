@@ -31,7 +31,7 @@ flowchart TB
     JOB -- reply --> WA
 ```
 
-Status after day 2: the whole flow (upload, ingest, track, T1, verdict, result page) runs locally, end to end in CI, and deployed, with the free color segmenter. Real SAM 3.1 calls and the WhatsApp webhook are next.
+Status after day 4: every stage from upload to explanation runs locally, end to end in CI, and deployed. The deployed engine uses the free offline stages (whole-clip planner, color segmenter, templated explanations) until paid calls are switched on; the Muse Spark planner and explainer and SAM 3.1 are built and tested offline against the request and response shapes in Meta's documentation; none has been called for real yet. The WhatsApp webhook is next.
 
 ### Deployment (all on free plans, no payment method anywhere)
 
@@ -50,13 +50,13 @@ Each stage has typed inputs and outputs from `packages/contracts/schema/pisa.sch
 | # | Stage | Input → output | Code |
 |---|---|---|---|
 | 0 | Ingest | upload → `IngestResult` (probes, `Timebase`) | `pisa_engine/ingest` |
-| 1 | Plan | normalized clip → `Plan` | day 4 |
-| 2 | Track | clip + phrase → `TrackSet` | `pisa_engine/tracking` |
+| 1 | Plan | normalized clip → `Plan` (events with time windows, phrases, size references, camera notes) | `pisa_engine/planning` |
+| 2 | Track | each phrase over its event windows only → `TrackSet` | `pisa_engine/tracking/windows.py` |
 | 3 | Stabilize | frames + object boxes → `CameraPath`, `Stabilization`, scene cuts | `pisa_engine/vision/stabilize.py` |
 | 4 | Measure | stabilized tracks → flights (phases and bounces) per object and shot | `pisa_engine/physics/trajectory.py` |
-| 5 | Test | flights → `TestResult` T1, T2, T3, T5 (T4 once the planner gives a scale) | `pisa_engine/physics/suite.py` |
+| 5 | Test | flights, scale → `TestResult` T1 to T5 | `pisa_engine/physics/suite.py` |
 | 6 | Verdict | `TestResult[]` → `Verdict` | `pisa_engine/verdict.py` (policy 0.1.0) |
-| 7 | Explain | `AnalysisResult` → localized text | day 4 |
+| 7 | Explain | verdict and measurements → `Explanation` in the job's language, or none | `pisa_engine/explain` |
 | 8 | Render | clip + fits → evidence video, share card | day 5 |
 
 ### Ingest
@@ -65,11 +65,24 @@ Every video is untrusted input. `normalize()` forces ffmpeg's MP4/MOV demuxer wi
 
 The output is an H.264 MP4 at a constant frame rate equal to the source average, rotation applied, no audio. Constant frame rate makes `t(frame) = start_s + frame * fps_den / fps_num` exact. SAM 3.1 returns zero-based frame indices of the clip it receives, so this `Timebase` maps its output back to source time.
 
+### Plan
+
+`Planner` is a protocol with two implementations:
+
+- `MuseSparkPlanner` uploads the normalized clip, counts the request's input tokens (`POST /v1/responses/input_tokens`, which includes the video) so the spend guard can hold the true worst case, then calls `POST /v1/responses` with `input_video` sampled at up to 8 frames per second (at most 240 frames in all) and `text.format` set to the `Plan` contract as a strict JSON schema. Reasoning effort is low. The upload is deleted when the call ends.
+- `WholeClipPlanner` treats the whole clip as one fall of a fixed phrase, for tests and offline runs.
+
+Every plan goes through `checked()`: windows are clipped to the clip and pulled half a sampling interval inside at both ends, phrases are normalized and deduplicated, implausible sizes are dropped, and a plan that keeps no event becomes "too unclear". The window matters: a test shows that the hand's push before a real toss makes it look impossible, and that the planner's window removes it. Without measurable events the pipeline tracks nothing and the verdict is inconclusive with the planner's reason (`no_free_flight` or `too_unclear`).
+
+The planner never judges whether a video is real; its instructions forbid it. A reference of known size (preferably the moving object itself, such as a ball) gives T4 its scale: a ball's diameter is read from the narrower side of its box, since motion blur only lengthens it along the motion.
+
 ### Track
+
+Each phrase is tracked once over the span of its events, cut from the normalized clip frame-exactly (`trim_frames`), since SAM bills per frame. Only samples inside an event window are kept and measured, each window separately. A reference object that is not part of any event is tracked over the first event's window only, to read its size.
 
 `Segmenter` is a protocol with two implementations:
 
-- `Sam31Segmenter` uploads the clip (`POST /v1/files`), streams `POST /v1/responses` with model `sam-3.1`, one concept phrase and the `file_id`, and decodes the stream with Meta's `meta-sam-parser`. We keep the latest mask revision per frame and object, decode it to a raster, and compute the centroid and area in source pixels from the mask's bounds.
+- `Sam31Segmenter` uploads the clip (`POST /v1/files`, deleted afterwards), streams `POST /v1/responses` with model `sam-3.1`, one concept phrase and the `file_id`, and decodes the stream with Meta's `meta-sam-parser`. We keep the latest mask revision per frame and object, decode it to a raster, and compute the centroid and area in source pixels from the mask's bounds.
 - `ColorSegmenter` tracks the synthetic ball by color, for tests and offline runs.
 
 ### Stabilize
@@ -90,7 +103,11 @@ All are pure functions on arrays (`pisa_engine/physics`). They share one constan
 | T4 implied g | a scale in px/m and a true time base | Earth's g is outside the 5 to 95% Monte Carlo interval; never convicts alone | `implied_g.py` |
 | T5 time-base consistency | two flights of one object | accelerations differ by 25% or more, at 4 standard errors or more | `consistency.py` |
 
-T1, T2, T3 and T5 need no scale and no true frame rate, so slow motion cannot fool them. The verdict needs confidence 0.9 to convict, which for T2, T3 and T5 means a difference about 9 standard errors past the tolerance.
+T1, T2, T3 and T5 need no scale and no true frame rate, so slow motion cannot fool them. The verdict needs confidence 0.9 to convict, which for T2, T3 and T5 means a difference about 9 standard errors past the tolerance. T4 runs only on flights that passed T1, and is set aside when the planner suspects slow motion. Wrong gravity alone leaves the verdict inconclusive, and the page says that slow or fast playback looks the same.
+
+### Explain
+
+`MuseSparkExplainer` sends Muse Spark the facts, never the video: the verdict, and only the measurements a reader understands, already rounded (ratios, the share of speed a bounce keeps, gravity in m/s², a few constants such as Earth's g). It asks for two or three plain sentences in the job's language, with minimal reasoning. The answer is kept only if every number written in it, read in the conventions of its language (decimal comma in Spanish and Portuguese), is one of the facts rounded no more finely than given. Otherwise, or when the call fails or paid calls are off, there is no explanation and the clients use their templated copy, which exists in all four languages. The stage never fails a job.
 
 ## Meta Model API access
 
@@ -100,6 +117,8 @@ All requests go through `MetaModelApiClient`, which checks two gates before anyt
 2. **Spend guard.** `PISA_PAID_CALLS_ENABLED` is a kill switch, off by default. When on, the worst-case cost of each call is computed from list prices (`model_api/pricing.py`) and checked against a persistent ledger and `PISA_SPEND_CAP_USD`. Meta's own spend limit only sends email alerts, so this is the real stop.
 
 The key is a `SecretStr` read only from `MODEL_API_KEY`, used only in the Authorization header, and redacted from logs.
+
+Uploaded files never expire on Meta's side unless asked, so every upload is deleted (`DELETE /v1/files/{id}`) as soon as its call ends, even when the call fails, and carries a one-hour expiry as a backstop. Token counting is gated like a paid call because it sends the same data. Every settled cost is also collected for the running job and saved in its result's `costs`.
 
 ## Testing
 

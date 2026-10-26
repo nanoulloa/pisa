@@ -1,5 +1,29 @@
 # Progress
 
+## Day 4 · Monday, Oct 26 (same session)
+
+### Done
+
+- **Planner:** `MuseSparkPlanner` sends the clip as `input_video` (up to 8 frames per second, 240 in all) with the `Plan` contract as a strict structured-output schema, after counting the request's input tokens to hold the true worst case. Plans are checked: windows clipped and pulled inside the free flight, phrases normalized and deduplicated, implausible sizes dropped. `WholeClipPlanner` keeps everything free offline.
+- **Plan in the pipeline:** only event windows are tracked (each phrase once, cut frame-exactly, since SAM bills per frame) and measured. An unmeasurable plan ends inconclusive with its reason. A known size gives T4 its scale; suspected slow motion sets T4 aside; T4 alone never convicts.
+- **Explainer:** Muse Spark words the verdict from a small JSON of understandable facts, never the video. Every number in the answer must be one of the facts, read in the language's conventions, or the answer is dropped and the templates are used.
+- **Privacy and money:** every upload to Meta is deleted when its call ends, even on failure, with a one-hour expiry as backstop (this also fixes the SAM adapter, which kept uploads). Each job saves what it cost.
+- **Contracts:** `PlanReason`, `Explanation` in the result, and the schema shipped inside the Python package for the planner.
+- **Web:** the model's sentence when present (with a note in the technical panel), a gravity card in m/s², explanations for slow or fast playback and for clips with nothing to measure, and what the planner watched. Four languages.
+- **Spike ready:** `services/engine/spikes/plan/run_plan.py` runs the planner alone or the whole pipeline with every real model on our own clips. It stops at the kill switch.
+- **Tests:** 141 engine tests, including the request shapes for every Meta call, the hand-toss case with and without a window, T4 with a scale, number checks in four languages, and uploads deleted on failure. 11 Playwright tests.
+
+### Next (day 5)
+
+- First real run (needs `PISA_PAID_CALLS_ENABLED=true`, about $0.05 per short clip): the planner and SAM on our own drop, throw and bounce. It answers video tokens per second, window accuracy, phrase quality and the `expires_after` encoding.
+- Evidence video with the ghost, and the share card.
+- Move the spend ledger to Supabase before paid calls are switched on in Modal.
+
+### Blocked
+
+- Real model runs wait for the founder to switch on paid calls.
+- Real clips from the shot list.
+
 ## Day 3 · Monday, Oct 26 (same session)
 
 ### Done
