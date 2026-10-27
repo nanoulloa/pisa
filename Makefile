@@ -59,10 +59,10 @@ dev-engine: ## Run the engine API on :8000
 dev-web: ## Run the web app on :3000
 	npm run dev --workspace @pisa/web
 
-deploy-engine: ## Deploy the engine API to Modal (needs `uvx modal setup` and the "pisa-engine" secret)
+deploy-engine: ## Deploy the engine to Modal, free stages only; PAID=true switches on SAM and Muse Spark
 	uv export --package pisa-engine --no-dev --no-hashes --no-emit-workspace --frozen \
 		--output-file services/engine/requirements.modal.txt
-	uv run modal deploy services/engine/modal_app.py
+	PISA_DEPLOY_PAID=$(if $(filter true,$(PAID)),true,false) uv run modal deploy services/engine/modal_app.py
 
 sync-secrets: ## Copy the engine's secrets from .env to Modal (prints key names, never values)
 	uv run python scripts/sync_modal_secret.py

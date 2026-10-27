@@ -1,21 +1,28 @@
 """The engine API on Modal. Deploy with `make deploy-engine`.
 
 Sized for Modal's free $1/month without a payment method: one CPU core, at most two
-containers, scale to zero when idle. Paid Meta API calls stay off here until the spend
-ledger moves to Supabase (a local ledger would not be shared between containers).
+containers, scale to zero when idle.
 
-Secrets come from the Modal secret "pisa-engine": SUPABASE_URL, SUPABASE_SECRET_KEY and
-PISA_WEB_ORIGINS.
+Paid Meta API calls are the founder's switch. `make deploy-engine` deploys the free offline
+stages (whole-clip planner, color segmenter, templated explanations);
+`make deploy-engine PAID=true` deploys SAM 3.1 and Muse Spark behind the kill switch and the
+spend cap, whose ledger lives in Supabase so every container shares it.
+
+Secrets come from the Modal secret "pisa-engine" (`make sync-secrets`): the Supabase URL and
+key, the WhatsApp keys, the allowed web origins and, for paid calls, MODEL_API_KEY.
 """
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 import modal
 
 REQUIREMENTS = Path(__file__).parent / "requirements.modal.txt"
+# Read where `modal deploy` runs; containers get the result through the image's environment.
+PAID = os.environ.get("PISA_DEPLOY_PAID") == "true"
 
 
 def _pinned_requirements() -> list[str]:
@@ -36,10 +43,10 @@ image = (
     .uv_pip_install(*_pinned_requirements())
     .env(
         {
-            "PISA_SEGMENTER": "fake",
-            "PISA_PLANNER": "fake",
-            "PISA_EXPLAINER": "none",
-            "PISA_PAID_CALLS_ENABLED": "false",
+            "PISA_SEGMENTER": "sam" if PAID else "fake",
+            "PISA_PLANNER": "muse_spark" if PAID else "fake",
+            "PISA_EXPLAINER": "muse_spark" if PAID else "none",
+            "PISA_PAID_CALLS_ENABLED": "true" if PAID else "false",
             "PISA_DATA_DIR": "/root/pisa-data",
             "PISA_SPEND_LEDGER_PATH": "/root/pisa-data/spend.jsonl",
             # Modal passes the real client address as the connection peer and drops forged

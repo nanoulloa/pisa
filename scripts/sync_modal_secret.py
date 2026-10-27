@@ -21,7 +21,9 @@ WHATSAPP = (
     "WHATSAPP_WEBHOOK_VERIFY_TOKEN",
     "WHATSAPP_PHONE_NUMBER_ID",
 )
-OPTIONAL = ("WHATSAPP_GRAPH_API_VERSION", "PISA_PUBLIC_URL")
+# MODEL_API_KEY is only used once the engine is deployed with paid calls on
+# (`make deploy-engine PAID=true`); the spend cap is shared through Supabase.
+OPTIONAL = ("WHATSAPP_GRAPH_API_VERSION", "PISA_PUBLIC_URL", "MODEL_API_KEY", "PISA_SPEND_CAP_USD")
 # Not secret: the browser origins allowed to call the deployed engine.
 PRODUCTION_WEB_ORIGINS = (
     "https://pisa-theta.vercel.app,https://pisa-nanos-projects-ace74675.vercel.app"
