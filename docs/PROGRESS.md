@@ -1,5 +1,27 @@
 # Progress
 
+## Day 7 · Tuesday, Oct 27
+
+### Done
+
+- **Eval harness** (`pisa_engine.evaluation`, `make eval`, `make eval-synthetic`): resumable runs through the real pipeline, pure scoring with Wilson intervals, per-test and per-tag breakdowns, latency and cost, threshold calibration, and a `frame` command to seed generated clips from real first frames. The report is the new `EvalReport` contract, ready for the "How we know" page.
+- **Synthetic eval** (`eval/reports/synthetic.md`): 22 rendered clips with 0.5 to 2 px of jitter. 0 of 12 real clips called impossible; 7 of 10 generated clips caught. The 3 misses are deliberate limits: low gravity without a scale looks like slow motion (two clips), and constant speed has nothing to measure.
+- **Bug found by the eval and fixed:** jittery tracks hid the rest before a throw, and real throws were called impossible. Rest and bounce detection now adapt to each track's measured jitter.
+- **Recording guide** in `eval/README.md`: 24 real clips (drops, throws, bounces, pairs, slow motion; a third handheld) and one generated clip per real clip, from its first frame.
+- **Tests:** 196 engine tests (15 new): the eval run, resume, stop at the paid switch, scoring, intervals, calibration, and the jitter regressions.
+
+### Next
+
+- The founder records the real clips, ideally with a bright orange ball so the free tracker can measure them before any paid run.
+- Pick an image-to-video generator for the generated clips (the founder's call: it may cost money).
+- Run SAM 3.1 and Muse Spark on the set once paid calls are switched on (about $0.05 per clip), then calibrate.
+- Day 8: the "How we know" page reading `eval/reports/*.json`, and the Muse Spark "real or AI?" baseline.
+
+### Blocked
+
+- Real clips need recording.
+- Real model runs wait for the founder to switch on paid calls.
+
 ## Day 6 · Tuesday, Oct 27 (same session)
 
 ### Done

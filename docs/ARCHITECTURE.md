@@ -142,10 +142,19 @@ Uploaded files never expire on Meta's side unless asked, so every upload is dele
 
 - Engine: pytest with an autouse fixture that blocks every non-local network connection. HTTP adapters are tested with `httpx.MockTransport`; SAM parsing uses streams built in Meta's wire format.
 - Synthetic clips with known gravity run through ingest and tracking; tests recover g within 1% from pixels.
-- Every law has a pass case, a violation case and a false-positive test on hundreds of noisy real trajectories (T1 falls, T2 pairs, T3 bounces with restitution up to 1.0, T5 bounces). None is ever called a violation.
+- Every law has a pass case, a violation case and a false-positive test on hundreds of noisy real trajectories (T1 falls and throws from the hand, T2 pairs, T3 bounces with restitution up to 1.0, T5 bounces). None is ever called a violation.
 - Rendered clips run through the whole API: a real bounce, a bounce that gains energy, two balls falling together and apart, and a shaky handheld fall and fake, each with the expected verdict and decisive test.
 - Web: Vitest checks every locale has the same ICU keys and the agreed core terms; Playwright smoke-tests routing and the language switcher, then uploads five rendered clips to the real engine and checks each verdict, explanation and card.
 - CI: ruff, mypy strict, pytest, contract drift, ESLint, tsc strict, Vitest, build, Playwright and gitleaks on every push.
+
+## Evaluation
+
+`pisa_engine.evaluation` scores verdicts on labeled clips (`eval/README.md` has the recording guide and commands).
+
+- **Run** (`runner.py`): every clip of a manifest goes through `run_job` with the same segmenter and planner the API builds (`wiring.py`), minus the explainer. Each clip's `AnalysisResult` is saved as soon as it exists, a rerun skips saved clips, and the run stops before the next clip when paid calls are off or the spend cap is reached. Clips use the `user` data policy unless `--allow-contributor` is passed.
+- **Score** (`scoring.py`): pure. Verdicts are decided again from the saved test results, so another policy can be scored without running a model. Rates carry 95% Wilson intervals; a failed job counts as inconclusive with its error code. The report is the `EvalReport` contract, so the web app can render it.
+- **Calibrate** (`calibration.py`): pure. Searches per-test confidence thresholds for the most detections with no more false positives on real clips than allowed; thresholds the set gives no reason to move stay put.
+- **Synthetic set** (`synthetic_set.py`): 22 rendered clips with known physics and 0.5 to 2 px of position jitter, including the cases Pisa cannot catch (low gravity looks like slow motion; constant speed has nothing to measure). `make eval-synthetic` runs it for free.
 
 ## Job API and limits
 
