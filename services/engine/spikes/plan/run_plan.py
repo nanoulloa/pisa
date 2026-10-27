@@ -29,13 +29,14 @@ from pisa_engine.ingest.normalize import TimeWindow, normalize
 from pisa_engine.jobs import StorageJobStore
 from pisa_engine.model_api import costs
 from pisa_engine.model_api.client import MetaModelApiClient
-from pisa_engine.model_api.spend import JsonlSpendLedger, PaidCallsDisabledError, SpendGuard
+from pisa_engine.model_api.spend import PaidCallsDisabledError, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
 from pisa_engine.planning.muse_spark import MuseSparkPlanner
 from pisa_engine.render.store import LocalEvidenceStore
 from pisa_engine.settings import get_settings
 from pisa_engine.storage import LocalStorage
 from pisa_engine.tracking.sam import Sam31Segmenter
+from pisa_engine.wiring import spend_ledger_for
 
 OUT_ROOT = Path(__file__).resolve().parents[1] / "out"
 
@@ -45,7 +46,7 @@ async def main() -> int:
     out = OUT_ROOT / (args.name or args.clip.stem)
     out.mkdir(parents=True, exist_ok=True)
     settings = get_settings()
-    ledger = JsonlSpendLedger(settings.spend_ledger_path)
+    ledger = spend_ledger_for(settings)
     guard = SpendGuard(
         enabled=settings.paid_calls_enabled, cap_usd=settings.spend_cap_usd, ledger=ledger
     )
@@ -83,7 +84,7 @@ async def main() -> int:
     for entry in spent:
         print(f"  {entry.stage:<8} {entry.model:<28} {entry.unit:<14} {entry.quantity:>8.0f}"
               f"  ${entry.usd:.5f}")  # fmt: skip
-    print(f"This run: ${sum(e.usd for e in spent):.4f}. Ledger total: ${ledger.total_usd():.4f}.")
+    print(f"This run: ${sum(e.usd for e in spent):.4f}. Ledger total: ${ledger.spent_usd():.4f}.")
     return 0
 
 

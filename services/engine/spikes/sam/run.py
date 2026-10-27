@@ -30,12 +30,13 @@ import numpy as np
 from pisa_contracts import TrackedObject, TrackSet
 from pisa_engine.ingest.normalize import TimeWindow, normalize
 from pisa_engine.model_api.client import MetaModelApiClient
-from pisa_engine.model_api.spend import JsonlSpendLedger, PaidCallsDisabledError, SpendGuard
+from pisa_engine.model_api.spend import PaidCallsDisabledError, SpendGuard
 from pisa_engine.settings import get_settings
 from pisa_engine.synthetic import BallScene, render
 from pisa_engine.tracking.fake import ColorSegmenter
 from pisa_engine.tracking.sam import Sam31Segmenter
 from pisa_engine.tracking.segmenter import Segmenter
+from pisa_engine.wiring import spend_ledger_for
 
 OUT_ROOT = Path(__file__).resolve().parents[1] / "out"
 INK = "#0F3D3E"
@@ -65,8 +66,8 @@ def main() -> int:
     (out / "ingest.json").write_text(ingest.model_dump_json(indent=2))
 
     settings = get_settings()
-    ledger = JsonlSpendLedger(settings.spend_ledger_path)
-    spent_before = ledger.total_usd()
+    ledger = spend_ledger_for(settings)
+    spent_before = ledger.spent_usd()
     segmenter: Segmenter
     client: MetaModelApiClient | None = None
     if args.segmenter == "sam":
@@ -115,7 +116,7 @@ def main() -> int:
         "objects": len(objects),
         "fits": fits,
         "timings_s": {key: round(value, 3) for key, value in timings.items()},
-        "usd_spent": round(ledger.total_usd() - spent_before, 6),
+        "usd_spent": round(ledger.spent_usd() - spent_before, 6),
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2))
     if objects:

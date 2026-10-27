@@ -45,7 +45,13 @@ from pisa_engine.whatsapp.ledger import (
     MessageLedger,
     SupabaseMessageLedger,
 )
-from pisa_engine.wiring import explainer_for, meta_client_for, planner_for, segmenter_for
+from pisa_engine.wiring import (
+    explainer_for,
+    meta_client_for,
+    planner_for,
+    segmenter_for,
+    uses_supabase,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +260,7 @@ def create_app(
 
 
 def message_ledger_for(config: Settings) -> MessageLedger:
-    if _uses_supabase(config):
+    if uses_supabase(config):
         return SupabaseMessageLedger(config.supabase_url, config.supabase_secret_key)
     return MemoryMessageLedger()
 
@@ -280,20 +286,15 @@ def _graph(config: Settings) -> GraphClient | None:
 
 
 def evidence_store_for(config: Settings) -> EvidenceStore:
-    if _uses_supabase(config):
+    if uses_supabase(config):
         return SupabaseEvidenceStore(config.supabase_url, config.supabase_secret_key)
     return LocalEvidenceStore(config.data_dir / "evidence")
 
 
 def _job_store(config: Settings) -> JobStore:
-    if _uses_supabase(config):
+    if uses_supabase(config):
         return SupabaseJobStore(config.supabase_url, config.supabase_secret_key)
     return StorageJobStore(LocalStorage(config.data_dir))
-
-
-def _uses_supabase(config: Settings) -> bool:
-    configured = bool(config.supabase_url and config.supabase_secret_key.get_secret_value())
-    return configured and config.store == "auto"
 
 
 async def _save_upload(upload: UploadFile, path: Path, limit: int) -> bool:

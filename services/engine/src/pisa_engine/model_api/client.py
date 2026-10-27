@@ -8,6 +8,7 @@ the Authorization header.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from collections.abc import AsyncIterator, Mapping, Sequence
@@ -118,18 +119,18 @@ class MetaModelApiClient:
         """POST /responses without streaming. Records the cost from the response's token usage."""
         model = str(body.get("model"))
         worst_case = [_worst_case(stage, model, worst_case_usd)]
-        reservation = self._reserve(body, policy=policy, worst_case_usd=worst_case_usd)
+        reservation = await self._reserve(body, policy=policy, worst_case_usd=worst_case_usd)
         try:
             response = await self._http.post("responses", headers=self._auth_headers(), json=body)
-            self._check_status(response, reservation, worst_case)
+            await self._check_status(response, reservation, worst_case)
             payload = self._json_or_raise(response)
-            self._settle(reservation, _token_costs(stage, model, payload, worst_case_usd))
+            await self._settle(reservation, _token_costs(stage, model, payload, worst_case_usd))
             return payload
         except _NEVER_SENT:
-            self._guard.release(reservation)
+            await self._release(reservation)
             raise
         except Exception:
-            self._settle(reservation, worst_case)  # Sent, outcome unknown: assume billed.
+            await self._settle(reservation, worst_case)  # Sent, outcome unknown: assume billed.
             raise
 
     async def stream_response(
@@ -145,7 +146,7 @@ class MetaModelApiClient:
         `charge` is recorded as soon as the API accepts the request: from then on the call is
         billed, whatever happens to the stream.
         """
-        reservation = self._reserve(body, policy=policy, worst_case_usd=worst_case_usd)
+        reservation = await self._reserve(body, policy=policy, worst_case_usd=worst_case_usd)
         headers = {**self._auth_headers(), "Accept": "text/event-stream"}
         try:
             async with self._http.stream(
@@ -153,40 +154,45 @@ class MetaModelApiClient:
             ) as response:
                 if response.status_code >= 400:
                     await response.aread()
-                self._check_status(response, reservation, charge)
-                self._settle(reservation, charge)
+                await self._check_status(response, reservation, charge)
+                await self._settle(reservation, charge)
                 async for event in _server_sent_events(response.aiter_lines()):
                     yield event
         except _NEVER_SENT:
-            self._guard.release(reservation)
+            await self._release(reservation)
             raise
         except Exception:
-            self._settle(reservation, charge)  # Sent, outcome unknown: assume billed.
+            await self._settle(reservation, charge)  # Sent, outcome unknown: assume billed.
             raise
 
-    def _check_status(
+    async def _check_status(
         self, response: httpx.Response, reservation: Reservation, charge: Sequence[CostEntry]
     ) -> None:
         """4xx: refused, not billed. 5xx: may have run, so charged at the worst case."""
         if response.status_code < 400:
             return
         if response.status_code < 500:
-            self._guard.release(reservation)
+            await self._release(reservation)
         else:
-            self._settle(reservation, charge)
+            await self._settle(reservation, charge)
         raise ModelApiError(response.status_code, response.text)
 
-    def _settle(self, reservation: Reservation, entries: Sequence[CostEntry]) -> None:
+    # The ledger may live in Supabase, so its calls run off the event loop.
+
+    async def _settle(self, reservation: Reservation, entries: Sequence[CostEntry]) -> None:
         """Record the cost in the spend ledger and in the running job's costs."""
         if reservation.open:
             costs.record(entries)
-        self._guard.settle(reservation, entries)
+        await asyncio.to_thread(self._guard.settle, reservation, entries)
 
-    def _reserve(
+    async def _release(self, reservation: Reservation) -> None:
+        await asyncio.to_thread(self._guard.release, reservation)
+
+    async def _reserve(
         self, body: Mapping[str, Any], *, policy: DataPolicy, worst_case_usd: float
     ) -> Reservation:
         self._reserve_checks(body, policy=policy)
-        return self._guard.reserve(worst_case_usd)
+        return await asyncio.to_thread(self._guard.reserve, worst_case_usd)
 
     def _reserve_checks(self, body: Mapping[str, Any], *, policy: DataPolicy) -> None:
         """The data policy and the kill switch, checked before anything is sent."""

@@ -110,7 +110,7 @@ async def test_create_response_sends_bearer_key_and_records_token_cost() -> None
         ("input_tokens", 15),
         ("output_tokens", 175),
     ]
-    assert ledger.total_usd() == pytest.approx(0.000763, abs=1e-6)
+    assert ledger.spent_usd() == pytest.approx(0.000763, abs=1e-6)
     (request,) = recorder.requests
     assert request.url == f"{BASE_URL}/responses"
     assert request.headers["Authorization"] == f"Bearer {FAKE_KEY}"
@@ -283,7 +283,7 @@ async def test_failed_calls_are_charged_unless_they_provably_never_ran(
             worst_case_usd=0.01,
             stage="plan",
         )
-    assert ledger.total_usd() == pytest.approx(charged_usd)
+    assert ledger.spent_usd() == pytest.approx(charged_usd)
     # The reservation is closed either way: a second call fits again only if nothing was charged.
     if charged_usd == 0:
         guard.reserve(0.01)
