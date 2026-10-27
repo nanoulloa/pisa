@@ -12,16 +12,15 @@
 - **Tests:** 181 engine tests, 24 of them for WhatsApp: signatures, payload parsing, language, Graph requests and retries, deduplication, limits, and the whole conversation through the real pipeline.
 
 - **Live on WhatsApp (Oct 27):** Meta app "Pisa" created and published, test number +1 555 141 9990, webhook verified and subscribed, the founder's phone confirmed. A "hola" got the welcome; two forwarded clips came back with the evidence video and the right verdicts ("Físicamente imposible" for the pair, "Consistente con la física real" for the bounce). Two steps the new dashboard needed that the docs did not mention: publishing the app (with a privacy policy, now at `/privacy` in four languages) and subscribing the app to the WhatsApp account (`scripts/whatsapp_subscribe.py`).
+- **Permanent WhatsApp token:** system user `pisa-bot` with the Pisa app and only the messaging and phone-number permissions on the WhatsApp account (no payment access). Its token never expires (checked with `debug_token`), is synced to Modal, and the bot answered with it.
 
 ### Next
 
-- Replace the 24-hour access token with a permanent system-user token before the demo, then `make sync-secrets` and `make deploy-engine`.
 - Real phone videos need SAM 3.1 and Muse Spark: switching on paid calls is the founder's decision, after the spend ledger moves to Supabase.
 - Day 7: record the real clips, generate AI clips from the same first frames, run the eval and calibrate.
 
 ### Blocked
 
-- The WhatsApp test needs the founder's Meta account.
 - Real model runs wait for the founder to switch on paid calls.
 
 ## Day 5 · Tuesday, Oct 27 (same session)

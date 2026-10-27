@@ -18,9 +18,16 @@ method to the WhatsApp Business account, so nothing can be charged beyond that.
 ## 2. Get the access token and the app secret
 
 - **Access token:** the one on the API Setup page lasts 24 hours, enough to try. For the demo,
-  create a permanent one: Business settings > Users > System users > Add, give it the Pisa app
-  with the `whatsapp_business_messaging` and `whatsapp_business_management` permissions, and
-  generate a token.
+  create a permanent one in Business settings > Users > System users:
+  1. **Add** a system user (Pisa's is `pisa-bot`, with the Admin role).
+  2. **Assign assets:** the Pisa app with full access, and the WhatsApp account with partial
+     access: "Phone numbers (view and manage)" and "Messages". Skip "Everything": it also opens
+     the payment information, which the bot never needs.
+  3. **Generate token:** app Pisa, expiry "Never", and only `whatsapp_business_messaging` and
+     `whatsapp_business_management`. Meta shows it once.
+
+  Check it without printing it: Graph's `GET /debug_token` should report `type` `SYSTEM_USER`
+  and `expires_at` 0.
 - **App secret:** App settings > Basic > App secret > Show.
 - **Verify token:** a random string you choose. Make one with:
 
