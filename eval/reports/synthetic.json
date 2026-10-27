@@ -1,0 +1,625 @@
+{
+  "name": "synthetic",
+  "created_at": "2026-10-27T21:25:36.021250Z",
+  "engine_version": "0.1.0",
+  "policy_version": "0.1.0",
+  "synthetic": true,
+  "segmenter": "color-offline",
+  "planner": "whole-clip",
+  "confusion": [
+    {
+      "truth": "real",
+      "physically_impossible": 0,
+      "consistent_with_real_physics": 12,
+      "inconclusive": 0
+    },
+    {
+      "truth": "generated",
+      "physically_impossible": 7,
+      "consistent_with_real_physics": 2,
+      "inconclusive": 1
+    }
+  ],
+  "false_positive_rate": {
+    "count": 0,
+    "total": 12,
+    "value": 0.0,
+    "ci_low": 0.0,
+    "ci_high": 0.2425
+  },
+  "detection_rate": {
+    "count": 7,
+    "total": 10,
+    "value": 0.7,
+    "ci_low": 0.3968,
+    "ci_high": 0.8922
+  },
+  "inconclusive_rate": {
+    "count": 1,
+    "total": 22,
+    "value": 0.0455,
+    "ci_low": 0.0081,
+    "ci_high": 0.218
+  },
+  "conclusive_accuracy": {
+    "count": 19,
+    "total": 21,
+    "value": 0.9048,
+    "ci_low": 0.7109,
+    "ci_high": 0.9735
+  },
+  "by_tag": [
+    {
+      "tag": "bounce",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 3,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 2,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "drop",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 5,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 3,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 1
+        }
+      ]
+    },
+    {
+      "tag": "handheld",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 3,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 1,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "low-gravity",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "pair",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 2,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "slow-motion",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "static",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 9,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 6,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 1
+        }
+      ]
+    },
+    {
+      "tag": "throw",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "test": "free_fall_shape",
+      "measured": {
+        "real": 12,
+        "generated": 9
+      },
+      "violated": {
+        "real": 0,
+        "generated": 3
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 3
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "galileo_pair",
+      "measured": {
+        "real": 2,
+        "generated": 2
+      },
+      "violated": {
+        "real": 0,
+        "generated": 2
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 2
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "bounce_energy",
+      "measured": {
+        "real": 3,
+        "generated": 3
+      },
+      "violated": {
+        "real": 0,
+        "generated": 2
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 2
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "implied_g",
+      "measured": {
+        "real": 0,
+        "generated": 0
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "time_base_consistency",
+      "measured": {
+        "real": 3,
+        "generated": 3
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    }
+  ],
+  "latency_s": {
+    "median": 0.407,
+    "p90": 0.658,
+    "max": 0.982
+  },
+  "cost_usd": 0.0,
+  "cost_usd_per_clip": {
+    "median": 0.0,
+    "p90": 0.0,
+    "max": 0.0
+  },
+  "clips": [
+    {
+      "id": "drop-still",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.418,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "drop-sideways",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.396,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "drop-jittery",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.375,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "drop-handheld",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "handheld"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.535,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "throw",
+      "truth": "real",
+      "tags": [
+        "throw",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.444,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "throw-handheld",
+      "truth": "real",
+      "tags": [
+        "throw",
+        "handheld"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.657,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "bounce-soft",
+      "truth": "real",
+      "tags": [
+        "bounce",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "time_base_consistency"
+      ],
+      "latency_s": 0.658,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "bounce-lively",
+      "truth": "real",
+      "tags": [
+        "bounce",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "time_base_consistency"
+      ],
+      "latency_s": 0.646,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "bounce-handheld",
+      "truth": "real",
+      "tags": [
+        "bounce",
+        "handheld"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "time_base_consistency"
+      ],
+      "latency_s": 0.951,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "pair-together",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape",
+        "galileo_pair"
+      ],
+      "latency_s": 0.383,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "pair-together-sideways",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape",
+        "galileo_pair"
+      ],
+      "latency_s": 0.381,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "drop-slow-motion",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static",
+        "slow-motion"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.364,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "eased-drop",
+      "truth": "generated",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "physically_impossible",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.369,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "eased-drop-sideways",
+      "truth": "generated",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "physically_impossible",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.369,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "eased-drop-handheld",
+      "truth": "generated",
+      "tags": [
+        "drop",
+        "handheld"
+      ],
+      "verdict": "physically_impossible",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.542,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "bounce-gains-energy",
+      "truth": "generated",
+      "tags": [
+        "bounce",
+        "static"
+      ],
+      "verdict": "physically_impossible",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy"
+      ],
+      "latency_s": 0.495,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "bounce-gains-more",
+      "truth": "generated",
+      "tags": [
+        "bounce",
+        "static"
+      ],
+      "verdict": "physically_impossible",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy"
+      ],
+      "latency_s": 0.527,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "pair-apart",
+      "truth": "generated",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "physically_impossible",
+      "reason_code": null,
+      "decisive_tests": [
+        "galileo_pair"
+      ],
+      "latency_s": 0.382,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "pair-far-apart",
+      "truth": "generated",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "physically_impossible",
+      "reason_code": null,
+      "decisive_tests": [
+        "galileo_pair"
+      ],
+      "latency_s": 0.383,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "constant-speed-drop",
+      "truth": "generated",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 0.368,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "low-gravity-drop",
+      "truth": "generated",
+      "tags": [
+        "drop",
+        "static",
+        "low-gravity"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "free_fall_shape"
+      ],
+      "latency_s": 0.366,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "low-gravity-bounce",
+      "truth": "generated",
+      "tags": [
+        "bounce",
+        "static",
+        "low-gravity"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "time_base_consistency"
+      ],
+      "latency_s": 0.982,
+      "cost_usd": 0.0
+    }
+  ]
+}

@@ -61,6 +61,8 @@ class BallScene:
     # Background texture and camera shake, for stabilization.
     textured: bool = False
     camera_shake_px: float = 0.0
+    # Random per-frame displacement of each drawn ball, like a tracker's jitter on real footage.
+    position_noise_px: float = 0.0
     seed: int = 0
 
     @property
@@ -147,6 +149,10 @@ def render(scene: BallScene, output: Path) -> None:
     companion = scene.companion_trajectory()
     if companion is not None:
         balls.append(companion)
+    if scene.position_noise_px > 0:  # The true trajectory stays exact; only the drawing jitters.
+        rng = np.random.default_rng(scene.seed + 2)
+        for rows in balls:
+            rows[:, 1:] += rng.normal(0.0, scene.position_noise_px, (len(rows), 2))
     offsets = scene.camera_offsets()
     frames = []
     for index, (dx, dy) in enumerate(offsets):
@@ -200,6 +206,7 @@ def main() -> None:
     parser.add_argument("--companion-g", type=float, help="Drop a second ball with this gravity.")
     parser.add_argument("--shake", type=float, default=0.0, help="Camera shake in pixels.")
     parser.add_argument("--textured", action="store_true", help="Draw a textured background.")
+    parser.add_argument("--noise", type=float, default=0.0, help="Position jitter in pixels.")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     scene = BallScene(
@@ -212,6 +219,7 @@ def main() -> None:
         companion_g_mps2=args.companion_g,
         textured=args.textured or args.shake > 0,
         camera_shake_px=args.shake,
+        position_noise_px=args.noise,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     render(scene, args.out)

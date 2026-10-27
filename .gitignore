@@ -33,3 +33,6 @@ playwright-report/
 
 # Generated at deploy time from uv.lock
 services/engine/requirements.modal.txt
+
+# Eval runs: full results and evidence videos of clips that can show people
+eval/runs/

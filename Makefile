@@ -5,7 +5,8 @@ SCHEMA := packages/contracts/schema/pisa.schema.json
 PY_MODELS := packages/contracts/python/src/pisa_contracts/models.py
 PY_SCHEMA := packages/contracts/python/src/pisa_contracts/schema.py
 
-.PHONY: help setup gen gen-check lint typecheck test e2e check dev-engine dev-web deploy-engine sync-secrets
+.PHONY: help setup gen gen-check lint typecheck test e2e check dev-engine dev-web deploy-engine sync-secrets \
+	eval-synthetic eval
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -65,3 +66,16 @@ deploy-engine: ## Deploy the engine API to Modal (needs `uvx modal setup` and th
 
 sync-secrets: ## Copy the engine's secrets from .env to Modal (prints key names, never values)
 	uv run python scripts/sync_modal_secret.py
+
+EVAL := uv run python -m pisa_engine.evaluation
+SYNTHETIC := eval/raw/synthetic/manifest.json
+
+eval-synthetic: ## Free eval on rendered clips with known physics; writes eval/reports/synthetic.md
+	$(EVAL) synth
+	PISA_SEGMENTER=fake PISA_PLANNER=fake $(EVAL) run --manifest $(SYNTHETIC) --name synthetic --force
+	$(EVAL) score --manifest $(SYNTHETIC) --name synthetic
+
+eval: ## Eval a labeled set: make eval MANIFEST=eval/raw/phone-v1/manifest.json NAME=phone-v1
+	$(EVAL) run --manifest $(MANIFEST) --name $(NAME)
+	$(EVAL) score --manifest $(MANIFEST) --name $(NAME)
+	$(EVAL) calibrate --manifest $(MANIFEST) --name $(NAME)
