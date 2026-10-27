@@ -53,3 +53,13 @@ test("the privacy policy is reachable from the home page", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Política de privacidad");
   await expect(page.getByText("Tu video se borra en cuanto termina el análisis.")).toBeVisible();
 });
+
+test("How we know is reachable from home and shows the published eval", async ({ page }) => {
+  await page.goto("/en");
+  await page.getByRole("link", { name: "How we know Pisa works" }).click();
+  await expect(page).toHaveURL(/\/en\/how-we-know$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pisa measures. It doesn't guess.");
+  await expect(page.getByRole("img", { name: /^Pisa measures: \d+ of \d+/ }).first()).toBeVisible();
+  await page.getByText("Every law and every video").click();
+  await expect(page.getByRole("rowheader", { name: "Free fall" })).toBeVisible();
+});

@@ -38,7 +38,8 @@
       "gravitySource": "Source: arXiv 2512.02016",
       "opinionValue": "0%",
       "opinionLabel": "Clean, real throws and bounces that a vision model tuned for physics accepted as plausible. Measuring the motion scored them 0.96 to 0.99.",
-      "opinionSource": "Source: Morpheus, ICML 2026"
+      "opinionSource": "Source: Morpheus, ICML 2026",
+      "more": "How we know Pisa works"
     },
     "scope": {
       "title": "What Pisa checks",
@@ -50,7 +51,8 @@
     "footer": {
       "built": "Built for the Meta Global AI Developer Hackathon with Muse Spark and SAM 3.1.",
       "code": "Source code",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "howWeKnow": "How we know"
     }
   },
   "Verdict": {
@@ -227,7 +229,8 @@
     "card": {
       "alt": "Pisa result: {verdict}",
       "pending": "Pisa checks whether the motion in a viral video is physically possible."
-    }
+    },
+    "howWeKnow": "How we know"
   },
   "Errors": {
     "unsupported_format": "This file isn't a video Pisa can read. Try an MP4 or MOV.",
@@ -301,5 +304,131 @@
       "body": "To ask a question or have a result deleted, open an issue on Pisa's public repository with the result's link. Results hold no personal data, but they are deleted on request."
     },
     "updated": "Last updated: October 27, 2026."
+  },
+  "HowWeKnow": {
+    "eyebrow": "How we know",
+    "title": "Pisa measures. It doesn't guess.",
+    "lede": "No model decides whether a video is real. Pisa measures how an object moves and tests that motion against laws every real fall obeys. Then we test Pisa itself on videos whose answer we already know.",
+    "results": {
+      "title": "How well it works",
+      "synthetic": "These first numbers come from {count, number} clips we rendered with known physics: {real, number} that follow it and {generated, number} that break it the way AI video generators do. They show that every part works end to end. Results on videos filmed with phones and made by AI generators will replace them.",
+      "filmed": "{count, number} videos: {real, number} filmed with phones and {generated, number} made by AI video generators from the same first frames.",
+      "count": "{count, number} of {total, number}",
+      "falsePositives": "real videos called physically impossible",
+      "falsePositivesNote": "The mistake that matters most. With {total, number} real videos, the true rate could still be as high as {high}.",
+      "detection": "AI-generated videos caught",
+      "detectionNote": "On videos like these, likely between {low} and {high}.",
+      "inconclusive": "videos Pisa would not judge",
+      "inconclusiveNote": "When nothing can be measured reliably, Pisa says so instead of guessing.",
+      "missed": "What Pisa misses is listed below, video by video."
+    },
+    "chart": {
+      "title": "How sure these numbers are",
+      "caption": "Each dot is a share of videos. Each line is its 95% interval: where the true share likely lies, given how many videos we checked.",
+      "falsePositives": "Real videos flagged",
+      "detection": "AI videos caught",
+      "row": "{who}: {count, number} of {total, number}, {value}. 95% interval {low} to {high}."
+    },
+    "compare": {
+      "title": "Measuring versus asking",
+      "lede": "People ask chatbots “Is this video real or AI-generated?” We asked Muse Spark, Meta's model, the same question about the same videos, and scored its answers the way we score Pisa's verdicts.",
+      "pisa": "Pisa measures",
+      "museSpark": "Muse Spark answers",
+      "measure": "Measure",
+      "falsePositives": "Real videos called fake",
+      "detection": "AI videos caught",
+      "silent": "No call: inconclusive or unsure",
+      "pending": "Muse Spark answers alongside the filmed videos. In earlier research, a vision model tuned for physics accepted none of the clean, real throws and bounces it was shown as plausible, while measuring their motion scored them 0.96 to 0.99."
+    },
+    "laws": {
+      "title": "Five laws every real fall obeys",
+      "lede": "Each law returns a measurement and a confidence. Pisa calls a video physically impossible only when a law breaks with high confidence.",
+      "number": "Law {number}",
+      "scaleFree": "Needs no ruler and no clock",
+      "needsScale": "Needs a known size and real speed, so it never convicts alone",
+      "free_fall_shape": {
+        "name": "Free fall",
+        "body": "Once it leaves the hand, an object speeds up steadily until it lands. Air can slow that down, never reverse it. An object that slows down while falling, or speeds up faster and faster, is not falling."
+      },
+      "galileo_pair": {
+        "name": "Two objects, one fall",
+        "body": "Two similar objects let go together fall together, as Galileo showed in Pisa. Generated videos often drop them at different rates."
+      },
+      "bounce_energy": {
+        "name": "Bounces lose height",
+        "body": "A ball never comes back faster than it arrived, so every bounce peaks lower than the one before."
+      },
+      "implied_g": {
+        "name": "The strength of gravity",
+        "body": "With something of known size in the frame, Pisa measures gravity itself: 9.81 m/s² on Earth. Slow motion changes this number too, so on its own it is never proof."
+      },
+      "time_base_consistency": {
+        "name": "One gravity per video",
+        "body": "Every fall in a clip must show the same gravity. Slow motion slows every fall equally; generated clips often don't."
+      }
+    },
+    "roles": {
+      "title": "Models help. Measurements decide.",
+      "plan": {
+        "who": "Muse Spark",
+        "what": "Watches the clip, finds the moment something falls, is thrown or bounces, and names what to follow."
+      },
+      "track": {
+        "who": "SAM 3.1",
+        "what": "Outlines the object in every frame of that moment."
+      },
+      "measure": {
+        "who": "Pisa's physics engine",
+        "what": "Turns the outlines into a path and tests it against the five laws. Plain, tested code: the same video always gets the same verdict."
+      },
+      "explain": {
+        "who": "Muse Spark",
+        "what": "Puts the result into words in your language, using only numbers the engine measured. Every number is checked."
+      }
+    },
+    "details": {
+      "summary": "Every law and every video",
+      "lawsTitle": "What each law caught",
+      "lawsNote": "Counted in videos. A law is decisive when a video was called physically impossible on its evidence.",
+      "law": "Law",
+      "measured": "Measured",
+      "broken": "Broken",
+      "decisive": "Decisive",
+      "pair": "{real, number} real, {generated, number} AI",
+      "clipsTitle": "Every video",
+      "clip": "Video",
+      "truth": "What it is",
+      "verdict": "Pisa",
+      "opinion": "Muse Spark",
+      "truthFilmed": {
+        "real": "Filmed",
+        "generated": "AI-generated"
+      },
+      "truthSynthetic": {
+        "real": "Real physics",
+        "generated": "Broken physics"
+      },
+      "opinions": {
+        "real": "Real",
+        "generated": "AI",
+        "unsure": "Unsure"
+      },
+      "report": "Report {name}, scored {date}. Verdict policy {policy}."
+    },
+    "limits": {
+      "title": "What Pisa can't tell you",
+      "notProof": "A consistent verdict doesn't prove a video is real. It means the motion breaks no law Pisa checks.",
+      "slowMotion": "Without a known size and a trusted frame rate, slow motion and weak gravity look the same. Pisa calls both consistent instead of guessing.",
+      "learning": "Video generators can learn to fall correctly: one study fixed gravity with 100 examples. Pisa checks several laws at once, so fixing one is not enough.",
+      "scope": "Pisa needs something that falls, flies or bounces on its own. It doesn't check faces, voices or lip-sync.",
+      "small": "Our test set is small. The intervals show how far the numbers could move."
+    },
+    "research": {
+      "title": "The research behind Pisa",
+      "gravity": "Generated videos fall with too little gravity, between 0.38 and 2.27 m/s², and objects dropped together don't land together.",
+      "morpheus": "Asking a model is not enough: a vision model tuned for physics rejected clean, real throws and bounces that measuring accepted.",
+      "motionphys": "Physics-based detection is an active field. Pisa's difference is that it shows its measurements instead of a score.",
+      "code": "Pisa's source code, tests and eval"
+    }
   }
 }

@@ -38,7 +38,8 @@
       "gravitySource": "来源：arXiv 2512.02016",
       "opinionValue": "0%",
       "opinionLabel": "一个针对物理调优的视觉模型，对清晰的真实抛掷和弹跳视频判为合理的比例。测量运动则给出 0.96 到 0.99 的分数。",
-      "opinionSource": "来源：Morpheus，ICML 2026"
+      "opinionSource": "来源：Morpheus，ICML 2026",
+      "more": "我们如何确定 Pisa 有效"
     },
     "scope": {
       "title": "Pisa 检查什么",
@@ -50,7 +51,8 @@
     "footer": {
       "built": "为 Meta 全球 AI 开发者黑客松打造，使用 Muse Spark 和 SAM 3.1。",
       "code": "源代码",
-      "privacy": "隐私"
+      "privacy": "隐私",
+      "howWeKnow": "我们如何确定"
     }
   },
   "Verdict": {
@@ -227,7 +229,8 @@
     "card": {
       "alt": "Pisa 结果：{verdict}",
       "pending": "Pisa 检查病毒视频中的运动在物理上是否可能。"
-    }
+    },
+    "howWeKnow": "我们如何确定"
   },
   "Errors": {
     "unsupported_format": "Pisa 无法读取这个文件。请换成 MP4 或 MOV。",
@@ -301,5 +304,131 @@
       "body": "如有问题或想删除某个结果，请在 Pisa 的公开代码库中提交 issue，并附上结果链接。结果不包含个人信息，但你提出要求后会被删除。"
     },
     "updated": "最后更新：2026 年 10 月 27 日。"
+  },
+  "HowWeKnow": {
+    "eyebrow": "我们如何确定",
+    "title": "Pisa 靠测量，不靠猜测。",
+    "lede": "判断视频真假的，从来不是模型。Pisa 测量物体如何运动，并用每一次真实下落都遵守的定律来检验这段运动。然后，我们再用答案已知的视频来检验 Pisa 本身。",
+    "results": {
+      "title": "效果如何",
+      "synthetic": "这批初步数据来自我们按已知物理规律渲染的 {count, number} 段片段：{real, number} 段符合物理规律，{generated, number} 段像 AI 视频生成器那样违反了它。这些数据说明每个环节都能完整运行。之后会换成用手机拍摄、以及由 AI 生成器制作的视频的结果。",
+      "filmed": "共 {count, number} 段视频：{real, number} 段用手机拍摄，{generated, number} 段由 AI 视频生成器从相同的首帧生成。",
+      "count": "{count, number}/{total, number}",
+      "falsePositives": "真实视频被判定为物理上不可能",
+      "falsePositivesNote": "这是最重要的错误。只有 {total, number} 段真实视频时，真实比例仍可能高达 {high}。",
+      "detection": "被识别出的 AI 生成视频",
+      "detectionNote": "对于类似的视频，比例大概在 {low} 到 {high} 之间。",
+      "inconclusive": "Pisa 不作判定的视频",
+      "inconclusiveNote": "当没有任何内容能被可靠测量时，Pisa 会如实说明，而不是猜测。",
+      "missed": "Pisa 漏掉了哪些，下面逐个列出。"
+    },
+    "chart": {
+      "title": "这些数字有多可靠",
+      "caption": "每个点表示一个视频比例。每条线是它的 95% 区间：根据我们检查的视频数量，真实比例很可能落在这个范围内。",
+      "falsePositives": "被误判的真实视频",
+      "detection": "被识别出的 AI 视频",
+      "row": "{who}：{total, number} 个中的 {count, number} 个，{value}。95% 区间：{low} 至 {high}。"
+    },
+    "compare": {
+      "title": "测量与提问",
+      "lede": "人们会问聊天机器人：“这个视频是真的还是 AI 生成的？”我们就同一批视频向 Meta 的模型 Muse Spark 提出了同样的问题，并用评估 Pisa 判定的方式给它的回答打分。",
+      "pisa": "Pisa 测量",
+      "museSpark": "Muse Spark 回答",
+      "measure": "指标",
+      "falsePositives": "真实视频被当成假视频",
+      "detection": "被识别出的 AI 视频",
+      "silent": "未下结论：无法判定或不确定",
+      "pending": "Muse Spark 的回答将与实拍视频一起公布。在此前的研究中，一个针对物理常识微调的视觉模型没有把它看到的任何一段干净、真实的投掷和弹跳视频判为合理，而测量这些运动的得分在 0.96 到 0.99 之间。"
+    },
+    "laws": {
+      "title": "每一次真实下落都遵守的五条定律",
+      "lede": "每条定律都会给出一个测量值和一个置信度。只有当某条定律以高置信度被打破时，Pisa 才会判定视频物理上不可能。",
+      "number": "定律 {number}",
+      "scaleFree": "不需要尺子，也不需要时钟",
+      "needsScale": "需要已知尺寸和真实速度，因此单靠它永远不会下结论",
+      "free_fall_shape": {
+        "name": "自由落体",
+        "body": "物体一离开手，就会稳定加速，直到落地。空气可以减缓这种加速，但不能让它反转。如果物体在下落时减速，或者越落越快地加速，那它就不是在自由下落。"
+      },
+      "galileo_pair": {
+        "name": "两个物体，一起落下",
+        "body": "两个相似的物体同时松手，会一起落下，正如伽利略在比萨所展示的那样。生成的视频常常让它们以不同的速度下落。"
+      },
+      "bounce_energy": {
+        "name": "弹跳会越来越低",
+        "body": "球弹起时的速度永远不会比落下时更快，所以每次弹跳都比上一次低。"
+      },
+      "implied_g": {
+        "name": "重力的大小",
+        "body": "如果画面中有已知尺寸的物体，Pisa 就能测出重力本身：地球上是 9.81 m/s²。慢动作也会改变这个数值，所以单凭它永远不能作为证据。"
+      },
+      "time_base_consistency": {
+        "name": "一段视频，一种重力",
+        "body": "同一段片段中的每一次下落都必须显示相同的重力。慢动作会让所有下落同等变慢；生成的片段往往做不到。"
+      }
+    },
+    "roles": {
+      "title": "模型负责协助，测量负责判定。",
+      "plan": {
+        "who": "Muse Spark",
+        "what": "观看片段，找出物体下落、被抛出或弹跳的时刻，并指出要跟踪什么。"
+      },
+      "track": {
+        "who": "SAM 3.1",
+        "what": "在那一时刻的每一帧中勾勒出物体的轮廓。"
+      },
+      "measure": {
+        "who": "Pisa 物理引擎",
+        "what": "把轮廓转换成运动轨迹，并用五条定律检验它。简单且经过测试的代码：同一段视频总会得到同样的判定。"
+      },
+      "explain": {
+        "who": "Muse Spark",
+        "what": "用你的语言说明结果，只使用引擎测得的数字。每个数字都会经过核对。"
+      }
+    },
+    "details": {
+      "summary": "每条定律和每段视频",
+      "lawsTitle": "每条定律发现了什么",
+      "lawsNote": "按视频计数。如果一段视频因某条定律的证据被判定为物理上不可能，这条定律就是决定性的。",
+      "law": "定律",
+      "measured": "已测量",
+      "broken": "被打破",
+      "decisive": "决定性",
+      "pair": "真实 {real, number} 段，AI {generated, number} 段",
+      "clipsTitle": "每段视频",
+      "clip": "视频",
+      "truth": "实际情况",
+      "verdict": "Pisa",
+      "opinion": "Muse Spark",
+      "truthFilmed": {
+        "real": "实拍",
+        "generated": "AI 生成"
+      },
+      "truthSynthetic": {
+        "real": "真实物理",
+        "generated": "违反物理"
+      },
+      "opinions": {
+        "real": "真实",
+        "generated": "AI",
+        "unsure": "不确定"
+      },
+      "report": "报告 {name}，评分于 {date}。判定规则版本 {policy}。"
+    },
+    "limits": {
+      "title": "Pisa 无法告诉你的事",
+      "notProof": "“符合真实物理”并不能证明视频是真的，只说明这段运动没有违反 Pisa 检查的任何定律。",
+      "slowMotion": "如果没有已知尺寸和可信的帧率，慢动作和较弱的重力看起来完全一样。Pisa 会把两者都判为符合物理，而不是去猜。",
+      "learning": "视频生成器可以学会正确地表现下落：有一项研究只用 100 个样本就修正了重力。Pisa 同时检查多条定律，所以只修正一条并不够。",
+      "scope": "Pisa 需要画面中有自行下落、飞行或弹跳的物体。它不检查人脸、声音或口型同步。",
+      "small": "我们的测试集还很小。区间显示了这些数字可能的变动范围。"
+    },
+    "research": {
+      "title": "Pisa 背后的研究",
+      "gravity": "生成的视频中，物体下落时的重力太小，只有 0.38 到 2.27 m/s²，而且同时松手的物体不会同时落地。",
+      "morpheus": "只问模型是不够的：一个针对物理微调的视觉模型否定了干净、真实的投掷和弹跳视频，而测量方法接受了它们。",
+      "motionphys": "基于物理的检测是一个活跃的研究领域。Pisa 的不同之处在于，它展示的是测量结果，而不是一个分数。",
+      "code": "Pisa 的源代码、测试和评估"
+    }
   }
 }

@@ -38,7 +38,8 @@
       "gravitySource": "Fonte: arXiv 2512.02016",
       "opinionValue": "0%",
       "opinionLabel": "Arremessos e quiques reais e limpos que um modelo de visão ajustado para física aceitou como plausíveis. Medir o movimento deu a eles de 0,96 a 0,99.",
-      "opinionSource": "Fonte: Morpheus, ICML 2026"
+      "opinionSource": "Fonte: Morpheus, ICML 2026",
+      "more": "Como sabemos que o Pisa funciona"
     },
     "scope": {
       "title": "O que o Pisa verifica",
@@ -50,7 +51,8 @@
     "footer": {
       "built": "Feito para o Meta Global AI Developer Hackathon com Muse Spark e SAM 3.1.",
       "code": "Código-fonte",
-      "privacy": "Privacidade"
+      "privacy": "Privacidade",
+      "howWeKnow": "Como sabemos"
     }
   },
   "Verdict": {
@@ -227,7 +229,8 @@
     "card": {
       "alt": "Resultado do Pisa: {verdict}",
       "pending": "O Pisa verifica se o movimento de um vídeo viral é fisicamente possível."
-    }
+    },
+    "howWeKnow": "Como sabemos"
   },
   "Errors": {
     "unsupported_format": "Este arquivo não é um vídeo que o Pisa consiga ler. Tente um MP4 ou MOV.",
@@ -301,5 +304,131 @@
       "body": "Para tirar uma dúvida ou pedir que um resultado seja apagado, abra uma issue no repositório público do Pisa com o link do resultado. Os resultados não contêm dados pessoais, mas são apagados se você pedir."
     },
     "updated": "Última atualização: 27 de outubro de 2026."
+  },
+  "HowWeKnow": {
+    "eyebrow": "Como sabemos",
+    "title": "O Pisa mede. Não adivinha.",
+    "lede": "Nenhum modelo decide se um vídeo é real. O Pisa mede como um objeto se move e testa esse movimento com leis que toda queda real obedece. Depois testamos o próprio Pisa com vídeos cuja resposta já conhecemos.",
+    "results": {
+      "title": "Quão bem funciona",
+      "synthetic": "Estes primeiros números vêm de {count, number} clipes que geramos com física conhecida: {real, number} que a seguem e {generated, number} que a quebram do jeito que os geradores de vídeo com IA fazem. Eles mostram que cada parte funciona de ponta a ponta. Os resultados com vídeos filmados com celulares e criados por geradores de IA vão substituí-los.",
+      "filmed": "{count, number} vídeos: {real, number} filmados com celulares e {generated, number} criados por geradores de vídeo com IA a partir dos mesmos primeiros quadros.",
+      "count": "{count, number} de {total, number}",
+      "falsePositives": "vídeos reais classificados como fisicamente impossíveis",
+      "falsePositivesNote": "O erro que mais importa. Com {total, number} vídeos reais, a taxa verdadeira ainda pode chegar a {high}.",
+      "detection": "vídeos gerados por IA identificados",
+      "detectionNote": "Em vídeos como estes, provavelmente entre {low} e {high}.",
+      "inconclusive": "vídeos que o Pisa preferiu não julgar",
+      "inconclusiveNote": "Quando nada pode ser medido com segurança, o Pisa diz isso em vez de adivinhar.",
+      "missed": "O que o Pisa deixa passar aparece abaixo, vídeo por vídeo."
+    },
+    "chart": {
+      "title": "Quão seguros são estes números",
+      "caption": "Cada ponto é uma proporção de vídeos. Cada linha é o seu intervalo de 95%: onde a proporção verdadeira provavelmente está, considerando quantos vídeos verificamos.",
+      "falsePositives": "Vídeos reais sinalizados",
+      "detection": "Vídeos de IA identificados",
+      "row": "{who}: {count, number} de {total, number}, {value}. Intervalo de 95%: de {low} a {high}."
+    },
+    "compare": {
+      "title": "Medir ou perguntar",
+      "lede": "As pessoas perguntam aos chatbots: “Este vídeo é real ou gerado por IA?”. Fizemos a mesma pergunta ao Muse Spark, o modelo da Meta, sobre os mesmos vídeos, e avaliamos as respostas do mesmo jeito que avaliamos os veredictos do Pisa.",
+      "pisa": "O Pisa mede",
+      "museSpark": "O Muse Spark responde",
+      "measure": "Medida",
+      "falsePositives": "Vídeos reais tidos como falsos",
+      "detection": "Vídeos de IA identificados",
+      "silent": "Sem resposta: inconclusivo ou sem certeza",
+      "pending": "O Muse Spark vai responder junto com os vídeos filmados. Em pesquisas anteriores, um modelo de visão ajustado para física não aceitou como plausível nenhum dos lançamentos e quiques reais e limpos que viu, enquanto medir o movimento deu a eles notas entre 0,96 e 0,99."
+    },
+    "laws": {
+      "title": "Cinco leis que toda queda real obedece",
+      "lede": "Cada lei gera uma medição e um nível de confiança. O Pisa só classifica um vídeo como fisicamente impossível quando uma lei é quebrada com alta confiança.",
+      "number": "Lei {number}",
+      "scaleFree": "Não precisa de régua nem de relógio",
+      "needsScale": "Precisa de um tamanho conhecido e da velocidade real, então nunca condena sozinha",
+      "free_fall_shape": {
+        "name": "Queda livre",
+        "body": "Depois que sai da mão, um objeto acelera de forma constante até cair no chão. O ar pode reduzir essa aceleração, nunca invertê-la. Um objeto que freia enquanto cai, ou que acelera cada vez mais rápido, não está caindo."
+      },
+      "galileo_pair": {
+        "name": "Dois objetos, uma queda",
+        "body": "Dois objetos parecidos soltos juntos caem juntos, como Galileu mostrou em Pisa. Vídeos gerados costumam fazê-los cair em ritmos diferentes."
+      },
+      "bounce_energy": {
+        "name": "Cada quique perde altura",
+        "body": "Uma bola nunca sai de um quique mais rápido do que chegou, então cada quique chega mais baixo que o anterior."
+      },
+      "implied_g": {
+        "name": "A força da gravidade",
+        "body": "Com algo de tamanho conhecido na imagem, o Pisa mede a própria gravidade: 9,81 m/s² na Terra. A câmera lenta também muda esse número, então sozinho ele nunca é prova."
+      },
+      "time_base_consistency": {
+        "name": "Uma só gravidade por vídeo",
+        "body": "Todas as quedas de um clipe precisam mostrar a mesma gravidade. A câmera lenta desacelera todas as quedas igualmente; clipes gerados muitas vezes não."
+      }
+    },
+    "roles": {
+      "title": "Os modelos ajudam. As medições decidem.",
+      "plan": {
+        "who": "Muse Spark",
+        "what": "Assiste ao clipe, encontra o momento em que algo cai, é lançado ou quica, e diz o que acompanhar."
+      },
+      "track": {
+        "who": "SAM 3.1",
+        "what": "Contorna o objeto em cada quadro desse momento."
+      },
+      "measure": {
+        "who": "O motor de física do Pisa",
+        "what": "Transforma os contornos em uma trajetória e a testa com as cinco leis. Código simples e testado: o mesmo vídeo sempre recebe o mesmo veredicto."
+      },
+      "explain": {
+        "who": "Muse Spark",
+        "what": "Explica o resultado no seu idioma, usando só números que o motor mediu. Cada número é conferido."
+      }
+    },
+    "details": {
+      "summary": "Cada lei e cada vídeo",
+      "lawsTitle": "O que cada lei identificou",
+      "lawsNote": "Contado em vídeos. Uma lei é decisiva quando um vídeo foi classificado como fisicamente impossível com base na evidência dela.",
+      "law": "Lei",
+      "measured": "Medida",
+      "broken": "Quebrada",
+      "decisive": "Decisiva",
+      "pair": "{real, number} reais, {generated, number} de IA",
+      "clipsTitle": "Cada vídeo",
+      "clip": "Vídeo",
+      "truth": "O que é",
+      "verdict": "Pisa",
+      "opinion": "Muse Spark",
+      "truthFilmed": {
+        "real": "Filmado",
+        "generated": "Gerado por IA"
+      },
+      "truthSynthetic": {
+        "real": "Física real",
+        "generated": "Física quebrada"
+      },
+      "opinions": {
+        "real": "Real",
+        "generated": "IA",
+        "unsure": "Sem certeza"
+      },
+      "report": "Relatório {name}, avaliado em {date}. Política de veredicto {policy}."
+    },
+    "limits": {
+      "title": "O que o Pisa não consegue dizer",
+      "notProof": "Um veredicto consistente não prova que um vídeo é real. Significa que o movimento não quebra nenhuma lei que o Pisa verifica.",
+      "slowMotion": "Sem um tamanho conhecido e uma taxa de quadros confiável, câmera lenta e gravidade fraca parecem iguais. O Pisa classifica as duas como consistentes em vez de adivinhar.",
+      "learning": "Geradores de vídeo podem aprender a fazer quedas corretas: um estudo corrigiu a gravidade com 100 exemplos. O Pisa verifica várias leis ao mesmo tempo, então corrigir uma não basta.",
+      "scope": "O Pisa precisa de algo que caia, voe ou quique por conta própria. Ele não verifica rostos, vozes nem sincronia labial.",
+      "small": "Nosso conjunto de teste é pequeno. Os intervalos mostram quanto os números podem variar."
+    },
+    "research": {
+      "title": "A pesquisa por trás do Pisa",
+      "gravity": "Nos vídeos gerados, as coisas caem com pouca gravidade, entre 0,38 e 2,27 m/s², e objetos soltos juntos não chegam juntos ao chão.",
+      "morpheus": "Perguntar a um modelo não basta: um modelo de visão ajustado para física rejeitou lançamentos e quiques reais e limpos que a medição aceitou.",
+      "motionphys": "A detecção baseada em física é um campo ativo. O que diferencia o Pisa é mostrar suas medições em vez de uma nota.",
+      "code": "O código, os testes e a avaliação do Pisa"
+    }
   }
 }

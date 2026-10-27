@@ -211,7 +211,12 @@ export function ResultView({ result }: { result: AnalysisResult }) {
         <p className="hint">{t("policy", { version: verdict.policy_version })}</p>
       </details>
 
-      <p className="hint">{t("limits")}</p>
+      <p className="hint">
+        {t("limits")}{" "}
+        <Link className="text-link" href="/how-we-know">
+          {t("howWeKnow")}
+        </Link>
+      </p>
       <ShareButtons id={result.job.id} verdict={verdictLabels(verdict.label)} />
       <Link className="button-primary" href="/check">
         {t("checkAnother")}

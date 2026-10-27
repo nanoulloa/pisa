@@ -109,6 +109,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             </figcaption>
           </figure>
         </div>
+        <Link className="text-link" href="/how-we-know">
+          {t("why.more")}
+        </Link>
       </section>
 
       <section className="band scope" aria-labelledby="scope-title">
@@ -134,6 +137,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <a href={SOURCES.code} rel="noreferrer">
           {t("footer.code")}
         </a>
+        <Link href="/how-we-know">{t("footer.howWeKnow")}</Link>
         <Link href="/privacy">{t("footer.privacy")}</Link>
       </footer>
     </main>
