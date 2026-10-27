@@ -1,5 +1,19 @@
 # Progress
 
+## Day 8, continued · Tuesday, Oct 27
+
+### Done
+
+- **Shared spend cap in Supabase:** holds are granted one at a time by Postgres functions, so no number of containers can cross the cap together. Checked against the real project at zero cost (a $0 hold granted and released, an oversized one refused, only the secret key can call them). Local runs, spikes and the eval share the same cap.
+- **One switch for the real models on Modal:** `make deploy-engine PAID=true` deploys SAM 3.1 and Muse Spark behind the kill switch; plain `make deploy-engine` goes back to the free stages. `make sync-secrets` now also copies `MODEL_API_KEY` and `PISA_SPEND_CAP_USD` when they are in `.env`. Deployed in free mode and checked with a real job.
+- **README, demo script and submission draft:** live links, the eval, the switch; a shot-by-shot demo script with what each shot still needs; the submission text with [pending] where real numbers go.
+- **Tests:** 201 engine tests.
+
+### Next
+
+- The founder decides when to switch on paid calls; then a first real run on a few clips to see SAM and Muse Spark answer for real.
+- The real and generated clips, then the filmed eval, baseline, calibration and publish.
+
 ## Day 8 · Tuesday, Oct 27
 
 ### Done

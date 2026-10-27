@@ -10,7 +10,11 @@ Pisa is a reality check for viral videos. Forward a suspicious clip on WhatsApp 
 
 The name comes from Galileo dropping two balls from the Tower of Pisa to show that everything falls at the same rate. Pisa runs that same test on viral videos.
 
-> Status: day 1 of 10 of the Meta Global AI Developer Hackathon (Indie Developer track). The engine skeleton, contracts, web shell and CI are in place; see [docs/PROGRESS.md](docs/PROGRESS.md).
+- **Web:** https://pisa-theta.vercel.app (English, Spanish, Simplified Chinese, Brazilian Portuguese)
+- **How we know it works:** https://pisa-theta.vercel.app/en/how-we-know
+- **WhatsApp:** forward a video to the Pisa test number (Meta's test numbers only reply to registered phones; see [docs/WHATSAPP.md](docs/WHATSAPP.md))
+
+> Built for the Meta Global AI Developer Hackathon (Indie Developer track). Progress, day by day, in [docs/PROGRESS.md](docs/PROGRESS.md).
 
 ## How it works
 
@@ -44,6 +48,12 @@ The physics tests prefer checks that need no scale and no time base: the shape o
 - Asking a vision-language model does not work: a VLM tuned for physical commonsense passed 0% of clean real projectiles and bounces, while physics-informed scoring of real videos reaches 0.96 to 0.99. [Morpheus, arXiv:2504.02918](https://arxiv.org/abs/2504.02918)
 - Physics-based detection is an active field (MotionPhys: 78.5% on GenBuster++ with a trained classifier). Pisa differs by returning measured, checkable evidence instead of a score. [arXiv:2608.20770](https://arxiv.org/abs/2608.20770)
 
+## How we know it works
+
+The eval runs labeled clips through the same pipeline users get and scores the verdicts against what each clip really is. The number that matters most is the false positive rate: real videos called impossible. Every rate is reported with its 95% Wilson interval, a calibration step tunes the verdict thresholds to keep real videos safe first, and Muse Spark is asked "Is this video real or AI-generated?" about the same clips as a baseline. The published report is on the "How we know" page and in [eval/reports](eval/reports); the method and the recording guide are in [eval/README.md](eval/README.md).
+
+The eval already paid for itself: on rendered clips with one or two pixels of tracking jitter, it caught real throws being called impossible, and the rest detection was fixed before any real video was affected.
+
 ## Scope
 
 - **Checks:** falls, throws, bounces, and two objects falling together.
@@ -73,15 +83,15 @@ make check
 
 `make help` lists every command. `make e2e` runs the browser smoke test.
 
-Run the tracking pipeline offline on a synthetic fall with known gravity (free, no API calls):
+Run the whole eval offline on rendered clips with known physics (free, no API calls):
 
 ```bash
-uv run --group spikes python services/engine/spikes/sam/run.py --synthetic --g 2.0
+make eval-synthetic
 ```
 
 ### Paid API calls are off by default
 
-`PISA_PAID_CALLS_ENABLED=false` in `.env` blocks every Meta Model API request before it is sent. When enabled, every call is checked against a persistent spend ledger and `PISA_SPEND_CAP_USD`. User videos are never sent to `-contributor` tier models, which Meta may train on. Tests block all network access.
+`PISA_PAID_CALLS_ENABLED=false` in `.env` blocks every Meta Model API request before it is sent. When enabled, every call first holds its worst-case cost against `PISA_SPEND_CAP_USD` in a ledger shared through Supabase, so every container and every local run stays under one cap. The deployed engine runs the free offline stages unless it is deployed with `make deploy-engine PAID=true`. User videos are never sent to `-contributor` tier models, which Meta may train on. Tests block all network access.
 
 ## License
 
