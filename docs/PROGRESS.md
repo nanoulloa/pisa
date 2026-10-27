@@ -1,5 +1,23 @@
 # Progress
 
+## Day 8 · Tuesday, Oct 27
+
+### Done
+
+- **Muse Spark baseline** (`make eval-baseline`): asks "Is this video real or AI-generated?" about every clip, resumable, stops at the paid-calls switch, scored next to Pisa (real clips called fake, generated clips caught, unsure). Built and tested against a fake API; not run for real yet.
+- **"How we know" page** (`/[locale]/how-we-know`, four languages): how well Pisa works with 95% intervals as a dot-and-interval chart, the comparison with Muse Spark (pending until it runs), the five laws in plain words, who does what (models help, measurements decide), every law and every video behind a disclosure, limits and research. Linked from the home page and every result. Checked on desktop and phone, light and dark, in English, Spanish, Chinese and Portuguese.
+- **`publish`**: the page shows `eval/reports/published.json`, written only by an explicit publish. The synthetic report is published for now, clearly labeled.
+- **Tests:** 199 engine tests, 15 Vitest, 13 Playwright (new: the page is reachable from home and shows the published eval).
+
+### Next
+
+- The founder's real clips, then: `make eval` (free with an orange ball, or with SAM once paid calls are on), `make eval-baseline`, calibrate, `publish`.
+- Accessibility and dark-mode polish across the remaining screens.
+
+### Blocked
+
+- Real numbers and the baseline wait for the real clips and for paid calls to be switched on.
+
 ## Day 7 · Tuesday, Oct 27
 
 ### Done

@@ -121,3 +121,11 @@ One entry per decision that would be expensive to undo: context, decision, why.
 ## 2026-10-27 · Calibration only tightens what the set has evidence for
 
 **Context.** The brief asks for thresholds calibrated on the eval set, and the set will be small. **Decision.** Calibration searches per-test confidence thresholds (0.6 to 0.99) for the most generated clips caught with no more false positives on real clips than allowed (zero by default), preferring the stricter set on ties. A threshold that changes nothing on the set keeps its current value. It tunes only the verdict policy: violations the physics tests never report cannot be recovered by lowering a threshold. **Why.** It protects real videos first, does not invent thresholds for tests the set never exercised, and keeps every change a reviewed edit with a new policy version.
+
+## 2026-10-27 · The baseline asks the plain question
+
+**Context.** The brief asks to compare Pisa with Muse Spark's opinion on the same clips. A prompt that mentions gravity or physics would turn the baseline into a weaker copy of Pisa. **Decision.** Muse Spark gets the question people actually type, "Is this video real or AI-generated?", with instructions that only define the three answers (real, generated, unsure) and ask for one sentence of reasoning. It sees the normalized clip at the planner's sampling rate, with medium reasoning effort. Failed calls count as unsure. Its cost goes under a new `baseline` stage rather than being booked as planning. **Why.** It measures what the demo claims: an opinion versus a measurement, on equal footing.
+
+## 2026-10-27 · "How we know" shows one published report
+
+**Context.** The page must show real eval numbers, honestly, and the eval produces many reports (synthetic, partial, recalibrated). **Decision.** The page imports `eval/reports/published.json` at build time; only `python -m pisa_engine.evaluation publish --name N` writes it. Rates appear as "0 of 12" with their 95% intervals, drawn as dots and lines (Pisa filled in ink, Muse Spark hollow in muted ink). A synthetic report is labeled as such before its numbers. The synthetic report is published until the filmed set is scored. **Why.** Publishing public numbers should be a deliberate act, the page needs no database or engine call, and small samples cannot pass for proof.
