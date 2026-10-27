@@ -8,7 +8,6 @@ import json
 import logging
 import shutil
 import time
-from collections.abc import Callable
 from datetime import UTC, datetime
 from functools import cache
 from pathlib import Path
@@ -21,15 +20,13 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Red
 
 from pisa_contracts import Job, Locale
 from pisa_engine import __version__
-from pisa_engine.explain.explainer import Explainer, MuseSparkExplainer, NoExplainer
+from pisa_engine.explain.explainer import Explainer
 from pisa_engine.jobs import JobStore, StorageJobStore, SupabaseJobStore
 from pisa_engine.limits import AdmissionMiddleware, BodySizeLimitMiddleware, RateLimiter
 from pisa_engine.logs import configure_logging
 from pisa_engine.model_api.client import MetaModelApiClient
-from pisa_engine.model_api.spend import JsonlSpendLedger, SpendGuard
 from pisa_engine.pipeline import PipelineDeps, run_job
-from pisa_engine.planning.muse_spark import MuseSparkPlanner
-from pisa_engine.planning.planner import Planner, WholeClipPlanner
+from pisa_engine.planning.planner import Planner
 from pisa_engine.render.store import (
     EvidenceStore,
     LocalEvidenceStore,
@@ -38,8 +35,6 @@ from pisa_engine.render.store import (
 )
 from pisa_engine.settings import Settings, get_settings
 from pisa_engine.storage import LocalStorage
-from pisa_engine.tracking.fake import ColorSegmenter
-from pisa_engine.tracking.sam import Sam31Segmenter
 from pisa_engine.tracking.segmenter import Segmenter
 from pisa_engine.whatsapp.bot import BotDeps, WhatsAppBot
 from pisa_engine.whatsapp.graph import GraphClient
@@ -50,6 +45,7 @@ from pisa_engine.whatsapp.ledger import (
     MessageLedger,
     SupabaseMessageLedger,
 )
+from pisa_engine.wiring import explainer_for, meta_client_for, planner_for, segmenter_for
 
 logger = logging.getLogger(__name__)
 
@@ -97,13 +93,13 @@ def create_app(
     @cache
     def meta_client() -> MetaModelApiClient:
         """One client and one spend guard for every stage that pays, made on first use."""
-        return _meta_client(config)
+        return meta_client_for(config)
 
     deps = PipelineDeps(
-        segmenter=segmenter or _segmenter(config, meta_client),
+        segmenter=segmenter or segmenter_for(config, meta_client),
         store=store,
-        planner=planner or _planner(config, meta_client),
-        explainer=explainer or _explainer(config, meta_client),
+        planner=planner or planner_for(config, meta_client),
+        explainer=explainer or explainer_for(config, meta_client),
         evidence=evidence_store,
     )
     rate = RateLimiter(config.jobs_per_hour, window_s=3600, global_limit=config.jobs_per_hour_total)
@@ -298,46 +294,6 @@ def _job_store(config: Settings) -> JobStore:
 def _uses_supabase(config: Settings) -> bool:
     configured = bool(config.supabase_url and config.supabase_secret_key.get_secret_value())
     return configured and config.store == "auto"
-
-
-_ClientFactory = Callable[[], MetaModelApiClient]
-
-
-def _segmenter(config: Settings, client: _ClientFactory) -> Segmenter:
-    if config.segmenter == "fake":
-        return ColorSegmenter()
-    return Sam31Segmenter(client(), model=config.sam_model)
-
-
-def _planner(config: Settings, client: _ClientFactory) -> Planner:
-    if config.planner == "fake":
-        return WholeClipPlanner(config.default_phrase)
-    return MuseSparkPlanner(
-        client(),
-        model=config.muse_spark_model,
-        contributor_model=config.muse_spark_contributor_model,
-    )
-
-
-def _explainer(config: Settings, client: _ClientFactory) -> Explainer:
-    if config.explainer == "none":
-        return NoExplainer()
-    return MuseSparkExplainer(
-        client(),
-        model=config.muse_spark_model,
-        contributor_model=config.muse_spark_contributor_model,
-    )
-
-
-def _meta_client(config: Settings) -> MetaModelApiClient:
-    guard = SpendGuard(
-        enabled=config.paid_calls_enabled,
-        cap_usd=config.spend_cap_usd,
-        ledger=JsonlSpendLedger(config.spend_ledger_path),
-    )
-    return MetaModelApiClient(
-        api_key=config.meta_api_key, base_url=config.meta_api_base_url, guard=guard
-    )
 
 
 async def _save_upload(upload: UploadFile, path: Path, limit: int) -> bool:

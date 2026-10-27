@@ -51,7 +51,7 @@ from pisa_engine.render.store import EVIDENCE_TTL, EvidenceStore
 from pisa_engine.render.video import render_evidence
 from pisa_engine.tracking.segmenter import Segmenter, frame_time
 from pisa_engine.tracking.windows import Window, event_windows, reference_windows, track_windows
-from pisa_engine.verdict import decide
+from pisa_engine.verdict import verdict_for
 from pisa_engine.vision.stabilize import (
     MAX_UNRELIABLE_SHARE,
     CameraPath,
@@ -130,7 +130,7 @@ async def _run(
             scene = _Scene(objects, path, measured.flights, scale, slow_motion)
 
         await progress.enter("verdict")
-        verdict = _verdict(plan, results)
+        verdict = verdict_for(plan, results)
 
         await progress.enter("explain")
         explanation = await _explain(deps.explainer, job, verdict, results, plan)
@@ -225,13 +225,6 @@ def _measure(
                     flight = segment_flight(from_track(piece))
                     flights.append(OwnedFlight(obj.phrase, obj.object_id, flight))
     return _Measured(flights, unmeasured, dict(samples_by_phrase))
-
-
-def _verdict(plan: Plan, results: list[TestResult]) -> Verdict:
-    verdict = decide(results)
-    if not plan.measurable:  # Say why the planner found nothing to measure.
-        return verdict.model_copy(update={"reason_code": plan.reason or "no_measurable_events"})
-    return verdict
 
 
 async def _explain(
