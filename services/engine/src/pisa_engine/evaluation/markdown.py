@@ -45,6 +45,7 @@ def report_markdown(report: EvalReport) -> str:
         "",
         "Intervals are 95% Wilson intervals: with few clips they stay wide, as they should.",
         "",
+        *_baseline(report),
         "## Confusion matrix",
         "",
         *_confusion(report.confusion),
@@ -89,8 +90,9 @@ def report_markdown(report: EvalReport) -> str:
         "",
         "## Clips",
         "",
-        "| Clip | Truth | Tags | Verdict | Tests behind it, or reason | Seconds | USD |",
-        "|---|---|---|---|---|--:|--:|",
+        "| Clip | Truth | Tags | Verdict | Tests behind it, or reason | Seconds | USD "
+        "| Muse Spark |",
+        "|---|---|---|---|---|--:|--:|---|",
     ]
     for clip in report.clips:
         why = ", ".join(TEST_NAMES[t].split()[0] for t in TEST_IDS if t in clip.decisive_tests)
@@ -98,7 +100,7 @@ def report_markdown(report: EvalReport) -> str:
             why = clip.reason_code or ""
         lines.append(
             f"| {clip.id} | {clip.truth} | {' '.join(clip.tags)} | {VERDICT_NAMES[clip.verdict]} "
-            f"| {why} | {_number(clip.latency_s)} | {clip.cost_usd:.4f} |"
+            f"| {why} | {_number(clip.latency_s)} | {clip.cost_usd:.4f} | {clip.baseline or ''} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -143,6 +145,29 @@ def calibration_markdown(name: str, calibration: Calibration) -> str:
             "",
         ]
     return "\n".join(lines)
+
+
+def _baseline(report: EvalReport) -> list[str]:
+    lines = ["## Compared with asking Muse Spark", ""]
+    baseline = report.baseline
+    if baseline is None:
+        return [*lines, "Muse Spark has not been asked about this set yet.", ""]
+    pisa_silent = report.inconclusive_rate
+    return [
+        *lines,
+        f'`{baseline.model}` was asked "{baseline.question}" about the same clips. '
+        f"Its opinions cost ${baseline.cost_usd:.4f} in all.",
+        "",
+        "| Measure | Pisa measures | Muse Spark answers |",
+        "|---|---|---|",
+        f"| Real clips called fake | {_rate(report.false_positive_rate)} | "
+        f"{_rate(baseline.false_positive_rate)} |",
+        f"| Generated clips caught | {_rate(report.detection_rate)} | "
+        f"{_rate(baseline.detection_rate)} |",
+        f"| No call (inconclusive, unsure) | {_rate(pisa_silent)} | "
+        f"{_rate(baseline.unsure_rate)} |",
+        "",
+    ]
 
 
 def _rate(value: EvalRate) -> str:

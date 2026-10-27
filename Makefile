@@ -6,7 +6,7 @@ PY_MODELS := packages/contracts/python/src/pisa_contracts/models.py
 PY_SCHEMA := packages/contracts/python/src/pisa_contracts/schema.py
 
 .PHONY: help setup gen gen-check lint typecheck test e2e check dev-engine dev-web deploy-engine sync-secrets \
-	eval-synthetic eval
+	eval-synthetic eval eval-baseline
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -79,3 +79,7 @@ eval: ## Eval a labeled set: make eval MANIFEST=eval/raw/phone-v1/manifest.json 
 	$(EVAL) run --manifest $(MANIFEST) --name $(NAME)
 	$(EVAL) score --manifest $(MANIFEST) --name $(NAME)
 	$(EVAL) calibrate --manifest $(MANIFEST) --name $(NAME)
+
+eval-baseline: ## Ask Muse Spark "real or AI-generated?" about a set (paid): make eval-baseline MANIFEST=... NAME=...
+	$(EVAL) baseline --manifest $(MANIFEST) --name $(NAME)
+	$(EVAL) score --manifest $(MANIFEST) --name $(NAME)

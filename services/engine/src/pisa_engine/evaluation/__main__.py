@@ -2,8 +2,10 @@
 
     synth                                  render the free synthetic set and its manifest
     run --manifest M --name N              run every clip through the pipeline (resumable)
+    baseline --manifest M --name N         ask Muse Spark "real or AI-generated?" (resumable)
     score --manifest M --name N            write eval/reports/N.json and N.md
     calibrate --manifest M --name N        suggest per-test thresholds, write N-calibration.md
+    publish --name N                       show report N on the web app's "How we know" page
     frame CLIP --at SECONDS --out IMAGE    save one frame, to seed a video generator
 
 `run` uses the segmenter and planner configured in `.env` (PISA_SEGMENTER, PISA_PLANNER) and
@@ -21,6 +23,8 @@ from datetime import UTC, datetime
 from functools import cache
 from pathlib import Path
 
+from pisa_contracts import DataPolicy, EvalReport
+from pisa_engine.evaluation.baseline import MuseSparkBaseline, load_baseline, run_baseline
 from pisa_engine.evaluation.calibration import calibrate
 from pisa_engine.evaluation.manifest import load_manifest
 from pisa_engine.evaluation.markdown import calibration_markdown, report_markdown
@@ -33,6 +37,7 @@ from pisa_engine.wiring import meta_client_for, planner_for, segmenter_for
 
 RUNS_DIR = REPO_ROOT / "eval" / "runs"
 REPORTS_DIR = REPO_ROOT / "eval" / "reports"
+PUBLISHED = REPORTS_DIR / "published.json"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -84,10 +89,43 @@ def _run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _baseline(args: argparse.Namespace) -> int:
+    settings = Settings()
+    manifest = load_manifest(args.manifest)
+    baseline = MuseSparkBaseline(
+        meta_client_for(settings),
+        model=settings.muse_spark_model,
+        contributor_model=settings.muse_spark_contributor_model,
+    )
+    policy: DataPolicy = "internal" if args.allow_contributor else "user"
+    paid = "on" if settings.paid_calls_enabled else "off"
+    print(f"{len(manifest.clips)} clips. {baseline.model_for(policy)}, paid calls {paid}.")
+    try:
+        asyncio.run(
+            run_baseline(
+                args.manifest,
+                manifest,
+                RUNS_DIR / args.name,
+                baseline,
+                policy=policy,
+                force=args.force,
+            )
+        )
+    except RunStoppedError as stopped:
+        print(f"Stopped before the next clip: {stopped}. Answers already received are saved.")
+        return 2
+    return 0
+
+
 def _score(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest)
     info, runs = load_runs(RUNS_DIR / args.name)
-    report = score(manifest, runs, info, name=args.name, created_at=datetime.now(UTC))
+    baseline = load_baseline(RUNS_DIR / args.name)
+    report = score(
+        manifest, runs, info, name=args.name, created_at=datetime.now(UTC), baseline=baseline
+    )
+    if baseline and report.baseline is None:
+        print("Muse Spark has answered for only some clips; finish the baseline to include it.")
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     json_path, md_path = REPORTS_DIR / f"{args.name}.json", REPORTS_DIR / f"{args.name}.md"
     json_path.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
@@ -112,6 +150,16 @@ def _calibrate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _publish(args: argparse.Namespace) -> int:
+    """The page reads one file, so publishing is a deliberate act, never a side effect."""
+    source = REPORTS_DIR / f"{args.name}.json"
+    report = EvalReport.model_validate_json(source.read_text(encoding="utf-8"))
+    PUBLISHED.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    kind = "synthetic" if report.synthetic else "filmed and generated"
+    print(f"{_shown(PUBLISHED)} now holds {args.name} ({len(report.clips)} {kind} clips).")
+    return 0
+
+
 def _frame(args: argparse.Namespace) -> int:
     """ffmpeg applies the phone's rotation, like the pipeline's ingest does."""
     command = [
@@ -133,6 +181,7 @@ def _parser() -> argparse.ArgumentParser:
 
     for name, handler, text in (
         ("run", _run, "Run every clip through the pipeline; skips clips already run."),
+        ("baseline", _baseline, "Ask Muse Spark whether each clip is real or AI-generated."),
         ("score", _score, "Score a run against the truth and write the report."),
         ("calibrate", _calibrate, "Suggest per-test thresholds from a run."),
     ):
@@ -140,8 +189,8 @@ def _parser() -> argparse.ArgumentParser:
         sub.add_argument("--manifest", type=Path, required=True)
         sub.add_argument("--name", required=True, help="Run name, such as phone-v1.")
         sub.set_defaults(command=handler)
-        if name == "run":
-            sub.add_argument("--force", action="store_true", help="Run every clip again.")
+        if name in ("run", "baseline"):
+            sub.add_argument("--force", action="store_true", help="Redo every clip.")
             sub.add_argument(
                 "--allow-contributor",
                 action="store_true",
@@ -150,6 +199,10 @@ def _parser() -> argparse.ArgumentParser:
             )
         if name == "calibrate":
             sub.add_argument("--max-false-positives", type=int, default=0)
+
+    publish = commands.add_parser("publish", help="Show a scored report on the web app.")
+    publish.add_argument("--name", required=True)
+    publish.set_defaults(command=_publish)
 
     frame = commands.add_parser("frame", help="Save one frame of a clip as an image.")
     frame.add_argument("clip", type=Path)

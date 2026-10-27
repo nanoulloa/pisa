@@ -20,6 +20,18 @@ make eval MANIFEST=eval/raw/phone-v1/manifest.json NAME=phone-v1
 
 Runs, scores and calibrates a labeled set with the segmenter and planner configured in `.env`. A run is saved clip by clip and resumes where it stopped, so a paid run never pays twice for the same clip. With SAM and Muse Spark it stops before the first clip unless `PISA_PAID_CALLS_ENABLED=true`. Pass `--allow-contributor` to the `run` step only for our own clips: the contributor tier is cheaper, but Meta may use its inputs for training.
 
+```bash
+make eval-baseline MANIFEST=eval/raw/phone-v1/manifest.json NAME=phone-v1
+```
+
+Asks Muse Spark "Is this video real or AI-generated?" about every clip of the set, the way a person would ask a chatbot, and adds its answers to the report next to Pisa's verdicts. It pays per clip, resumes like a run, and stops at the same switch. A failed answer counts as unsure.
+
+```bash
+uv run python -m pisa_engine.evaluation publish --name phone-v1
+```
+
+Copies a scored report to `reports/published.json`, the one file the web app's "How we know" page shows. Publishing is a deliberate step, so a test run never replaces the public numbers.
+
 The steps can also run one by one: `uv run python -m pisa_engine.evaluation --help`.
 
 ## Recording the real clips

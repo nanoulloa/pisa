@@ -83,10 +83,7 @@ class MuseSparkPlanner:
         self._effort = reasoning_effort
 
     async def plan(self, video: Path, ingest: IngestResult, *, policy: DataPolicy) -> Plan:
-        timebase = ingest.timebase
-        duration = timebase.frame_count * timebase.fps_den / timebase.fps_num
-        fps = timebase.fps_num / timebase.fps_den
-        sample_fps = min(MAX_SAMPLE_FPS, fps, MAX_SAMPLED_FRAMES / max(duration, 1e-6))
+        duration, fps, sample_fps = sampling(ingest)
         # Only internal test clips may use the contributor tier (Meta may train on its inputs).
         model = self._contributor_model if policy == "internal" else self._model
 
@@ -132,6 +129,14 @@ class MuseSparkPlanner:
             "max_output_tokens": MAX_OUTPUT_TOKENS,
             "store": False,
         }
+
+
+def sampling(ingest: IngestResult) -> tuple[float, float, float]:
+    """The clip's duration and frame rate, and the rate Muse Spark sees it at."""
+    timebase = ingest.timebase
+    duration = timebase.frame_count * timebase.fps_den / timebase.fps_num
+    fps = timebase.fps_num / timebase.fps_den
+    return duration, fps, min(MAX_SAMPLE_FPS, fps, MAX_SAMPLED_FRAMES / max(duration, 1e-6))
 
 
 def parse_plan(payload: dict[str, Any]) -> Plan:

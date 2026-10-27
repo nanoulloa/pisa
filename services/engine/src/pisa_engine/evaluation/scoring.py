@@ -5,7 +5,8 @@ scored without running a model again (that is how calibration works). With the p
 used, the verdicts are the ones the pipeline gave.
 
 A job that failed counts as inconclusive, with its error code as the reason: for someone who
-forwarded the clip, Pisa had no answer.
+forwarded the clip, Pisa had no answer. When Muse Spark was asked about the same clips, its
+opinions are scored the same way, with failed calls counted as unsure.
 """
 
 from __future__ import annotations
@@ -17,8 +18,10 @@ from datetime import datetime
 from typing import get_args
 
 from pisa_contracts import (
+    EvalBaseline,
     EvalClip,
     EvalGroup,
+    EvalOpinion,
     EvalRate,
     EvalReport,
     EvalSummary,
@@ -32,6 +35,7 @@ from pisa_contracts import (
     VerdictLabel,
 )
 from pisa_engine import __version__
+from pisa_engine.evaluation.baseline import QUESTION, BaselineRun
 from pisa_engine.evaluation.manifest import Clip, Manifest
 from pisa_engine.evaluation.runner import ClipRun, RunInfo
 from pisa_engine.verdict import POLICY_VERSION, PolicyConfig, verdict_for
@@ -85,8 +89,11 @@ def score(
     name: str,
     created_at: datetime,
     policy: PolicyConfig | None = None,
+    baseline: Mapping[str, BaselineRun] | None = None,
 ) -> EvalReport:
+    """`baseline` counts only when it covers every clip."""
     found = outcomes(manifest, runs, policy)
+    opinions = _opinions(found, baseline or {})
     real = [o for o in found if o.clip.truth == "real"]
     generated = [o for o in found if o.clip.truth == "generated"]
     conclusive = [o for o in found if o.verdict.label != "inconclusive"]
@@ -113,6 +120,7 @@ def score(
         latency_s=summary([o.latency_s for o in found if o.latency_s is not None]),
         cost_usd=round(sum(costs), 6),
         cost_usd_per_clip=summary(costs),
+        baseline=_baseline(found, baseline or {}, opinions),
         clips=[
             EvalClip(
                 id=o.clip.id,
@@ -123,6 +131,7 @@ def score(
                 decisive_tests=o.verdict.decisive_tests,
                 latency_s=o.latency_s,
                 cost_usd=round(o.cost_usd, 6),
+                baseline=opinions.get(o.clip.id),
             )
             for o in found
         ],
@@ -156,6 +165,33 @@ def summary(values: Sequence[float]) -> EvalSummary:
     median = ordered[middle] if len(ordered) % 2 else (ordered[middle - 1] + ordered[middle]) / 2
     p90 = ordered[max(0, math.ceil(0.9 * len(ordered)) - 1)]
     return EvalSummary(median=round(median, 4), p90=round(p90, 4), max=round(ordered[-1], 4))
+
+
+def _opinions(
+    found: Sequence[Outcome], baseline: Mapping[str, BaselineRun]
+) -> dict[str, EvalOpinion]:
+    if not found or any(o.clip.id not in baseline for o in found):
+        return {}
+    return {o.clip.id: baseline[o.clip.id].answer or "unsure" for o in found}
+
+
+def _baseline(
+    found: Sequence[Outcome],
+    baseline: Mapping[str, BaselineRun],
+    opinions: Mapping[str, EvalOpinion],
+) -> EvalBaseline | None:
+    if not opinions:
+        return None
+    real = [o.clip.id for o in found if o.clip.truth == "real"]
+    generated = [o.clip.id for o in found if o.clip.truth == "generated"]
+    return EvalBaseline(
+        model=", ".join(sorted({baseline[o.clip.id].model for o in found})),
+        question=QUESTION,
+        false_positive_rate=rate(sum(opinions[c] == "generated" for c in real), len(real)),
+        detection_rate=rate(sum(opinions[c] == "generated" for c in generated), len(generated)),
+        unsure_rate=rate(sum(v == "unsure" for v in opinions.values()), len(opinions)),
+        cost_usd=round(sum(baseline[o.clip.id].cost_usd for o in found), 6),
+    )
 
 
 def _correct(outcome: Outcome) -> bool:

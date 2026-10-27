@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+import httpx
 import pytest
+from pydantic import SecretStr
 
 import pisa_contracts as contracts
 from pisa_contracts import (
@@ -14,14 +17,26 @@ from pisa_contracts import (
     IngestResult,
     Plan,
     TestOutcome,
+    Timebase,
     Verdict,
+    VideoProbe,
+)
+from pisa_engine.evaluation.baseline import (
+    QUESTION,
+    MuseSparkBaseline,
+    Opinion,
+    load_baseline,
+    run_baseline,
 )
 from pisa_engine.evaluation.calibration import calibrate
 from pisa_engine.evaluation.manifest import Clip, Manifest
 from pisa_engine.evaluation.markdown import calibration_markdown, report_markdown
 from pisa_engine.evaluation.runner import RunInfo, RunStoppedError, load_runs, run_manifest
 from pisa_engine.evaluation.scoring import Outcome, outcomes, rate, score, summary
-from pisa_engine.model_api.spend import PaidCallsDisabledError
+from pisa_engine.model_api import costs
+from pisa_engine.model_api.client import MetaModelApiClient
+from pisa_engine.model_api.responses import ModelOutputError
+from pisa_engine.model_api.spend import InMemorySpendLedger, PaidCallsDisabledError, SpendGuard
 from pisa_engine.physics.results import result
 from pisa_engine.planning.planner import WholeClipPlanner
 from pisa_engine.render.store import LocalEvidenceStore
@@ -225,3 +240,136 @@ async def test_scores_can_be_recomputed_under_another_policy(
     )
     labels = [o.verdict.label for o in outcomes(manifest, runs, without_t1)]
     assert labels[1] == "inconclusive"  # The eased drop is no longer convicted.
+
+
+# Baseline: Muse Spark's opinion on the same clips
+
+
+def _ingest() -> IngestResult:
+    probe = VideoProbe(
+        width=640,
+        height=960,
+        duration_s=2.0,
+        fps_num=60,
+        fps_den=1,
+        is_vfr=False,
+        rotation_deg=0,
+        frame_count=120,
+        codec="h264",
+        has_audio=False,
+        size_bytes=10_000,
+    )
+    timebase = Timebase(fps_num=60, fps_den=1, start_s=0.0, frame_count=120)
+    return IngestResult(source=probe, normalized=probe, timebase=timebase, scene_cuts_s=[])
+
+
+async def test_muse_spark_is_asked_plainly_and_answers_in_a_scorable_shape(
+    tmp_path: Path,
+) -> None:
+    requests: list[httpx.Request] = []
+
+    def api(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.method == "DELETE":
+            return httpx.Response(200, json={"id": "file-7", "deleted": True})
+        if request.url.path.endswith("/files"):
+            return httpx.Response(200, json={"id": "file-7", "expires_at": 1793050000})
+        if request.url.path.endswith("/input_tokens"):
+            return httpx.Response(200, json={"input_tokens": 9000})
+        text = json.dumps({"answer": "real", "reason": "The lighting looks natural."})
+        return httpx.Response(
+            200,
+            json={
+                "output": [{"type": "message", "content": [{"type": "output_text", "text": text}]}],
+                "usage": {"input_tokens": 9000, "output_tokens": 300},
+            },
+        )
+
+    client = MetaModelApiClient(
+        api_key=SecretStr("LLM_000_not-a-real-key"),
+        base_url="https://api.meta.ai/v1",
+        guard=SpendGuard(enabled=True, cap_usd=1.0, ledger=InMemorySpendLedger()),
+        transport=httpx.MockTransport(api),
+    )
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(b"\x00")
+    baseline = MuseSparkBaseline(client)
+    with costs.collecting() as spent:
+        opinion = await baseline.ask(video, _ingest(), policy="user")
+
+    assert (opinion.answer, opinion.reason) == ("real", "The lighting looks natural.")
+    _, count, create, delete = requests
+    body = json.loads(create.content)
+    assert json.loads(count.content) == body
+    assert body["model"] == "muse-spark-1.3"
+    question, clip = body["input"][0]["content"]
+    assert question == {"type": "input_text", "text": QUESTION}
+    assert clip == {"type": "input_video", "file_id": "file-7", "fps": 8.0}  # As the planner.
+    assert "physic" not in (body["instructions"] + question["text"]).lower()  # No hints.
+    assert body["text"]["format"]["name"] == "opinion"
+    assert {e.stage for e in spent} == {"baseline"}
+    assert (delete.method, delete.url.path) == ("DELETE", "/v1/files/file-7")
+    assert baseline.model_for("internal") == "muse-spark-1.3-contributor"
+
+
+class _ScriptedBaseline:
+    """Gives the scripted answers in order; an exception in the script is raised instead."""
+
+    def __init__(self, *script: str | Exception) -> None:
+        self.script = list(script)
+        self.asked = 0
+
+    def model_for(self, policy: DataPolicy) -> str:
+        return "muse-spark-1.3"
+
+    async def ask(self, video: Path, ingest: IngestResult, *, policy: DataPolicy) -> Opinion:
+        self.asked += 1
+        step = self.script.pop(0)
+        if isinstance(step, Exception):
+            raise step
+        return Opinion.model_validate({"answer": step, "reason": "Because."})
+
+
+async def test_baseline_answers_are_saved_scored_and_resumed(
+    eval_set: tuple[Path, Manifest], tmp_path: Path
+) -> None:
+    path, manifest = eval_set
+    out = tmp_path / "run"
+    await _run(path, manifest, out)
+    info, runs = load_runs(out)
+
+    # drop (real), eased (generated), empty (real); the last call fails and counts as unsure.
+    scripted = _ScriptedBaseline("generated", "generated", ModelOutputError("not JSON"))
+    await run_baseline(path, manifest, out, scripted, policy="user", progress=lambda _: None)
+    await run_baseline(path, manifest, out, scripted, policy="user", progress=lambda _: None)
+    assert scripted.asked == 3  # The second run asked nothing again.
+
+    report = score(manifest, runs, info, name="t", created_at=NOW, baseline=load_baseline(out))
+    assert report.baseline is not None
+    assert (
+        report.baseline.false_positive_rate.count,
+        report.baseline.false_positive_rate.total,
+    ) == (
+        1,
+        2,
+    )
+    assert report.baseline.detection_rate.count == 1
+    assert report.baseline.unsure_rate.count == 1
+    assert [c.baseline for c in report.clips] == ["generated", "generated", "unsure"]
+    assert "Compared with asking Muse Spark" in report_markdown(report)
+
+    # An opinion on only some clips is not a comparison.
+    partial = {k: v for k, v in load_baseline(out).items() if k != "empty"}
+    assert score(manifest, runs, info, name="t", created_at=NOW, baseline=partial).baseline is None
+
+
+async def test_the_baseline_stops_at_the_paid_calls_switch(
+    eval_set: tuple[Path, Manifest], tmp_path: Path
+) -> None:
+    path, manifest = eval_set
+    out = tmp_path / "run"
+    with pytest.raises(RunStoppedError, match="paid_calls_disabled"):
+        await run_baseline(
+            path, manifest, out, _ScriptedBaseline(PaidCallsDisabledError()), policy="user"
+        )
+    assert load_baseline(out) == {}

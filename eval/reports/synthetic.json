@@ -1,6 +1,6 @@
 {
   "name": "synthetic",
-  "created_at": "2026-10-27T21:25:36.021250Z",
+  "created_at": "2026-10-27T22:03:56.107458Z",
   "engine_version": "0.1.0",
   "policy_version": "0.1.0",
   "synthetic": true,
@@ -293,7 +293,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.418,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "drop-sideways",
@@ -308,7 +309,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.396,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "drop-jittery",
@@ -323,7 +325,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.375,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "drop-handheld",
@@ -338,7 +341,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.535,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "throw",
@@ -353,7 +357,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.444,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "throw-handheld",
@@ -368,7 +373,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.657,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "bounce-soft",
@@ -385,7 +391,8 @@
         "time_base_consistency"
       ],
       "latency_s": 0.658,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "bounce-lively",
@@ -402,7 +409,8 @@
         "time_base_consistency"
       ],
       "latency_s": 0.646,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "bounce-handheld",
@@ -419,7 +427,8 @@
         "time_base_consistency"
       ],
       "latency_s": 0.951,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "pair-together",
@@ -435,7 +444,8 @@
         "galileo_pair"
       ],
       "latency_s": 0.383,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "pair-together-sideways",
@@ -451,7 +461,8 @@
         "galileo_pair"
       ],
       "latency_s": 0.381,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "drop-slow-motion",
@@ -467,7 +478,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.364,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "eased-drop",
@@ -482,7 +494,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.369,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "eased-drop-sideways",
@@ -497,7 +510,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.369,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "eased-drop-handheld",
@@ -512,7 +526,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.542,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "bounce-gains-energy",
@@ -527,7 +542,8 @@
         "bounce_energy"
       ],
       "latency_s": 0.495,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "bounce-gains-more",
@@ -542,7 +558,8 @@
         "bounce_energy"
       ],
       "latency_s": 0.527,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "pair-apart",
@@ -557,7 +574,8 @@
         "galileo_pair"
       ],
       "latency_s": 0.382,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "pair-far-apart",
@@ -572,7 +590,8 @@
         "galileo_pair"
       ],
       "latency_s": 0.383,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "constant-speed-drop",
@@ -585,7 +604,8 @@
       "reason_code": "no_measurable_events",
       "decisive_tests": [],
       "latency_s": 0.368,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "low-gravity-drop",
@@ -601,7 +621,8 @@
         "free_fall_shape"
       ],
       "latency_s": 0.366,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     },
     {
       "id": "low-gravity-bounce",
@@ -619,7 +640,9 @@
         "time_base_consistency"
       ],
       "latency_s": 0.982,
-      "cost_usd": 0.0
+      "cost_usd": 0.0,
+      "baseline": null
     }
-  ]
+  ],
+  "baseline": null
 }
