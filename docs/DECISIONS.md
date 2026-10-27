@@ -106,3 +106,7 @@ One entry per decision that would be expensive to undo: context, decision, why.
 
 **Context.** WhatsApp has no idempotency key for sending. A send that timed out or got a 5xx may have been delivered. **Decision.** Lookups, downloads and uploads retry on 5xx, timeouts and 429 with exponential backoff and jitter; sends retry only on 429 and connections that never opened. **Why.** A missing reply can be resent by the user; a duplicated verdict in a family group looks broken.
 
+## 2026-10-27 · Two WhatsApp setup steps the dashboard does not finish
+
+**Context.** After the webhook was verified and subscribed to `messages`, the dashboard's test event reached the engine but a real "hola" did not. Meta's banner said unpublished apps only receive dashboard tests, and after publishing the account was still subscribed only to Meta's own test tool (WA DevX Webhook Events). **Decision.** Publish the app, which requires a privacy policy (added at `/privacy` in four languages, stating exactly what Pisa keeps), and subscribe the app to the WhatsApp Business account with `POST /{waba-id}/subscribed_apps` (`scripts/whatsapp_subscribe.py`). **Why.** Both are one-time steps, verified by a real message and two real forwards; writing them down keeps the setup repeatable.
+

@@ -34,6 +34,7 @@ method to the WhatsApp Business account, so nothing can be charged beyond that.
 |---|---|
 | 23 | `WHATSAPP_ACCESS_TOKEN` |
 | 24 | `WHATSAPP_PHONE_NUMBER_ID` |
+| 25 | `WHATSAPP_BUSINESS_ACCOUNT_ID` (for the subscription step) |
 | 27 | `WHATSAPP_APP_SECRET` |
 | 29 | `WHATSAPP_WEBHOOK_VERIFY_TOKEN` |
 
@@ -47,7 +48,14 @@ make sync-secrets
 make deploy-engine
 ```
 
-## 4. Connect the webhook
+## 4. Publish the app
+
+Meta delivers real messages to the webhook only once the app is published; until then only
+the dashboard's test events arrive. Publishing needs a privacy policy URL: App settings >
+Basic > Privacy policy URL = `https://pisa-theta.vercel.app/en/privacy`, save, then
+**Publish**. With the test number, still only the confirmed numbers can write to it.
+
+## 5. Connect the webhook
 
 In the app, open **WhatsApp > Configuration > Webhook**:
 
@@ -56,7 +64,16 @@ In the app, open **WhatsApp > Configuration > Webhook**:
 
 Press **Verify and save**, then subscribe to the **messages** field.
 
-## 5. Try it
+Then subscribe the app to the WhatsApp Business account. The new dashboard may leave the
+account subscribed only to Meta's own test tool, and then real messages never reach Pisa:
+
+```bash
+uv run python scripts/whatsapp_subscribe.py
+```
+
+It should list **Pisa** among the subscribed apps.
+
+## 6. Try it
 
 From your phone, write "hola" to the test number: Pisa answers with what it does. Then
 forward a video where something falls, is thrown or bounces. Pisa acknowledges at once and
