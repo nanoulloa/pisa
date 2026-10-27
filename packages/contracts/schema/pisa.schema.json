@@ -1017,6 +1017,345 @@
           }
         }
       }
+    },
+    "EvalTruth": {
+      "description": "What a clip in the eval set really is: filmed with a camera, or made by a video generator.",
+      "type": "string",
+      "enum": [
+        "real",
+        "generated"
+      ]
+    },
+    "EvalRate": {
+      "description": "A share of clips with its 95% Wilson interval, which stays honest on small samples. Null shares when there are no clips to count.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "total",
+        "value",
+        "ci_low",
+        "ci_high"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ci_low": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ci_high": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "EvalVerdictCounts": {
+      "description": "How many clips of one kind got each verdict: one row of the confusion matrix.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "truth",
+        "physically_impossible",
+        "consistent_with_real_physics",
+        "inconclusive"
+      ],
+      "properties": {
+        "truth": {
+          "$ref": "#/$defs/EvalTruth"
+        },
+        "physically_impossible": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "consistent_with_real_physics": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inconclusive": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "EvalGroup": {
+      "description": "The confusion matrix restricted to clips with one tag, such as handheld or bounce.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "rows"
+      ],
+      "properties": {
+        "tag": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvalVerdictCounts"
+          }
+        }
+      }
+    },
+    "EvalTruthCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "real",
+        "generated"
+      ],
+      "properties": {
+        "real": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generated": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "EvalTestStats": {
+      "description": "What one physics test contributed, counted in clips. measured: the test passed or found a violation at least once. violated: at least one violation, at any confidence. decisive: judged physically impossible with this test among the decisive ones.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "test",
+        "measured",
+        "violated",
+        "decisive",
+        "closest_call_real"
+      ],
+      "properties": {
+        "test": {
+          "$ref": "#/$defs/TestId"
+        },
+        "measured": {
+          "$ref": "#/$defs/EvalTruthCounts"
+        },
+        "violated": {
+          "$ref": "#/$defs/EvalTruthCounts"
+        },
+        "decisive": {
+          "$ref": "#/$defs/EvalTruthCounts"
+        },
+        "closest_call_real": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Highest confidence of a violation on a real clip: how close this test came to a false positive."
+        }
+      }
+    },
+    "EvalClip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "truth",
+        "tags",
+        "verdict",
+        "reason_code",
+        "decisive_tests",
+        "latency_s",
+        "cost_usd"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "truth": {
+          "$ref": "#/$defs/EvalTruth"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verdict": {
+          "$ref": "#/$defs/VerdictLabel"
+        },
+        "reason_code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Why the verdict is inconclusive, or the error code of a job that failed."
+        },
+        "decisive_tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TestId"
+          }
+        },
+        "latency_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cost_usd": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "EvalSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "median",
+        "p90",
+        "max"
+      ],
+      "properties": {
+        "median": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "p90": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "EvalReport": {
+      "description": "Pisa's verdicts on a labeled set of clips, scored against what each clip really is. false_positive_rate: real clips judged physically impossible, the number that matters most. detection_rate: generated clips judged physically impossible. inconclusive_rate: all clips judged inconclusive. conclusive_accuracy: among conclusive verdicts, the share that matches the truth. latency_s: seconds per clip, end to end.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "created_at",
+        "engine_version",
+        "policy_version",
+        "synthetic",
+        "segmenter",
+        "planner",
+        "confusion",
+        "false_positive_rate",
+        "detection_rate",
+        "inconclusive_rate",
+        "conclusive_accuracy",
+        "by_tag",
+        "tests",
+        "latency_s",
+        "cost_usd",
+        "cost_usd_per_clip",
+        "clips"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "engine_version": {
+          "type": "string"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "synthetic": {
+          "type": "boolean",
+          "description": "True when every clip was rendered by the engine's synthetic generator rather than filmed or generated by a video model."
+        },
+        "segmenter": {
+          "type": "string"
+        },
+        "planner": {
+          "type": "string"
+        },
+        "confusion": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvalVerdictCounts"
+          }
+        },
+        "false_positive_rate": {
+          "$ref": "#/$defs/EvalRate"
+        },
+        "detection_rate": {
+          "$ref": "#/$defs/EvalRate"
+        },
+        "inconclusive_rate": {
+          "$ref": "#/$defs/EvalRate"
+        },
+        "conclusive_accuracy": {
+          "$ref": "#/$defs/EvalRate"
+        },
+        "by_tag": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvalGroup"
+          }
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvalTestStats"
+          }
+        },
+        "latency_s": {
+          "$ref": "#/$defs/EvalSummary"
+        },
+        "cost_usd": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Paid API calls for the whole set."
+        },
+        "cost_usd_per_clip": {
+          "$ref": "#/$defs/EvalSummary"
+        },
+        "clips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvalClip"
+          }
+        }
+      }
     }
   }
 }
