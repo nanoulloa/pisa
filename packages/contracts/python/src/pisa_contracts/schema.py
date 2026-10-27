@@ -52,8 +52,10 @@ SCHEMA: dict[str, Any] = json.loads(
     "test",
     "verdict",
     "explain",
-    "render"
-   ]
+    "render",
+    "baseline"
+   ],
+   "description": "Pipeline stages, in order. baseline is the eval's call asking Muse Spark for its opinion; no job ever runs it."
   },
   "JobStatus": {
    "type": "string",
@@ -1193,7 +1195,8 @@ SCHEMA: dict[str, Any] = json.loads(
     "reason_code",
     "decisive_tests",
     "latency_s",
-    "cost_usd"
+    "cost_usd",
+    "baseline"
    ],
    "properties": {
     "id": {
@@ -1234,6 +1237,16 @@ SCHEMA: dict[str, Any] = json.loads(
     "cost_usd": {
      "type": "number",
      "minimum": 0
+    },
+    "baseline": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/EvalOpinion"
+      },
+      {
+       "type": "null"
+      }
+     ]
     }
    }
   },
@@ -1270,7 +1283,7 @@ SCHEMA: dict[str, Any] = json.loads(
    }
   },
   "EvalReport": {
-   "description": "Pisa's verdicts on a labeled set of clips, scored against what each clip really is. false_positive_rate: real clips judged physically impossible, the number that matters most. detection_rate: generated clips judged physically impossible. inconclusive_rate: all clips judged inconclusive. conclusive_accuracy: among conclusive verdicts, the share that matches the truth. latency_s: seconds per clip, end to end.",
+   "description": "Pisa's verdicts on a labeled set of clips, scored against what each clip really is. false_positive_rate: real clips judged physically impossible, the number that matters most. detection_rate: generated clips judged physically impossible. inconclusive_rate: all clips judged inconclusive. conclusive_accuracy: among conclusive verdicts, the share that matches the truth. latency_s: seconds per clip, end to end. baseline: Muse Spark's opinion on the same clips, when it was asked.",
    "type": "object",
    "additionalProperties": false,
    "required": [
@@ -1291,7 +1304,8 @@ SCHEMA: dict[str, Any] = json.loads(
     "latency_s",
     "cost_usd",
     "cost_usd_per_clip",
-    "clips"
+    "clips",
+    "baseline"
    ],
    "properties": {
     "name": {
@@ -1363,6 +1377,59 @@ SCHEMA: dict[str, Any] = json.loads(
      "items": {
       "$ref": "#/$defs/EvalClip"
      }
+    },
+    "baseline": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/EvalBaseline"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   }
+  },
+  "EvalOpinion": {
+   "description": "A model's answer to \"Is this video real or AI-generated?\"",
+   "type": "string",
+   "enum": [
+    "real",
+    "generated",
+    "unsure"
+   ]
+  },
+  "EvalBaseline": {
+   "description": "Muse Spark asked \"Is this video real or AI-generated?\" about the same clips, scored like Pisa. false_positive_rate: real clips it called generated. detection_rate: generated clips it called generated. unsure_rate: all clips it would not call; failed calls count as unsure.",
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "model",
+    "question",
+    "false_positive_rate",
+    "detection_rate",
+    "unsure_rate",
+    "cost_usd"
+   ],
+   "properties": {
+    "model": {
+     "type": "string"
+    },
+    "question": {
+     "type": "string"
+    },
+    "false_positive_rate": {
+     "$ref": "#/$defs/EvalRate"
+    },
+    "detection_rate": {
+     "$ref": "#/$defs/EvalRate"
+    },
+    "unsure_rate": {
+     "$ref": "#/$defs/EvalRate"
+    },
+    "cost_usd": {
+     "type": "number",
+     "minimum": 0
     }
    }
   }

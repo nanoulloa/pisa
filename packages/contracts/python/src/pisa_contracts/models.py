@@ -30,8 +30,20 @@ user: a video someone submitted; never sent to a contributor-tier model. interna
 
 
 type Stage = Literal[
-    "ingest", "plan", "track", "stabilize", "measure", "test", "verdict", "explain", "render"
+    "ingest",
+    "plan",
+    "track",
+    "stabilize",
+    "measure",
+    "test",
+    "verdict",
+    "explain",
+    "render",
+    "baseline",
 ]
+"""
+Pipeline stages, in order. baseline is the eval's call asking Muse Spark for its opinion; no job ever runs it.
+"""
 
 
 type JobStatus = Literal["queued", "running", "done", "failed"]
@@ -539,6 +551,37 @@ class EvalTestStats(BaseModel):
     """
 
 
+class EvalSummary(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    median: Annotated[float | None, Field(ge=0.0)]
+    p90: Annotated[float | None, Field(ge=0.0)]
+    max: Annotated[float | None, Field(ge=0.0)]
+
+
+type EvalOpinion = Literal["real", "generated", "unsure"]
+"""
+A model's answer to "Is this video real or AI-generated?"
+"""
+
+
+class EvalBaseline(BaseModel):
+    """
+    Muse Spark asked "Is this video real or AI-generated?" about the same clips, scored like Pisa. false_positive_rate: real clips it called generated. detection_rate: generated clips it called generated. unsure_rate: all clips it would not call; failed calls count as unsure.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    model: str
+    question: str
+    false_positive_rate: EvalRate
+    detection_rate: EvalRate
+    unsure_rate: EvalRate
+    cost_usd: Annotated[float, Field(ge=0.0)]
+
+
 class EvalClip(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -554,20 +597,12 @@ class EvalClip(BaseModel):
     decisive_tests: list[TestId]
     latency_s: Annotated[float | None, Field(ge=0.0)]
     cost_usd: Annotated[float, Field(ge=0.0)]
-
-
-class EvalSummary(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    median: Annotated[float | None, Field(ge=0.0)]
-    p90: Annotated[float | None, Field(ge=0.0)]
-    max: Annotated[float | None, Field(ge=0.0)]
+    baseline: EvalOpinion | None
 
 
 class EvalReport(BaseModel):
     """
-    Pisa's verdicts on a labeled set of clips, scored against what each clip really is. false_positive_rate: real clips judged physically impossible, the number that matters most. detection_rate: generated clips judged physically impossible. inconclusive_rate: all clips judged inconclusive. conclusive_accuracy: among conclusive verdicts, the share that matches the truth. latency_s: seconds per clip, end to end.
+    Pisa's verdicts on a labeled set of clips, scored against what each clip really is. false_positive_rate: real clips judged physically impossible, the number that matters most. detection_rate: generated clips judged physically impossible. inconclusive_rate: all clips judged inconclusive. conclusive_accuracy: among conclusive verdicts, the share that matches the truth. latency_s: seconds per clip, end to end. baseline: Muse Spark's opinion on the same clips, when it was asked.
     """
 
     model_config = ConfigDict(
@@ -597,3 +632,4 @@ class EvalReport(BaseModel):
     """
     cost_usd_per_clip: EvalSummary
     clips: list[EvalClip]
+    baseline: EvalBaseline | None

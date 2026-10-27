@@ -18,10 +18,13 @@ export type JobSource = "web" | "whatsapp" | "eval";
  */
 export type DataPolicy = "user" | "internal";
 /**
+ * Pipeline stages, in order. baseline is the eval's call asking Muse Spark for its opinion; no job ever runs it.
+ *
  * This interface was referenced by `PisaContracts`'s JSON-Schema
  * via the `definition` "Stage".
  */
-export type Stage = "ingest" | "plan" | "track" | "stabilize" | "measure" | "test" | "verdict" | "explain" | "render";
+export type Stage =
+  "ingest" | "plan" | "track" | "stabilize" | "measure" | "test" | "verdict" | "explain" | "render" | "baseline";
 /**
  * This interface was referenced by `PisaContracts`'s JSON-Schema
  * via the `definition` "JobStatus".
@@ -80,6 +83,13 @@ export type GhostModel = "fit" | "earth_gravity" | "partner" | "elastic_bounce";
  * via the `definition` "EvalTruth".
  */
 export type EvalTruth = "real" | "generated";
+/**
+ * A model's answer to "Is this video real or AI-generated?"
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "EvalOpinion".
+ */
+export type EvalOpinion = "real" | "generated" | "unsure";
 
 /**
  * Shared contracts between the Pisa engine (Python) and web app (TypeScript). Conventions: every property is required and optional values are nullable; times are in seconds, lengths in meters, image coordinates in pixels with the origin at the top-left and y pointing down.
@@ -524,6 +534,7 @@ export interface EvalClip {
   decisive_tests: TestId[];
   latency_s: number | null;
   cost_usd: number;
+  baseline: EvalOpinion | null;
 }
 /**
  * This interface was referenced by `PisaContracts`'s JSON-Schema
@@ -535,7 +546,7 @@ export interface EvalSummary {
   max: number | null;
 }
 /**
- * Pisa's verdicts on a labeled set of clips, scored against what each clip really is. false_positive_rate: real clips judged physically impossible, the number that matters most. detection_rate: generated clips judged physically impossible. inconclusive_rate: all clips judged inconclusive. conclusive_accuracy: among conclusive verdicts, the share that matches the truth. latency_s: seconds per clip, end to end.
+ * Pisa's verdicts on a labeled set of clips, scored against what each clip really is. false_positive_rate: real clips judged physically impossible, the number that matters most. detection_rate: generated clips judged physically impossible. inconclusive_rate: all clips judged inconclusive. conclusive_accuracy: among conclusive verdicts, the share that matches the truth. latency_s: seconds per clip, end to end. baseline: Muse Spark's opinion on the same clips, when it was asked.
  *
  * This interface was referenced by `PisaContracts`'s JSON-Schema
  * via the `definition` "EvalReport".
@@ -565,4 +576,19 @@ export interface EvalReport {
   cost_usd: number;
   cost_usd_per_clip: EvalSummary;
   clips: EvalClip[];
+  baseline: EvalBaseline | null;
+}
+/**
+ * Muse Spark asked "Is this video real or AI-generated?" about the same clips, scored like Pisa. false_positive_rate: real clips it called generated. detection_rate: generated clips it called generated. unsure_rate: all clips it would not call; failed calls count as unsure.
+ *
+ * This interface was referenced by `PisaContracts`'s JSON-Schema
+ * via the `definition` "EvalBaseline".
+ */
+export interface EvalBaseline {
+  model: string;
+  question: string;
+  false_positive_rate: EvalRate;
+  detection_rate: EvalRate;
+  unsure_rate: EvalRate;
+  cost_usd: number;
 }
