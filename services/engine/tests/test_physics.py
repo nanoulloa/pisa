@@ -58,6 +58,28 @@ def test_a_bounce_splits_the_track_into_two_phases() -> None:
     assert phases[0].t[-1] < impact <= phases[1].t[0] + 1 / FPS
 
 
+@pytest.mark.parametrize("sigma_px", [0.5, 1.0, 2.0])
+def test_a_jittery_hold_is_still_a_rest(sigma_px: float) -> None:
+    """Trackers jitter on real footage, so a held ball is never perfectly still."""
+    trajectory = _scene_trajectory("free_fall", hold_s=0.2)
+    for seed in range(50):
+        (phase,) = flight_phases(_with_noise(trajectory, sigma_px, seed))
+        assert phase.t[0] == pytest.approx(0.2, abs=2.5 / FPS)
+
+
+@pytest.mark.parametrize("sigma_px", [0.5, 1.0, 2.0])
+def test_a_jittery_throw_from_the_hand_is_not_called_impossible(sigma_px: float) -> None:
+    """Found by the synthetic eval: with the hold left in, the jump to throwing speed looked
+    like acceleration that grows, and real throws were judged impossible."""
+    rows = BallScene(
+        hold_s=0.1, duration_s=0.9, x0_px=120.0, y0_px=600.0, vx_mps=1.0, vy_mps=-3.5
+    ).true_trajectory()
+    throw = Trajectory(t=rows[:, 0], x=rows[:, 1], y=rows[:, 2])
+    for seed in range(100):
+        phases = flight_phases(_with_noise(throw, sigma_px, seed))
+        assert decide([free_fall_shape(p) for p in phases]).label != "physically_impossible"
+
+
 def test_a_still_object_has_no_phases() -> None:
     t = np.arange(30) / FPS
     still = Trajectory(t=t, x=np.full_like(t, 10.0), y=np.full_like(t, 50.0))
