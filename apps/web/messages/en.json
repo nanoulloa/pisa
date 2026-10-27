@@ -49,7 +49,8 @@
     },
     "footer": {
       "built": "Built for the Meta Global AI Developer Hackathon with Muse Spark and SAM 3.1.",
-      "code": "Source code"
+      "code": "Source code",
+      "privacy": "Privacy"
     }
   },
   "Verdict": {
@@ -266,5 +267,39 @@
       "partner": "In the video, each lime circle shows where the object would be if both fell together.",
       "elastic_bounce": "In the video, the lime circle shows the highest bounce real physics allows."
     }
+  },
+  "Privacy": {
+    "eyebrow": "Privacy",
+    "title": "Privacy policy",
+    "lede": "Pisa checks whether the motion in a video is physically possible. It needs your video only for as long as it takes to measure it.",
+    "what": {
+      "title": "What Pisa receives",
+      "body": "The video you upload or forward, the language of the page or of your message and, on WhatsApp, your phone number so Pisa can reply. Pisa asks for nothing else: no account, no name, no location."
+    },
+    "kept": {
+      "title": "How long it is kept",
+      "body": "Your video is deleted as soon as the analysis ends. The evidence video, which shows your frames with the measurements drawn on them, is kept for 24 hours so you can watch and share it, then deleted. Pisa keeps the result: the verdict, the measurements and the measured paths. They contain no image, sound or personal detail, and anyone with the result's link can open it."
+    },
+    "models": {
+      "title": "Meta's AI models",
+      "body": "To find what moves in a video and to word the result, Pisa may send it to Meta's AI models (Muse Spark and SAM 3.1). While Pisa runs on the credits of Meta's hackathon, Meta may use what it receives to improve its products. Copies uploaded to Meta are deleted from its storage when each call ends."
+    },
+    "whatsapp": {
+      "title": "WhatsApp",
+      "body": "Messages reach Pisa through Meta's WhatsApp Business Platform. Pisa uses your number only to reply: it is not saved with your result, and records keep only an unreadable form of it. So it never answers twice, Pisa keeps message identifiers, not their content, for 7 days."
+    },
+    "browser": {
+      "title": "In your browser",
+      "body": "The website keeps your language in a cookie and your light or dark theme in your browser's storage. There are no analytics, advertising or tracking cookies."
+    },
+    "services": {
+      "title": "Who runs it",
+      "body": "The website runs on Vercel and the analysis on Modal; results and evidence videos are stored by Supabase. Each processes data only to run Pisa."
+    },
+    "rights": {
+      "title": "Questions and deletion",
+      "body": "To ask a question or have a result deleted, open an issue on Pisa's public repository with the result's link. Results hold no personal data, but they are deleted on request."
+    },
+    "updated": "Last updated: October 27, 2026."
   }
 }

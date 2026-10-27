@@ -529,6 +529,15 @@ button.button-secondary {
   cursor: pointer;
 }
 
+.privacy section h2 {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.privacy section p {
+  margin: 0;
+}
+
 .plan-list {
   display: grid;
   gap: 0.25rem;

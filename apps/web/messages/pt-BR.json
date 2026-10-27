@@ -49,7 +49,8 @@
     },
     "footer": {
       "built": "Feito para o Meta Global AI Developer Hackathon com Muse Spark e SAM 3.1.",
-      "code": "Código-fonte"
+      "code": "Código-fonte",
+      "privacy": "Privacidade"
     }
   },
   "Verdict": {
@@ -266,5 +267,39 @@
       "partner": "No vídeo, cada círculo verde-limão mostra onde o objeto estaria se os dois caíssem juntos.",
       "elastic_bounce": "No vídeo, o círculo verde-limão mostra o quique mais alto que a física real permite."
     }
+  },
+  "Privacy": {
+    "eyebrow": "Privacidade",
+    "title": "Política de privacidade",
+    "lede": "O Pisa verifica se o movimento de um vídeo é fisicamente possível. Ele precisa do seu vídeo só pelo tempo que leva para medi-lo.",
+    "what": {
+      "title": "O que o Pisa recebe",
+      "body": "O vídeo que você envia ou encaminha, o idioma da página ou da sua mensagem e, no WhatsApp, seu número de telefone para poder responder. O Pisa não pede mais nada: nem conta, nem nome, nem localização."
+    },
+    "kept": {
+      "title": "Por quanto tempo fica guardado",
+      "body": "Seu vídeo é apagado assim que a análise termina. O vídeo de evidência, que mostra suas imagens com as medições desenhadas, fica guardado por 24 horas para você assistir e compartilhar, e depois é apagado. O Pisa guarda o resultado: o veredito, as medições e as trajetórias medidas. Eles não contêm imagens, som nem dados pessoais, e qualquer pessoa com o link do resultado pode abri-lo."
+    },
+    "models": {
+      "title": "Modelos de IA da Meta",
+      "body": "Para encontrar o que se move num vídeo e redigir o resultado, o Pisa pode enviá-lo a modelos de IA da Meta (Muse Spark e SAM 3.1). Enquanto o Pisa usar os créditos do hackathon da Meta, a Meta pode usar o que recebe para melhorar seus produtos. As cópias enviadas à Meta são apagadas do armazenamento dela ao fim de cada chamada."
+    },
+    "whatsapp": {
+      "title": "WhatsApp",
+      "body": "As mensagens chegam ao Pisa pela plataforma WhatsApp Business da Meta. O Pisa usa seu número só para responder: ele não é guardado com o seu resultado e os registros mantêm apenas uma forma ilegível dele. Para não responder duas vezes, o Pisa guarda os identificadores das mensagens, não o conteúdo, por 7 dias."
+    },
+    "browser": {
+      "title": "No seu navegador",
+      "body": "O site guarda seu idioma num cookie e seu tema claro ou escuro no armazenamento do navegador. Não há cookies de análise, publicidade ou rastreamento."
+    },
+    "services": {
+      "title": "Quem opera",
+      "body": "O site roda na Vercel e a análise no Modal; os resultados e os vídeos de evidência ficam guardados no Supabase. Cada um trata os dados só para o Pisa funcionar."
+    },
+    "rights": {
+      "title": "Dúvidas e exclusão",
+      "body": "Para tirar uma dúvida ou pedir que um resultado seja apagado, abra uma issue no repositório público do Pisa com o link do resultado. Os resultados não contêm dados pessoais, mas são apagados se você pedir."
+    },
+    "updated": "Última atualização: 27 de outubro de 2026."
   }
 }

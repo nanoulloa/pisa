@@ -134,6 +134,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <a href={SOURCES.code} rel="noreferrer">
           {t("footer.code")}
         </a>
+        <Link href="/privacy">{t("footer.privacy")}</Link>
       </footer>
     </main>
   );

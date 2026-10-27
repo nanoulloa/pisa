@@ -45,3 +45,11 @@ test("the header shows the mark and links home", async ({ page }) => {
   await page.getByRole("link", { name: "Pisa, inicio" }).click();
   await expect(page).toHaveURL(/\/es$/);
 });
+
+test("the privacy policy is reachable from the home page", async ({ page }) => {
+  await page.goto("/es");
+  await page.getByRole("link", { name: "Privacidad" }).click();
+  await expect(page).toHaveURL(/\/es\/privacy$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Política de privacidad");
+  await expect(page.getByText("Tu video se borra en cuanto termina el análisis.")).toBeVisible();
+});
