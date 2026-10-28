@@ -172,6 +172,32 @@ def test_local_store_keeps_and_expires_videos(tmp_path: Path) -> None:
     assert store.locate(fresh) is not None
 
 
+def test_supabase_store_reuses_a_signed_link_while_it_has_time_left() -> None:
+    job = uuid4()
+    signs: list[httpx.Request] = []
+    now = [0.0]
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        signs.append(request)
+        return httpx.Response(
+            200, json={"signedURL": f"/object/sign/evidence/{job}.mp4?t={len(signs)}"}
+        )
+
+    store = SupabaseEvidenceStore(
+        "https://project.supabase.co",
+        SecretStr("sb_secret_not-real"),
+        httpx.MockTransport(respond),
+        clock=lambda: now[0],
+    )
+    first = store.locate(job)
+    now[0] = 49 * 60.0  # A shared link opened by the rest of the group within the hour.
+    assert store.locate(job) == first
+    assert len(signs) == 1
+    now[0] = 51 * 60.0  # Under ten minutes left: a fresh link.
+    assert store.locate(job) != first
+    assert len(signs) == 2
+
+
 def test_supabase_store_uses_the_storage_api() -> None:
     job, old, new = uuid4(), uuid4(), uuid4()
     requests: list[httpx.Request] = []

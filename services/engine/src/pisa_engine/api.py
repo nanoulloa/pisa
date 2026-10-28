@@ -241,15 +241,18 @@ def create_app(
         return {"status": "received"}
 
     @app.get("/jobs/{job_id}/evidence.mp4", response_model=None)
-    def get_evidence(job_id: UUID) -> Any:
-        """The evidence video while it lasts: the file, or a signed link valid for an hour."""
-        result = store.get_result(job_id)
+    async def get_evidence(job_id: UUID) -> Any:
+        """The evidence video while it lasts: the file, or a signed link valid for an hour.
+        The result and the link are fetched together; the link is used only if it may be."""
+        result, location = await asyncio.gather(
+            asyncio.to_thread(store.get_result, job_id),
+            asyncio.to_thread(evidence_store.locate, job_id),
+        )
         video = result.evidence.video if result and result.evidence else None
         if video is None:
             return _error(404, "evidence_not_found")
         if datetime.now(UTC) >= video.expires_at:
             return _error(404, "evidence_expired")
-        location = evidence_store.locate(job_id)
         if location is None:
             return _error(404, "evidence_expired")
         if isinstance(location, Path):

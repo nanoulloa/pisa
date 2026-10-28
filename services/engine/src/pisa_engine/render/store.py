@@ -9,6 +9,10 @@ from __future__ import annotations
 
 import logging
 import shutil
+import threading
+import time
+from collections import OrderedDict
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Protocol
@@ -21,6 +25,10 @@ logger = logging.getLogger(__name__)
 
 EVIDENCE_TTL = timedelta(hours=24)
 SIGNED_URL_TTL_S = 3600
+# Everyone who opens a shared result gets the same link while it has ten minutes left, so
+# only the first viewer waits for Storage to sign one.
+REUSE_SIGNED_S = SIGNED_URL_TTL_S - 600
+MAX_SIGNED = 1024
 BUCKET = "evidence"
 
 
@@ -64,8 +72,16 @@ class SupabaseEvidenceStore:
     """The private `evidence` bucket (supabase/migrations), through the Storage API."""
 
     def __init__(
-        self, url: str, secret_key: SecretStr, transport: httpx.BaseTransport | None = None
+        self,
+        url: str,
+        secret_key: SecretStr,
+        transport: httpx.BaseTransport | None = None,
+        *,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
+        self._clock = clock
+        self._signed: OrderedDict[UUID, tuple[str, float]] = OrderedDict()
+        self._lock = threading.Lock()
         key = secret_key.get_secret_value()
         headers = {"apikey": key}
         if key.startswith("eyJ"):  # Legacy service_role JWTs also go in Authorization.
@@ -87,6 +103,11 @@ class SupabaseEvidenceStore:
         response.raise_for_status()
 
     def locate(self, job_id: UUID) -> str | None:
+        now = self._clock()
+        with self._lock:
+            cached = self._signed.get(job_id)
+        if cached is not None and now - cached[1] < REUSE_SIGNED_S:
+            return cached[0]
         response = self._http.post(
             f"object/sign/{BUCKET}/{job_id}.mp4", json={"expiresIn": SIGNED_URL_TTL_S}
         )
@@ -94,7 +115,14 @@ class SupabaseEvidenceStore:
             return None
         response.raise_for_status()
         signed = response.json().get("signedURL")
-        return f"{self._base}{signed}" if isinstance(signed, str) else None
+        if not isinstance(signed, str):
+            return None
+        with self._lock:
+            self._signed[job_id] = (f"{self._base}{signed}", now)
+            self._signed.move_to_end(job_id)
+            while len(self._signed) > MAX_SIGNED:
+                self._signed.popitem(last=False)
+        return f"{self._base}{signed}"
 
     def delete_older_than(self, cutoff: datetime) -> int:
         stale = []
@@ -107,6 +135,9 @@ class SupabaseEvidenceStore:
                 "DELETE", f"object/{BUCKET}", json={"prefixes": stale[start : start + 1000]}
             )
             response.raise_for_status()
+        if stale:
+            with self._lock:
+                self._signed.clear()  # No link to a deleted video outlives it.
         return len(stale)
 
     def _list(self) -> list[dict[str, Any]]:
