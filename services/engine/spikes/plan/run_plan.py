@@ -98,8 +98,15 @@ async def _full(
     sam_model: str,
 ) -> list[CostEntry]:
     store = StorageJobStore(LocalStorage(out / "store"))
+    raw_count = 0
+
+    def save_raw(text: str) -> None:
+        nonlocal raw_count
+        raw_count += 1
+        (out / f"sam_raw_{raw_count}.txt").write_text(text)
+
     deps = PipelineDeps(
-        segmenter=Sam31Segmenter(client, model=sam_model),
+        segmenter=Sam31Segmenter(client, model=sam_model, on_raw_output=save_raw),
         store=store,
         planner=planner,
         explainer=MuseSparkExplainer(client),

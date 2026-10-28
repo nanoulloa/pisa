@@ -1,5 +1,16 @@
 # Progress
 
+## Day 8, first real run · Tuesday, Oct 27
+
+### Done
+
+- **Credits:** the $150 show under Billing as free credits. While they are in use Meta may use what it receives, so the WhatsApp receipt, README and submission draft now say so, like the upload page already did.
+- **First real calls to Muse Spark and SAM 3.1:** two of our renders through the whole pipeline, $0.0212 in total, recorded in the shared ledger. Upload, planning with video input, token counting, the SAM request and the Spanish explanation all work for real. Both clips came back Inconclusive: they are under a second long with a small ball, too little for Muse Spark to plan from, and SAM found nothing for the phrases it got. See [spikes/2026-10-27-first-real-run.md](spikes/2026-10-27-first-real-run.md).
+
+### Next
+
+- One run on a larger, longer render (`eval/raw/smoke/bounce-big.mp4`, at most about $0.07) or the first phone clip, to see SAM return real masks.
+
 ## Day 8, continued · Tuesday, Oct 27
 
 ### Done
