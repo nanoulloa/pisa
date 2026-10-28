@@ -79,6 +79,36 @@ def test_facts_hold_what_people_understand_and_no_pixels() -> None:
     assert facts["constants"]["earth_gravity_m_s2"] == 9.81
 
 
+def test_counts_are_named_for_what_they_count_and_matching_ratios_stay_out() -> None:
+    consistent = Verdict(
+        label="consistent_with_real_physics",
+        policy_version="0.1.0",
+        decisive_tests=["free_fall_shape", "bounce_energy", "time_base_consistency"],
+        reason_code=None,
+    )
+    falls = [
+        result("free_fall_shape", "pass", 1.0, [measurement("acceleration_px_s2", a, "px/s^2")])
+        for a in (3926.4, 3922.7, 3918.4)
+    ]
+    bounces = [
+        result("bounce_energy", "pass", 1.0, [measurement("restitution", e, "1")])
+        for e in (0.6997, 0.6994)
+    ]
+    same_g = result(
+        "time_base_consistency",
+        "pass",
+        1.0,
+        [measurement("acceleration_ratio", 1.002, "1"), measurement("flights", 3, "1")],
+    )
+    facts = explanation_facts(consistent, [*falls, *bounces, same_g], PLAN)
+    # A ball that bounced twice has three flight phases, and the explainer is told which is which.
+    assert facts["counts"] == {"bounces_measured": 2, "flight_phases_measured": 3}
+    assert all("acceleration_ratio" not in test for test in facts["tests"])
+    # The first real explanation quoted a ratio that matched: "1,0 frente a 1" is now refused.
+    assert unsupported_numbers("con un valor de 1,0 frente a 1", facts, "es") == [1.0, 1.0]
+    assert "flights" not in json.dumps(facts)
+
+
 @pytest.mark.parametrize(
     ("locale", "text", "numbers"),
     [

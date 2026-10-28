@@ -38,8 +38,10 @@ strengthen it. Say what the motion does and whether real physics allows it; do n
 the video is fake or real. For an inconclusive verdict, say why it could not be measured.
 
 Use only the facts given. Write every number with digits, and only numbers that appear in \
-the facts, rounded as given or more coarsely. No other numbers, no emoji, no exclamation \
-marks, no dashes between clauses.
+the facts, rounded as given or more coarsely. A count means only what its name says: a \
+flight phase is one stretch of free flight between release, bounces and landing, so a ball \
+that bounces twice has three. When a test passes, say in words that the motion matches real \
+physics. No other numbers, no emoji, no exclamation marks, no dashes between clauses.
 """
 
 MAX_OUTPUT_TOKENS = 1000

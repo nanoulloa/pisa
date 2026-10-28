@@ -25,12 +25,18 @@ _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
 def explanation_facts(
     verdict: Verdict, results: Sequence[TestResult], plan: Plan
 ) -> dict[str, Any]:
-    tests = [_test_facts(r) for r in results if r.outcome in ("pass", "violation")]
+    measured = [r for r in results if r.outcome in ("pass", "violation")]
+    # The number check cannot tell what a number counts, so every count is named for it.
+    counts = {
+        "bounces_measured": sum(r.test == "bounce_energy" for r in measured),
+        "flight_phases_measured": sum(r.test == "free_fall_shape" for r in measured),
+    }
     return {
         "verdict": verdict.label,
         "verdict_reason": verdict.reason_code,
         "decisive_tests": list(verdict.decisive_tests),
-        "tests": tests,
+        "tests": [_test_facts(r) for r in measured],
+        "counts": {name: count for name, count in counts.items() if count},
         "not_measured_because": sorted(
             {r.reason_code for r in results if r.outcome == "insufficient_data" and r.reason_code}
         ),
@@ -38,7 +44,6 @@ def explanation_facts(
         "constants": {
             "earth_gravity_m_s2": EARTH_G,
             "highest_possible_speed_kept_after_bounce_percent": 100,
-            "ratio_real_physics_gives": 1,
         },
     }
 
@@ -48,7 +53,9 @@ def _test_facts(test: TestResult) -> dict[str, Any]:
     facts: dict[str, Any] = {"test": test.test, "outcome": test.outcome, "reason": test.reason_code}
     if test.test == "bounce_energy" and "restitution" in values:
         facts["speed_kept_after_bounce_percent"] = round(values["restitution"].value * 100)
-    if test.test in ("galileo_pair", "time_base_consistency") and "acceleration_ratio" in values:
+    ratio_test = test.test in ("galileo_pair", "time_base_consistency")
+    # A ratio only says how far apart two accelerations are; one of 1.0 reads as noise.
+    if ratio_test and test.outcome == "violation" and "acceleration_ratio" in values:
         ratio = values["acceleration_ratio"].value
         facts["acceleration_ratio"] = round(max(ratio, 1 / ratio) if ratio > 0 else ratio, 2)
     if test.test == "implied_g" and "implied_g" in values:
@@ -60,8 +67,6 @@ def _test_facts(test: TestResult) -> dict[str, Any]:
             ratio = values["earth_g_ratio"].value
             facts["times_weaker_than_earth"] = round(ratio, 1) if ratio >= 1 else None
             facts["times_stronger_than_earth"] = round(1 / ratio, 1) if ratio < 1 else None
-    if test.test == "time_base_consistency" and "flights" in values:
-        facts["flights_compared"] = int(values["flights"].value)
     return facts
 
 
