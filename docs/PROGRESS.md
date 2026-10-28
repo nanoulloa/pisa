@@ -1,5 +1,17 @@
 # Progress
 
+## Day 9 · Wednesday, Oct 28
+
+### Done
+
+- **The explanation counts right:** the explainer now gets named counts (`bounces_measured`, `flight_phases_measured`) instead of the time-base test's bare flight count, and no ratio when a test passes. One real call on the bounce-big measurements ($0.0002) now says the ball flies 3 times and bounces 2, with no ratio. A matching ratio quoted as "1,0 frente a 1" is now refused by the number check.
+- **No ghost parked on the floor:** a ghost goes away when its object's next phase starts, leaving its path and measured points as a trail; the last phase's ghost stays where it ended, so the final gap of a fall stays in view. Re-rendered the bounce-big evidence offline from SAM's saved answer and checked frames before and after.
+- **Tests:** 204 engine tests (3 new), each failing on the old code.
+
+### Next
+
+- The founder's first phone clip. Watch where Muse Spark starts the event: on bounce-big it started 0.16 s after the release.
+
 ## Day 8, first real run · Tuesday, Oct 27
 
 ### Done
