@@ -7,9 +7,12 @@
 - **Credits:** the $150 show under Billing as free credits. While they are in use Meta may use what it receives, so the WhatsApp receipt, README and submission draft now say so, like the upload page already did.
 - **First real calls to Muse Spark and SAM 3.1:** two of our renders through the whole pipeline, $0.0212 in total, recorded in the shared ledger. Upload, planning with video input, token counting, the SAM request and the Spanish explanation all work for real. Both clips came back Inconclusive: they are under a second long with a small ball, too little for Muse Spark to plan from, and SAM found nothing for the phrases it got. See [spikes/2026-10-27-first-real-run.md](spikes/2026-10-27-first-real-run.md).
 
+- **Third real run, on a larger render (Oct 28):** SAM 3.1 tracked the ball within 1 px of its true position, the engine measured gravity within 0.2% and the bounce exactly, and the verdict was Consistent with real physics, for $0.019. It also found two bugs: the explanation counted 3 bounces instead of 2, and the evidence video leaves an earlier ghost parked on the floor while the ball bounces.
+
 ### Next
 
-- One run on a larger, longer render (`eval/raw/smoke/bounce-big.mp4`, at most about $0.07) or the first phone clip, to see SAM return real masks.
+- Fix the explanation's counts and the parked ghost.
+- The founder's first phone clip.
 
 ## Day 8, continued · Tuesday, Oct 27
 

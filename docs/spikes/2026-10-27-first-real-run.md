@@ -33,6 +33,19 @@ The shared ledger in Supabase recorded $0.0212 in total.
 
 About 270 input tokens per sampled frame for Muse Spark (1,617 tokens for 6 frames; 2,127 for 8). A 5 s phone clip sampled at 8 fps is about 11,000 tokens, roughly $0.02 on the standard tier with the plan's output. SAM is $0.20 per 1,000 frames, with a 50-frame minimum per request.
 
-## Next
+## Third run: a larger, longer render (Oct 28)
 
-`eval/raw/smoke/bounce-big.mp4`: 2.5 s at 60 fps, an 80 px ball on a textured background, held, released, bouncing. One run is at most about $0.07, mostly SAM (150 frames per phrase). Or the founder's first phone clip, which is the real target.
+`eval/raw/smoke/bounce-big.mp4`: 2.5 s at 60 fps, an 80 px ball on a textured background, held for 0.8 s, then falling and bouncing (restitution 0.7). Same command, `--name real-bounce-big`. $0.0190; the ledger now holds $0.0403.
+
+- **Plan:** one `bounce` event from 0.96 s to 2.44 s, phrase "orange circle", static camera.
+- **SAM 3.1:** one request, 91 billed frames, one object in 89 frames, confidence at least 0.965. Against the rendered truth, the centroid is off by 0.74 px at the median and 1.05 px at worst; the mask area is 3% larger than the disc. The raw answer is in `spikes/out/real-bounce-big/sam_raw_1.txt`.
+- **Physics:** three flight phases, measured accelerations of 3,918 to 3,926 px/s² against a true 3,924; speed kept after each bounce 70%, as rendered.
+- **Verdict:** Consistent with real physics, decided by the free-fall shape, bounce energy and time-base consistency.
+
+So the path from a real SAM answer to a verdict works, with sub-pixel accuracy on a clean clip.
+
+### Problems it found
+
+1. **The explanation miscounts.** It says the ball bounces 3 times; in the analyzed stretch it bounces twice (1.40 s and 2.25 s). The 3 is `flights_compared` from the time-base test, and the number check only asks whether a number exists in the facts, not what it counts. The last sentence also quotes a ratio ("un valor de 1,0 frente a 1"), which means nothing to most readers.
+2. **A ghost stays parked on the floor.** Each flight phase has its own ghost, and `_draw_ghost` keeps drawing a ghost at its last position after its phase ends. With bounces, the first ghost sits on the floor while the ball rises, as if physics said it should not bounce. Misleading on a consistent clip.
+3. **The planned window starts late.** The ball is released at 0.80 s; the event starts at 0.96 s, so SAM misses the first 0.16 s of the fall. Harmless here; worth watching on phone clips, where the first fall is the main evidence.
