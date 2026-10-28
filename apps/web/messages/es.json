@@ -256,7 +256,7 @@
   },
   "WhatsApp": {
     "welcome": "Hola, soy Pisa. Reenvíame un video en el que algo caiga, se lance o rebote y te digo si la física real pudo producirlo. No reviso rostros, voces ni sincronización de labios.",
-    "received": "Recibido. Estoy midiendo cómo se mueve lo que aparece y te respondo en menos de un minuto. Pisa borra tu video en un máximo de 24 horas y solo guarda las mediciones.",
+    "received": "Recibido. Estoy midiendo cómo se mueve lo que aparece y te respondo en menos de un minuto. Mientras Pisa use créditos del hackathon, Meta puede usar lo que recibe para mejorar sus modelos. Pisa borra tu video en un máximo de 24 horas y solo guarda las mediciones.",
     "onlyVideos": "Solo puedo revisar videos. Reenvíame el video que quieres comprobar.",
     "tooLarge": "Este video pesa más de 16 MB. Envía uno más corto, de hasta 60 segundos.",
     "rateLimited": "Ya revisaste muchos videos en la última hora. Vuelve a intentarlo más tarde.",

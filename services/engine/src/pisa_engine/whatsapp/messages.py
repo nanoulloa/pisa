@@ -11,7 +11,7 @@ MESSAGES: dict[str, dict[str, Any]] = json.loads(
  "en": {
   "WhatsApp": {
    "welcome": "Hi, I'm Pisa. Forward me a video where something falls, is thrown or bounces, and I'll tell you whether real physics could have made it. I don't check faces, voices or lip sync.",
-   "received": "Got it. I'm measuring how things move in it and will reply in under a minute. Pisa deletes your video within 24 hours and keeps only the measurements.",
+   "received": "Got it. I'm measuring how things move in it and will reply in under a minute. While Pisa runs on hackathon credits, Meta may use what it receives to improve its models. Pisa deletes your video within 24 hours and keeps only the measurements.",
    "onlyVideos": "I can only check videos. Forward me the video you want to check.",
    "tooLarge": "This video is larger than 16 MB. Send a shorter one, up to 60 seconds.",
    "rateLimited": "You've checked many videos in the last hour. Try again later.",
@@ -69,7 +69,7 @@ MESSAGES: dict[str, dict[str, Any]] = json.loads(
  "es": {
   "WhatsApp": {
    "welcome": "Hola, soy Pisa. Reenvíame un video en el que algo caiga, se lance o rebote y te digo si la física real pudo producirlo. No reviso rostros, voces ni sincronización de labios.",
-   "received": "Recibido. Estoy midiendo cómo se mueve lo que aparece y te respondo en menos de un minuto. Pisa borra tu video en un máximo de 24 horas y solo guarda las mediciones.",
+   "received": "Recibido. Estoy midiendo cómo se mueve lo que aparece y te respondo en menos de un minuto. Mientras Pisa use créditos del hackathon, Meta puede usar lo que recibe para mejorar sus modelos. Pisa borra tu video en un máximo de 24 horas y solo guarda las mediciones.",
    "onlyVideos": "Solo puedo revisar videos. Reenvíame el video que quieres comprobar.",
    "tooLarge": "Este video pesa más de 16 MB. Envía uno más corto, de hasta 60 segundos.",
    "rateLimited": "Ya revisaste muchos videos en la última hora. Vuelve a intentarlo más tarde.",
@@ -127,7 +127,7 @@ MESSAGES: dict[str, dict[str, Any]] = json.loads(
  "zh-CN": {
   "WhatsApp": {
    "welcome": "你好，我是 Pisa。把有物体下落、被抛出或弹跳的视频转发给我，我会告诉你真实的物理能否产生这样的运动。我不检查人脸、声音或对口型。",
-   "received": "收到。我正在测量视频中物体的运动，一分钟内回复你。Pisa 会在 24 小时内删除你的视频，只保留测量结果。",
+   "received": "收到。我正在测量视频中物体的运动，一分钟内回复你。在 Pisa 使用黑客松额度期间，Meta 可能会用收到的内容改进其模型。Pisa 会在 24 小时内删除你的视频，只保留测量结果。",
    "onlyVideos": "我只能检查视频。把你想检查的视频转发给我。",
    "tooLarge": "这个视频超过 16 MB。请发送一个更短的视频，不超过 60 秒。",
    "rateLimited": "你在过去一小时内已经检查了很多视频。请稍后再试。",
@@ -185,7 +185,7 @@ MESSAGES: dict[str, dict[str, Any]] = json.loads(
  "pt-BR": {
   "WhatsApp": {
    "welcome": "Oi, eu sou o Pisa. Encaminhe um vídeo em que algo cai, é arremessado ou quica e eu digo se a física real poderia ter produzido isso. Não verifico rostos, vozes nem sincronia labial.",
-   "received": "Recebido. Estou medindo como as coisas se movem e respondo em menos de um minuto. O Pisa apaga seu vídeo em até 24 horas e guarda só as medições.",
+   "received": "Recebido. Estou medindo como as coisas se movem e respondo em menos de um minuto. Enquanto o Pisa usar créditos do hackathon, a Meta pode usar o que recebe para melhorar seus modelos. O Pisa apaga seu vídeo em até 24 horas e guarda só as medições.",
    "onlyVideos": "Só consigo verificar vídeos. Encaminhe o vídeo que você quer verificar.",
    "tooLarge": "Este vídeo tem mais de 16 MB. Envie um mais curto, de até 60 segundos.",
    "rateLimited": "Você já verificou muitos vídeos na última hora. Tente de novo mais tarde.",

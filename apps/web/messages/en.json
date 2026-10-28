@@ -256,7 +256,7 @@
   },
   "WhatsApp": {
     "welcome": "Hi, I'm Pisa. Forward me a video where something falls, is thrown or bounces, and I'll tell you whether real physics could have made it. I don't check faces, voices or lip sync.",
-    "received": "Got it. I'm measuring how things move in it and will reply in under a minute. Pisa deletes your video within 24 hours and keeps only the measurements.",
+    "received": "Got it. I'm measuring how things move in it and will reply in under a minute. While Pisa runs on hackathon credits, Meta may use what it receives to improve its models. Pisa deletes your video within 24 hours and keeps only the measurements.",
     "onlyVideos": "I can only check videos. Forward me the video you want to check.",
     "tooLarge": "This video is larger than 16 MB. Send a shorter one, up to 60 seconds.",
     "rateLimited": "You've checked many videos in the last hour. Try again later.",

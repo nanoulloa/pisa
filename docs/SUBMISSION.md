@@ -37,7 +37,7 @@ Before any real video was involved, the eval on rendered clips with realistic tr
 - **Muse Spark 1.3, explainer:** words the verdict from the measurement facts alone. Every number in its answer is checked against the measurements, in the reader's locale; if one doesn't match, the answer is dropped for templated copy.
 - **Muse Spark 1.3, baseline:** the same model asked the plain question, to show what an opinion gets right and wrong next to a measurement.
 - **WhatsApp Cloud API:** signed webhooks, idempotent message handling, the evidence video and verdict sent back in the sender's language.
-- **Spend and privacy:** every paid call holds its worst-case cost against a shared cap before it is sent. User videos never go to the contributor tier, and raw videos are deleted after the analysis; evidence videos after 24 hours.
+- **Spend and privacy:** every paid call holds its worst-case cost against a shared cap before it is sent. User videos never go to the contributor tier, and raw videos are deleted after the analysis; evidence videos after 24 hours. While Pisa runs on the hackathon's credits, Meta may use what it receives to improve its products, and Pisa says so before upload on the web and in its first WhatsApp reply.
 
 ## Technical depth
 

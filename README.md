@@ -91,7 +91,7 @@ make eval-synthetic
 
 ### Paid API calls are off by default
 
-`PISA_PAID_CALLS_ENABLED=false` in `.env` blocks every Meta Model API request before it is sent. When enabled, every call first holds its worst-case cost against `PISA_SPEND_CAP_USD` in a ledger shared through Supabase, so every container and every local run stays under one cap. The deployed engine runs the free offline stages unless it is deployed with `make deploy-engine PAID=true`. User videos are never sent to `-contributor` tier models, which Meta may train on. Tests block all network access.
+`PISA_PAID_CALLS_ENABLED=false` in `.env` blocks every Meta Model API request before it is sent. When enabled, every call first holds its worst-case cost against `PISA_SPEND_CAP_USD` in a ledger shared through Supabase, so every container and every local run stays under one cap. The deployed engine runs the free offline stages unless it is deployed with `make deploy-engine PAID=true`. User videos are never sent to `-contributor` tier models, which Meta may train on. While the project runs on Meta's hackathon credits, Meta may still use what it receives to improve its products, so the upload page and the WhatsApp bot's first reply say so. Tests block all network access.
 
 ## License
 
