@@ -1,10 +1,11 @@
 """The evidence video: the clip with the object outlined, its measured points and the ghost.
 
 Only the measured events are shown, with half a second around them, and short events play
-at half speed so the ghost can be followed. Ghosts live in stabilized coordinates; each frame
-maps them back through the inverse of its camera transform, so on a shaky clip the ghost
-stays next to the object, not next to the frame. The output is H.264 in an MP4 that
-WhatsApp accepts (under 16 MB).
+at half speed so the ghost can be followed. After a bounce only the new phase's ghost moves;
+the earlier ones leave their paths and measured points behind as a trail. Ghosts live in
+stabilized coordinates; each frame maps them back through the inverse of its camera
+transform, so on a shaky clip the ghost stays next to the object, not next to the frame.
+The output is H.264 in an MP4 that WhatsApp accepts (under 16 MB).
 """
 
 from __future__ import annotations
@@ -156,9 +157,12 @@ def _to_frame(camera: CameraPath, index: int) -> FloatArray:
 def _draw_ghost(frame: Image, ghost: Ghost, t: float, to_frame: FloatArray, radius: float) -> None:
     """The ghost, the path it took, and where the object was measured before now. The path
     and the ghost are translucent and nothing is drawn at the object's current position, so
-    the object itself always stays visible."""
+    the object itself always stays visible. Once the object's next phase has started only the
+    path and the points remain: a ghost parked on the floor would say the object should not
+    have bounced."""
     if t < ghost.start_s:
         return
+    shown = ghost.gone_s is None or t < ghost.gone_s
     now = min(t, ghost.end_s)
     steps = max(2, int((now - ghost.start_s) * 120) + 1)
     times = np.linspace(ghost.start_s, now, steps)
@@ -171,9 +175,11 @@ def _draw_ghost(frame: Image, ghost: Ghost, t: float, to_frame: FloatArray, radi
         line = (path * (1 << _SHIFT)).round().astype(np.int32).reshape(-1, 1, 2)
         cv2.polylines(overlay, [line], False, LIME, 3, cv2.LINE_AA, _SHIFT)
     x, y = path[-1]
-    _circle(overlay, x, y, radius, LIME, -1)
+    if shown:
+        _circle(overlay, x, y, radius, LIME, -1)
     cv2.addWeighted(overlay, GHOST_ALPHA, frame, 1 - GHOST_ALPHA, 0, dst=frame)
-    _circle(frame, x, y, radius, INK, 2)
+    if shown:
+        _circle(frame, x, y, radius, INK, 2)
     for px, py in points[:-1]:  # Where the object was measured, up to its last position.
         _circle(frame, px, py, 3.0, PAPER, -1)
         _circle(frame, px, py, 3.0, INK, 1)

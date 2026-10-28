@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Literal
 
 import numpy as np
@@ -48,7 +48,9 @@ class OwnedFlight:
 @dataclass(frozen=True, slots=True)
 class Ghost:
     """y(t) = y0 + vy (t - t_ref) + a (t - t_ref)^2 / 2 and x(t) = x0 + vx (t - t_ref), in
-    stabilized pixels with y down, shown from `start_s` to `end_s`."""
+    stabilized pixels with y down, shown from `start_s` to `end_s`. When the object's next
+    phase starts (`gone_s`, after a bounce) the ghost goes away, since that phase has its own;
+    the ghost of a last phase stays where it ended, so the final gap stays in view."""
 
     phrase: str
     object_id: int
@@ -63,6 +65,7 @@ class Ghost:
     vy: float
     acceleration: float
     px_per_m: float | None
+    gone_s: float | None = None
 
     def position(self, t: FloatArray) -> tuple[FloatArray, FloatArray]:
         tau = t - self.t_ref
@@ -95,14 +98,16 @@ def ghosts(
             bounce = next((b for b in owned.flight.bounces if b.after is phase), None)
             elastic = _elastic(owned, bounce, px_per_m) if bounce is not None else None
             if elastic is not None:
-                found.append(elastic)
+                ghost = elastic
             elif number == 0 and index in shared:
-                found.append(_anchored(owned, phase, "partner", shared[index], px_per_m))
+                ghost = _anchored(owned, phase, "partner", shared[index], px_per_m)
             elif px_per_m is not None and not slow_motion and _not_earth(phase, scale):
                 earth = EARTH_G * px_per_m
-                found.append(_anchored(owned, phase, "earth_gravity", earth, px_per_m))
+                ghost = _anchored(owned, phase, "earth_gravity", earth, px_per_m)
             else:
-                found.append(_fitted(owned, phase, px_per_m))
+                ghost = _fitted(owned, phase, px_per_m)
+            later = owned.flight.phases[number + 1 :]
+            found.append(replace(ghost, gone_s=float(later[0].t[0]) if later else None))
     return sorted(found, key=lambda ghost: ghost.telling(), reverse=True)
 
 

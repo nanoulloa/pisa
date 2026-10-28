@@ -21,10 +21,10 @@ from pisa_engine.api import create_app
 from pisa_engine.ingest.normalize import normalize
 from pisa_engine.jobs import StorageJobStore
 from pisa_engine.physics.implied_g import Scale
-from pisa_engine.physics.trajectory import from_track, segment_flight
+from pisa_engine.physics.trajectory import Trajectory, from_track, segment_flight
 from pisa_engine.render.ghost import Ghost, OwnedFlight, ghosts
 from pisa_engine.render.store import LocalEvidenceStore, SupabaseEvidenceStore, delete_expired
-from pisa_engine.render.video import _to_frame, render_evidence
+from pisa_engine.render.video import PAPER, _draw_ghost, _to_frame, render_evidence
 from pisa_engine.settings import Settings
 from pisa_engine.storage import LocalStorage
 from pisa_engine.synthetic import BallScene, render
@@ -115,6 +115,28 @@ async def test_on_a_shaky_clip_the_ghost_is_drawn_where_the_object_is(tmp_path: 
         drawn = to_frame @ np.array([x[0], y[0], 1.0])
         # Within a pixel of the ball in the shaken frame, not of the stabilized one.
         assert np.hypot(drawn[0] - sample.centroid.x, drawn[1] - sample.centroid.y) < 1.5
+
+
+def test_after_a_bounce_the_earlier_ghost_leaves_only_its_path() -> None:
+    scene = BallScene(profile="bounce", restitution=0.7, duration_s=1.4)
+    rows = scene.true_trajectory()
+    flight = segment_flight(Trajectory(t=rows[:, 0], x=rows[:, 1], y=rows[:, 2]))
+    found = ghosts([OwnedFlight("ball", 0, flight)], scale=None, slow_motion=False)
+    first = min(found, key=lambda g: g.start_s)
+    assert first.gone_s is not None
+    radius = scene.radius_px
+    (x,), (y,) = first.position(np.array([first.end_s]))
+    ys, xs = np.ogrid[: scene.height, : scene.width]
+    inside = (xs - x) ** 2 + (ys - y) ** 2 <= (radius - 3) ** 2
+
+    def drawn_share(t: float) -> float:
+        frame = np.full((scene.height, scene.width, 3), PAPER, dtype=np.uint8)
+        _draw_ghost(frame, first, t, np.eye(3)[:2], radius)
+        return float((frame[inside] != PAPER).any(axis=1).mean())
+
+    assert drawn_share(first.end_s) > 0.9  # Until the bounce, the ghost is there.
+    # Once the ball has bounced, a ghost left on the floor would say it should not have.
+    assert drawn_share(first.gone_s + 0.1) < 0.4
 
 
 def test_nothing_measured_draws_nothing(tmp_path: Path) -> None:

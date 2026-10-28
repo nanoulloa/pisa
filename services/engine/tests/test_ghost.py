@@ -93,6 +93,14 @@ def test_a_real_bounce_keeps_the_closest_gravity_path() -> None:
     assert max(g.deviation_px() for g in found) < 0.5
 
 
+def test_after_a_bounce_the_earlier_ghost_goes_away() -> None:
+    bounce = _scene(profile="bounce", restitution=0.7, duration_s=1.4, vx_mps=0.5)
+    found = sorted(ghosts([bounce], scale=None, slow_motion=False), key=lambda g: g.start_s)
+    phases = bounce.flight.phases
+    assert found[0].gone_s == pytest.approx(phases[1].t[0])  # When the next phase starts.
+    assert found[-1].gone_s is None  # The last one stays where it ended.
+
+
 def test_series_hold_the_measured_points_and_the_ghost_at_the_same_times() -> None:
     moon = _scene(g_mps2=1.62, hold_s=0.1, duration_s=0.7)
     found = ghosts([moon], scale=EXACT, slow_motion=False)
