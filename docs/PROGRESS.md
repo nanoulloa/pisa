@@ -7,10 +7,16 @@
 - **The explanation counts right:** the explainer now gets named counts (`bounces_measured`, `flight_phases_measured`) instead of the time-base test's bare flight count, and no ratio when a test passes. One real call on the bounce-big measurements ($0.0002) now says the ball flies 3 times and bounces 2, with no ratio. A matching ratio quoted as "1,0 frente a 1" is now refused by the number check.
 - **No ghost parked on the floor:** a ghost goes away when its object's next phase starts, leaving its path and measured points as a trail; the last phase's ghost stays where it ended, so the final gap of a fall stays in view. Re-rendered the bounce-big evidence offline from SAM's saved answer and checked frames before and after.
 - **Tests:** 204 engine tests (3 new), each failing on the old code.
+- **Captions for the evidence video**, in four languages, and a name for screen readers. The engine records where in the clip the video starts so the captions line up.
+- **Accessibility:** axe checks WCAG 2.2 AA on every screen, a result for each verdict and an error, in light and dark: no violations (a planted contrast bug was caught, so the check works). The check page works by keyboard with a visible focus ring.
+- **Speed on a phone** (emulated mid-range phone, slow 4G, 4x slower CPU): home, check and How we know paint in 0.8 to 1 s. The result page painted its verdict at 3.4 s; it is now rendered on the server and paints at about 1.3 s. The evidence video's first frame comes at 2.6 to 4 s, mostly the trips to Modal and Supabase; the redirect is faster (0.5 to 0.7 s, was 0.8 to 1.1 s), and a shared link reuses its signed URL. Scripts are 162 KB compressed with no chart library, so there is nothing heavy to lazy-load.
+- **Deployed:** the engine on Modal (free mode) and the web on Vercel, checked with a rendered bounce through the live site: Consistent, Spanish captions, no WCAG violations.
+- **Tests:** 206 engine, 19 Vitest, 35 Playwright.
 
 ### Next
 
 - The founder's first phone clip. Watch where Muse Spark starts the event: on bounce-big it started 0.16 s after the release.
+- Then the real and generated clips, the filmed eval, the baseline, calibration and publish, the demo video and the submission.
 
 ## Day 8, first real run · Tuesday, Oct 27
 

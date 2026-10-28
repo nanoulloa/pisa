@@ -133,3 +133,12 @@ One entry per decision that would be expensive to undo: context, decision, why.
 ## 2026-10-27 · One spend cap for every engine, in Supabase
 
 **Context.** The cap was enforced against a JSON Lines file, which Modal containers lose when they scale to zero and do not share, so two containers could each stay under the cap and together cross it. That was the reason paid calls stayed off on Modal. **Decision.** Ledgers now grant holds themselves. In Supabase, `spend_reserve`, `spend_settle` and `spend_release` take a transaction-level advisory lock, so holds are granted one at a time, and a hold is granted only if spent plus held stays under the cap. Only the secret key can call them. Every engine with Supabase configured (Modal containers, local runs, spikes, the eval) shares the one cap. A hold whose settle fails, or whose container dies, stays counted at the worst case. Ledger calls run off the event loop. Paid calls on Modal stay off until `make deploy-engine PAID=true`. **Why.** The founder's money is protected by one number that no number of containers can get around, and switching the real models on is one deliberate command.
+
+## 2026-10-28 · A finished result is rendered on the server
+
+**Context.** Most people open a result from a WhatsApp link, on a phone. Measured on an emulated mid-range phone over slow 4G, the verdict painted at 3.4 s: the server sent an empty progress view, and the verdict waited for the scripts, then a job request, then a result request. **Decision.** The result page asks the engine for the result on the server, with a 1.5 s limit, and renders it when the job is done; otherwise the browser polls as before. **Why.** The verdict now paints at about 1.3 s. A slow or cold engine costs at most 1.5 s before the progress view, the same wait the browser would have had.
+
+## 2026-10-28 · Captions describe a silent video
+
+**Context.** The brief asks for captions on the evidence video, which has no sound. **Decision.** WebVTT captions say what is drawn and when: the ring and the dots, the law each ghost follows, and the verdict at the end, from the result and the page's messages. The engine records where in the clip the video starts so flights measured in clip time can be placed. The field is optional, so results saved before it still load; they show no captions. **Why.** It gives people who cannot see the colors or follow the motion the same story in words, in their language, without a second render.
+

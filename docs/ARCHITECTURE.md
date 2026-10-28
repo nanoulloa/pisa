@@ -31,7 +31,7 @@ flowchart TB
     JOB -- reply --> WA
 ```
 
-Status after day 5: every stage from upload to the evidence video and share card runs locally, end to end in CI, and deployed. The deployed engine uses the free offline stages (whole-clip planner, color segmenter, templated explanations) until paid calls are switched on; the Muse Spark planner and explainer and SAM 3.1 are built and tested offline against the request and response shapes in Meta's documentation; none has been called for real yet. The WhatsApp webhook is next.
+Status on day 9: every stage from upload to the evidence video, share card and WhatsApp reply runs locally, end to end in CI, and deployed. The deployed engine uses the free offline stages (whole-clip planner, color segmenter, templated explanations) until paid calls are switched on there. Muse Spark and SAM 3.1 have run for real through the whole pipeline from a developer machine (see `docs/spikes/2026-10-27-first-real-run.md`); the filmed eval waits for real clips.
 
 ### Deployment (all on free plans, no payment method anywhere)
 
@@ -107,13 +107,17 @@ T1, T2, T3 and T5 need no scale and no true frame rate, so slow motion cannot fo
 
 ### Explain
 
-`MuseSparkExplainer` sends Muse Spark the facts, never the video: the verdict, and only the measurements a reader understands, already rounded (ratios, the share of speed a bounce keeps, gravity in m/s², a few constants such as Earth's g). It asks for two or three plain sentences in the job's language, with minimal reasoning. The answer is kept only if every number written in it, read in the conventions of its language (decimal comma in Spanish and Portuguese), is one of the facts rounded no more finely than given. Otherwise, or when the call fails or paid calls are off, there is no explanation and the clients use their templated copy, which exists in all four languages. The stage never fails a job.
+`MuseSparkExplainer` sends Muse Spark the facts, never the video: the verdict, and only the measurements a reader understands, already rounded (ratios, the share of speed a bounce keeps, gravity in m/s², a few constants such as Earth's g). Counts are named for what they count (`bounces_measured`, `flight_phases_measured`), since the number check cannot tell what a number means, and a ratio is passed only when it shows a violation. It asks for two or three plain sentences in the job's language, with minimal reasoning. The answer is kept only if every number written in it, read in the conventions of its language (decimal comma in Spanish and Portuguese), is one of the facts rounded no more finely than given. Otherwise, or when the call fails or paid calls are off, there is no explanation and the clients use their templated copy, which exists in all four languages. The stage never fails a job.
 
 ### Render
 
 `ghosts()` gives every measured flight a ghost: it leaves with its object (same place, same speed, from the object's own fit) and then follows a law. It follows a stricter law only where that law's test found a violation, so on a real clip every ghost runs on top of its object: after a bounce that gains energy, the highest bounce physics allows (`elastic_bounce`); for two objects released together that fall apart, their shared acceleration (`partner`); when a size reference shows gravity that is not Earth's, Earth's gravity at the measured scale (`earth_gravity`); otherwise the closest constant-gravity path (`fit`). Ghosts are ranked by how far they part from their objects, and the result keeps the first six as `EvidenceSeries` for charts.
 
-`render_evidence()` cuts the clip to the measured events plus half a second, plays events shorter than 4 s at half speed, scales to at most 1280 px, and draws the tracked object's two-tone ring, the points measured so far, and the translucent lime ghost with its path. Ghosts live in stabilized coordinates; each frame maps them back through the inverse of its camera transform. Output is H.264 (main profile, at most 2 Mbit/s) under WhatsApp's 16 MB.
+`render_evidence()` cuts the clip to the measured events plus half a second, plays events shorter than 4 s at half speed, scales to at most 1280 px, and draws the tracked object's two-tone ring, the points measured so far, and the translucent lime ghost with its path. When the object's next phase starts (after a bounce) the earlier ghost goes away and leaves its path as a trail; the last phase's ghost stays where it ended, so the final gap of a fall stays in view. Ghosts live in stabilized coordinates; each frame maps them back through the inverse of its camera transform. Output is H.264 (main profile, at most 2 Mbit/s) under WhatsApp's 16 MB.
+
+The result records where in the clip the video starts (`source_start_s`) and its playback rate, so the web app can serve captions for it at `/[locale]/result/[id]/captions.vtt`: the video has no sound, and the captions say what is drawn and when, in the page's language. `GET /jobs/{id}/evidence.mp4` reads the result and signs the link together, and reuses a signed link while it has ten minutes left, so the rest of a group opening a shared result skips the signing.
+
+The result page asks the engine for the result on the server (giving up after 1.5 s) and, when the job is done, sends the verdict in the HTML; unfinished jobs poll from the browser. On an emulated phone over slow 4G the verdict paints at about 1.3 s.
 
 The video shows the user's frames, so it follows the raw video's rule: it is kept for 24 hours in the private Supabase bucket `evidence` (16 MB, MP4 only), then deleted through the Storage API by a Modal function that runs hourly, and also swept when jobs arrive. `GET /jobs/{id}/evidence.mp4` answers with a signed link valid for one hour, or 404 once `expires_at` has passed even if the sweep has not run yet. Locally the video stays on disk. `PISA_STORE=local` keeps jobs, results and evidence on disk even when `.env` configures Supabase.
 
@@ -144,7 +148,7 @@ Uploaded files never expire on Meta's side unless asked, so every upload is dele
 - Synthetic clips with known gravity run through ingest and tracking; tests recover g within 1% from pixels.
 - Every law has a pass case, a violation case and a false-positive test on hundreds of noisy real trajectories (T1 falls and throws from the hand, T2 pairs, T3 bounces with restitution up to 1.0, T5 bounces). None is ever called a violation.
 - Rendered clips run through the whole API: a real bounce, a bounce that gains energy, two balls falling together and apart, and a shaky handheld fall and fake, each with the expected verdict and decisive test.
-- Web: Vitest checks every locale has the same ICU keys and the agreed core terms; Playwright smoke-tests routing and the language switcher, then uploads five rendered clips to the real engine and checks each verdict, explanation and card.
+- Web: Vitest checks every locale has the same ICU keys and the agreed core terms, and the captions' timing; Playwright smoke-tests routing and the language switcher, then uploads five rendered clips to the real engine and checks each verdict, explanation and card. axe checks WCAG 2.2 AA on every screen, a result for each verdict and an error, in both themes with every disclosure open; one test walks the check page by keyboard and checks the focus ring.
 - CI: ruff, mypy strict, pytest, contract drift, ESLint, tsc strict, Vitest, build, Playwright and gitleaks on every push.
 
 ## Evaluation
