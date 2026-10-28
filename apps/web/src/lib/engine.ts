@@ -28,6 +28,22 @@ export function getResult(id: string): Promise<AnalysisResult> {
   return request<AnalysisResult>(`/jobs/${encodeURIComponent(id)}/result`);
 }
 
+/**
+ * On the server: the result when the job is done, else null. It never throws and gives up
+ * quickly, so a slow engine only means the browser asks instead.
+ */
+export async function finishedResult(id: string): Promise<AnalysisResult | null> {
+  try {
+    const response = await fetch(`${ENGINE_URL}/jobs/${encodeURIComponent(id)}/result`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(1500),
+    });
+    return response.ok ? ((await response.json()) as AnalysisResult) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {

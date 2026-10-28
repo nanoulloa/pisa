@@ -27,6 +27,10 @@ test("eased motion is physically impossible", async ({ page }) => {
   await expect(page.getByText("T1 Free-fall shape · violation")).toBeVisible();
   await expect(page.getByText("What Pisa watched")).toBeVisible();
   await expect(page.getByText("Fall, from 0 s to 0.75 s: ball")).toBeVisible();
+
+  // Opened again, as from a WhatsApp link, the verdict is already in the page's HTML.
+  const html = await (await page.request.get(page.url())).text();
+  expect(html).toContain("The object slows down while it is still falling.");
 });
 
 test("constant speed is inconclusive, and says why", async ({ page }) => {

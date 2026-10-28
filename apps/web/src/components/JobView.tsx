@@ -22,12 +22,14 @@ const STEPS = [
 
 type StepState = "done" | "current" | "pending";
 
-export function JobView({ id }: { id: string }) {
-  const [job, setJob] = useState<Job | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+/** Polls the job until it is done, unless the server already sent its result as `initial`. */
+export function JobView({ id, initial = null }: { id: string; initial?: AnalysisResult | null }) {
+  const [job, setJob] = useState<Job | null>(initial?.job ?? null);
+  const [result, setResult] = useState<AnalysisResult | null>(initial);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initial !== null) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -54,7 +56,7 @@ export function JobView({ id }: { id: string }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [id]);
+  }, [id, initial]);
 
   if (result !== null) return <ResultView result={result} />;
   return <Progress stage={job?.stage ?? null} error={error} />;
