@@ -273,6 +273,7 @@ async def _evidence(
                 height=rendered.height,
                 duration_s=rendered.duration_s,
                 playback_rate=rendered.playback_rate,
+                source_start_s=rendered.start_s,
                 size_bytes=rendered.size_bytes,
                 expires_at=datetime.now(UTC) + EVIDENCE_TTL,
             )

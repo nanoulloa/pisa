@@ -428,6 +428,10 @@ export interface EvidenceVideo {
    * 1 for real time; 0.5 when short events are slowed to half speed.
    */
   playback_rate: number;
+  /**
+   * Clip time of the video's first frame: a moment t of the clip plays at (t - source_start_s) / playback_rate, which places the captions. Left out by results saved before captions existed.
+   */
+  source_start_s?: number | null;
   size_bytes: number;
   expires_at: string;
 }

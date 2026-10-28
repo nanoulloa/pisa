@@ -49,6 +49,7 @@ class RenderedVideo:
     height: int
     duration_s: float
     playback_rate: float
+    start_s: float  # Clip time of the first frame.
     size_bytes: int
 
 
@@ -129,6 +130,7 @@ def render_evidence(
         height=out_h,
         duration_s=round(shown_s / rate, 3),
         playback_rate=rate,
+        start_s=round(timebase.start_s + first / fps, 4),
         size_bytes=size,
     )
 

@@ -210,6 +210,16 @@
         "partner": "Onde ele estaria se os dois caíssem juntos",
         "elastic_bounce": "O quique mais alto que a física real permite"
       },
+      "label": "Vídeo de evidência",
+      "captions": {
+        "label": "O que o vídeo mostra",
+        "intro": "O anel marca o objeto que o Pisa acompanhou. Os pontos, onde ele foi medido.",
+        "fit": "O fantasma segue o caminho mais próximo que a gravidade real permite.",
+        "earth_gravity": "O fantasma cai com a gravidade da Terra.",
+        "partner": "O fantasma cai como cairia se os dois caíssem juntos.",
+        "elastic_bounce": "O fantasma sobe tão alto quanto a física real permite.",
+        "verdict": "Veredito do Pisa: {verdict}."
+      },
       "slowed": "Reproduzido na metade da velocidade.",
       "kept": "O Pisa guarda este vídeo por 24 horas e depois o apaga. As medições ficam.",
       "expired": "O vídeo de evidência foi apagado 24 horas depois da verificação, para proteger sua privacidade. As medições abaixo ficam."

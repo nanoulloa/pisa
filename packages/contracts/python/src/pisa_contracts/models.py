@@ -442,6 +442,10 @@ class EvidenceVideo(BaseModel):
     """
     1 for real time; 0.5 when short events are slowed to half speed.
     """
+    source_start_s: Annotated[float | None, Field(ge=0.0)] = None
+    """
+    Clip time of the video's first frame: a moment t of the clip plays at (t - source_start_s) / playback_rate, which places the captions. Left out by results saved before captions existed.
+    """
     size_bytes: Annotated[int, Field(ge=0)]
     expires_at: AwareDatetime
 

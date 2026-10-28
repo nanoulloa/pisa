@@ -101,6 +101,15 @@ async def test_the_earth_ghost_falls_away_from_a_moon_fall(tmp_path: Path) -> No
     assert ghost[1] - ball[1] > 150  # Under Earth's gravity it would be far lower by now.
 
 
+async def test_the_video_says_where_in_the_clip_it_starts(tmp_path: Path) -> None:
+    scene = BallScene(hold_s=1.0, duration_s=1.5)
+    clip, ingest, path, objects, found = await _measure(scene, tmp_path, None)
+    video = render_evidence(clip, ingest.timebase, path, objects, found, tmp_path / "evidence.mp4")
+    assert video is not None
+    # Half a second before the fall, so captions written in clip time can be placed.
+    assert video.start_s == pytest.approx(found[0].start_s - 0.5, abs=1 / scene.fps)
+
+
 async def test_on_a_shaky_clip_the_ghost_is_drawn_where_the_object_is(tmp_path: Path) -> None:
     scene = BallScene(textured=True, camera_shake_px=10.0, hold_s=0.1, duration_s=0.7, vx_mps=0.8)
     _, ingest, path, objects, found = await _measure(scene, tmp_path, None)
@@ -233,6 +242,7 @@ def test_the_result_carries_evidence_and_the_engine_serves_the_video(
     assert result["job"]["stage"] == "render"
     evidence = result["evidence"]
     assert evidence["video"]["playback_rate"] == 0.5
+    assert evidence["video"]["source_start_s"] == 0.0  # The padding reaches the clip's start.
     expires = datetime.fromisoformat(evidence["video"]["expires_at"])
     assert timedelta(hours=23) < expires - datetime.now(UTC) <= timedelta(hours=24)
     (series,) = evidence["series"]

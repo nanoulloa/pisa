@@ -888,6 +888,14 @@ SCHEMA: dict[str, Any] = json.loads(
      "type": "number",
      "minimum": 0
     },
+    "source_start_s": {
+     "description": "Clip time of the video's first frame: a moment t of the clip plays at (t - source_start_s) / playback_rate, which places the captions. Left out by results saved before captions existed.",
+     "type": [
+      "number",
+      "null"
+     ],
+     "minimum": 0
+    },
     "size_bytes": {
      "type": "integer",
      "minimum": 0

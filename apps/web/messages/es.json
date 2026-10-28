@@ -210,6 +210,16 @@
         "partner": "Dónde estaría si los dos cayeran juntos",
         "elastic_bounce": "El rebote más alto que permite la física real"
       },
+      "label": "Video de evidencia",
+      "captions": {
+        "label": "Qué muestra el video",
+        "intro": "El anillo marca el objeto que siguió Pisa. Los puntos, dónde se midió.",
+        "fit": "El fantasma sigue el camino más cercano que permite la gravedad real.",
+        "earth_gravity": "El fantasma cae con la gravedad de la Tierra.",
+        "partner": "El fantasma cae como caería si los dos cayeran juntos.",
+        "elastic_bounce": "El fantasma sube tan alto como permite la física real.",
+        "verdict": "Veredicto de Pisa: {verdict}."
+      },
       "slowed": "Se reproduce a la mitad de la velocidad.",
       "kept": "Pisa guarda este video 24 horas y luego lo borra. Las mediciones se quedan.",
       "expired": "El video de evidencia se borró 24 horas después de la revisión, para proteger tu privacidad. Las mediciones de abajo se quedan."

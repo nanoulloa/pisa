@@ -210,6 +210,16 @@
         "partner": "Where it would be if both fell together",
         "elastic_bounce": "The highest bounce real physics allows"
       },
+      "label": "Evidence video",
+      "captions": {
+        "label": "What the video shows",
+        "intro": "The ring marks the object Pisa tracked. The dots mark where it was measured.",
+        "fit": "The ghost follows the closest path real gravity allows.",
+        "earth_gravity": "The ghost falls with Earth's gravity.",
+        "partner": "The ghost falls the way it would if both fell together.",
+        "elastic_bounce": "The ghost rises as high as real physics allows.",
+        "verdict": "Pisa's verdict: {verdict}."
+      },
       "slowed": "Played at half speed.",
       "kept": "Pisa keeps this video for 24 hours, then deletes it. The measurements stay.",
       "expired": "The evidence video was deleted 24 hours after the check, to protect your privacy. The measurements below stay."

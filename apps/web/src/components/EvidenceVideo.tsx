@@ -1,14 +1,18 @@
 "use client";
 
 import type { EvidenceVideo as Video, GhostModel } from "@pisa/contracts";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { ENGINE_URL } from "@/lib/engine";
 
-/** The clip with the object outlined and its ghost; it plays by itself unless motion is reduced. */
+/**
+ * The clip with the object outlined and its ghost; it plays by itself unless motion is reduced.
+ * The video has no sound, so its captions say what is drawn and when.
+ */
 export function EvidenceVideo({ id, video, model }: { id: string; video: Video; model: GhostModel }) {
   const t = useTranslations("Result.evidence");
+  const locale = useLocale();
   const ref = useRef<HTMLVideoElement>(null);
   const [openedAt] = useState(() => Date.now());
 
@@ -31,8 +35,18 @@ export function EvidenceVideo({ id, video, model }: { id: string; video: Video; 
         loop
         playsInline
         preload="metadata"
+        aria-label={t("label")}
         aria-describedby="evidence-legend"
-      />
+      >
+        {video.source_start_s != null && (
+          <track
+            kind="captions"
+            src={`/${locale}/result/${encodeURIComponent(id)}/captions.vtt`}
+            srcLang={locale}
+            label={t("captions.label")}
+          />
+        )}
+      </video>
       <figcaption id="evidence-legend">
         <ul className="legend">
           <li>
