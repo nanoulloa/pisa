@@ -12,8 +12,11 @@
 - **Speed on a phone** (emulated mid-range phone, slow 4G, 4x slower CPU): home, check and How we know paint in 0.8 to 1 s. The result page painted its verdict at 3.4 s; it is now rendered on the server and paints at about 1.3 s. The evidence video's first frame comes at 2.6 to 4 s, mostly the trips to Modal and Supabase; the redirect is faster (0.5 to 0.7 s, was 0.8 to 1.1 s), and a shared link reuses its signed URL. Scripts are 162 KB compressed with no chart library, so there is nothing heavy to lazy-load.
 - **Deployed:** the engine on Modal (free mode) and the web on Vercel, checked with a rendered bounce through the live site: Consistent, Spanish captions, no WCAG violations.
 - **Tests:** 206 engine, 19 Vitest, 35 Playwright.
+- **Redesign, so the site stops reading as made by AI:** the landing page now opens on a poster with an interactive gravity lab (strobe of a drop, real gravity against the one you pick, verdict live), a phone with Pisa's real WhatsApp-style reply to a test clip, the pipeline drawn as one falling ball, generated-video gravity on one axis with the Moon, Mars and Earth, strobe pictograms for scope and a lime closing band. The upload page has a drop area with a preview and filming tips; progress is a stage rail; a result opens on a verdict banner with the evidence beside its readouts. Dropped: eyebrow labels, italic serif headlines, numbered columns, pastel cards. New strings in all four languages. Checked in light and dark, on desktop and phone, in Spanish, Chinese and Portuguese; 35 Playwright tests pass (axe WCAG 2.2 AA in both themes, keyboard).
 
 ### Next
+
+- Swap the phone's demo clip for a filmed one once the eval set exists.
 
 - The founder's first phone clip. Watch where Muse Spark starts the event: on bounce-big it started 0.16 s after the release.
 - Then the real and generated clips, the filmed eval, the baseline, calibration and publish, the demo video and the submission.
