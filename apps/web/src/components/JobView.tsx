@@ -14,11 +14,11 @@ const POLL_MS = 700;
 
 /** The four steps people see, each covering the engine stages that run under it. */
 const STEPS = [
-  { key: "watching", stages: ["ingest", "plan"] },
-  { key: "tracking", stages: ["track"] },
-  { key: "measuring", stages: ["stabilize", "measure", "test", "verdict"] },
-  { key: "explaining", stages: ["explain", "render"] },
-] as const satisfies readonly { key: string; stages: readonly Stage[] }[];
+  { key: "watching", stages: ["ingest", "plan"], model: "Muse Spark" },
+  { key: "tracking", stages: ["track"], model: "SAM 3.1" },
+  { key: "measuring", stages: ["stabilize", "measure", "test", "verdict"], model: null },
+  { key: "explaining", stages: ["explain", "render"], model: "Muse Spark" },
+] as const satisfies readonly { key: string; stages: readonly Stage[]; model: string | null }[];
 
 type StepState = "done" | "current" | "pending";
 
@@ -64,23 +64,25 @@ export function JobView({ id, initial = null }: { id: string; initial?: Analysis
 
 function Progress({ stage, error }: { stage: Stage | null; error: string | null }) {
   const t = useTranslations("Progress");
+  const steps = useTranslations("Home.steps");
   const active = activeStep(stage);
   const current = STEPS[active];
 
   return (
-    <section className="page" aria-labelledby="progress-title">
+    <section className="progress" aria-labelledby="progress-title">
       <h1 id="progress-title">{t("title")}</h1>
-      <ol className="steps">
+      <ol className="progress-rail">
         {STEPS.map((step, index) => {
           const state: StepState = index < active ? "done" : index === active ? "current" : "pending";
           return (
             <li
               key={step.key}
-              className={`step step-${state}`}
+              className={`progress-step step-${state}`}
               aria-current={state === "current" ? "step" : undefined}
             >
-              <span className="step-marker" aria-hidden="true" />
-              <span>{t(`steps.${step.key}`)}</span>
+              <span className="progress-node" aria-hidden="true" />
+              <span className="progress-name">{t(`steps.${step.key}`)}</span>
+              <span className="progress-model">{step.model ?? steps("engine")}</span>
               <span className="visually-hidden">{t("state", { state })}</span>
             </li>
           );

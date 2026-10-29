@@ -7,24 +7,16 @@
     "lede": "Envía un video de algo que cae, se lanza o rebota. Pisa mide su movimiento y te dice si la gravedad real pudo haberlo producido.",
     "cta": "Revisar un video",
     "verdictsTitle": "Tres respuestas posibles",
-    "eyebrow": "Una prueba de física para videos virales",
     "taglineLead": "La IA puede falsificar píxeles.",
     "taglineTurn": "No puede falsificar la física.",
     "howLink": "Cómo funciona",
-    "demo": {
-      "filmed": "Filmado",
-      "filmedNote": "La esfera y su fantasma caen juntos.",
-      "generated": "Generado con IA",
-      "generatedNote": "Cae como si la gravedad fuera 4,9 veces más débil.",
-      "legend": "Fantasma: donde la gravedad real pone la esfera",
-      "caption": "Ilustración: la misma caída de 1,5 m con la gravedad de la Tierra y con la gravedad débil que suelen mostrar los videos generados."
-    },
     "steps": {
       "title": "Cómo revisa Pisa un video",
       "watching": "Pisa encuentra el momento en que algo cae, se lanza o rebota, y comprueba que la cámara esté lo bastante quieta para medir.",
       "tracking": "SAM 3.1 de Meta delinea el objeto en cada cuadro, así que su trayectoria se mide, no se adivina.",
       "measuring": "La trayectoria se pone a prueba con las leyes de la caída libre. El aire puede frenar una caída; nada real frena en el aire.",
-      "explaining": "Recibes una de tres respuestas, los números que la respaldan y el fantasma para verlo con tus propios ojos."
+      "explaining": "Recibes una de tres respuestas, los números que la respaldan y el fantasma para verlo con tus propios ojos.",
+      "engine": "Motor de física de Pisa"
     },
     "answers": {
       "physically_impossible": "Se rompe una ley del movimiento: el objeto frena en el aire, o acelera más de lo que permite la gravedad.",
@@ -39,20 +31,79 @@
       "opinionValue": "0 %",
       "opinionLabel": "Lanzamientos y rebotes reales y limpios que un modelo de visión ajustado para física aceptó como plausibles. Medir el movimiento les dio entre 0,96 y 0,99.",
       "opinionSource": "Fuente: Morpheus, ICML 2026",
-      "more": "Cómo sabemos que Pisa funciona"
+      "more": "Cómo sabemos que Pisa funciona",
+      "scale": {
+        "generated": "Videos generados",
+        "moon": "Luna",
+        "mars": "Marte",
+        "earth": "Tierra",
+        "summary": "En una escala de 0 a 10 m/s²: los videos generados, entre 0,38 y 2,27; la Luna, 1,62; Marte, 3,71, y la Tierra, 9,81.",
+        "moonNote": "Más cerca de la Luna que de la Tierra."
+      }
     },
     "scope": {
       "title": "Qué revisa Pisa",
       "checksTitle": "Revisa",
-      "checks": "Caídas, lanzamientos, rebotes y dos objetos que caen a la vez.",
       "skipsTitle": "No revisa",
-      "skips": "Cambios de rostro, sincronización de labios ni voces clonadas."
+      "items": {
+        "fall": "Caídas",
+        "throw": "Lanzamientos",
+        "bounce": "Rebotes",
+        "pair": "Dos objetos que caen a la vez"
+      },
+      "skipItems": {
+        "faces": "Cambios de rostro",
+        "lips": "Sincronización de labios",
+        "voices": "Voces clonadas"
+      }
     },
     "footer": {
       "built": "Hecho para el Meta Global AI Developer Hackathon con Muse Spark y SAM 3.1.",
       "code": "Código fuente",
       "privacy": "Privacidad",
       "howWeKnow": "Cómo lo sabemos"
+    },
+    "lab": {
+      "presets": "Elige una gravedad",
+      "generated": "Generado con IA",
+      "filmed": "Filmado",
+      "ghost": "Gravedad real",
+      "video": "El video",
+      "meters": "m",
+      "value": "{value} m/s²",
+      "videoGravity": "Gravedad en el video",
+      "earthGravity": "En la Tierra",
+      "slider": "Cambia la gravedad",
+      "same": "Igual que en la Tierra",
+      "weaker": "{ratio} veces más débil que en la Tierra",
+      "stronger": "{ratio} veces más fuerte que en la Tierra",
+      "replay": "Soltar de nuevo",
+      "caption": "Ilustración: una pelota soltada desde 1,5 m, fotografiada 15 veces por segundo. Las líneas punteadas unen las dos pelotas en el mismo instante.",
+      "summary": "Gravedad en el video: {video}. En la Tierra: {earth}. {verdict}.",
+      "keyGhost": "El fantasma: donde la gravedad real pone la pelota",
+      "keyBall": "La pelota tal como cae en el video",
+      "keyInstant": "El mismo instante para las dos"
+    },
+    "proof": {
+      "title": "Una respuesta con pruebas, no una opinión",
+      "lede": "En la web y en WhatsApp, Pisa responde con tres cosas que cualquiera puede comprobar.",
+      "forwarded": "Reenviado",
+      "question": "¿Esto es real?",
+      "callouts": {
+        "verdict": "El veredicto",
+        "verdictText": "Una de tres respuestas, en palabras simples.",
+        "ghost": "El fantasma",
+        "ghostText": "El círculo verde lima muestra dónde lo pondría la gravedad real.",
+        "numbers": "Los números",
+        "numbersText": "Lo que midió Pisa, para que cualquiera lo compruebe.",
+        "language": "Tu idioma",
+        "languageText": "Español, inglés, chino y portugués."
+      },
+      "caption": "Respuesta real de Pisa a un video de prueba hecho por computadora: dos pelotas soltadas a la vez, una con la gravedad de la Tierra y otra con una gravedad unas 4 veces más débil."
+    },
+    "closing": {
+      "title": "¿Te llegó un video que no cuadra?",
+      "lede": "Revísalo en menos de un minuto. Sin cuenta, y Pisa solo guarda las mediciones."
     }
   },
   "Verdict": {
@@ -67,7 +118,17 @@
     "fileHint": "MP4 o MOV, de hasta 60 segundos y 50 MB.",
     "submit": "Revisar este video",
     "uploading": "Subiendo…",
-    "privacy": "Pisa analiza los videos con modelos de IA de Meta. Mientras Pisa use créditos del hackathon, Meta puede usar lo que recibe para mejorar sus modelos. Pisa borra tu video en cuanto termina el análisis y solo guarda las mediciones."
+    "privacy": "Pisa analiza los videos con modelos de IA de Meta. Mientras Pisa use créditos del hackathon, Meta puede usar lo que recibe para mejorar sus modelos. Pisa borra tu video en cuanto termina el análisis y solo guarda las mediciones.",
+    "drop": "o arrástralo aquí",
+    "change": "Elegir otro video",
+    "selected": "Video elegido",
+    "tips": {
+      "title": "Para que Pisa pueda medir",
+      "still": "La cámara quieta, o lo más quieta posible.",
+      "whole": "Que se vea toda la caída, el lanzamiento o el rebote.",
+      "alone": "Algo que caiga, vuele o rebote por sí solo.",
+      "light": "Buena luz y el objeto bien visible."
+    }
   },
   "LocaleSwitcher": {
     "label": "Idioma",
@@ -257,7 +318,8 @@
     "internal_error": "Algo falló de nuestro lado. Vuelve a intentarlo."
   },
   "Header": {
-    "home": "Pisa, inicio"
+    "home": "Pisa, inicio",
+    "howWeKnow": "Cómo lo sabemos"
   },
   "Theme": {
     "toggle": "Cambiar tema",

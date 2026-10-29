@@ -56,10 +56,15 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
                 {brand("title")}
               </span>
             </Link>
-            <div className="control-pill">
-              <LocaleMenu />
-              <ThemeToggle />
-            </div>
+            <nav className="header-nav" aria-label={brand("title")}>
+              <Link className="header-link" href="/how-we-know">
+                {t("howWeKnow")}
+              </Link>
+              <div className="header-controls">
+                <LocaleMenu />
+                <ThemeToggle />
+              </div>
+            </nav>
           </header>
           {children}
         </NextIntlClientProvider>

@@ -49,6 +49,15 @@
         "NEXT_PUBLIC_ENGINE_URL=http://localhost:8100 npm run build --workspace @pisa/web && npm run start --workspace @pisa/web -- --port 3100"
       ],
       "port": 3100
+    },
+    {
+      "name": "web-dev-local",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "NEXT_PUBLIC_ENGINE_URL=http://localhost:8100 npm run dev --workspace @pisa/web -- --port 3100"
+      ],
+      "port": 3100
     }
   ]
 }

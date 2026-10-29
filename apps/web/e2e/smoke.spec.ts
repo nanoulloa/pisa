@@ -9,7 +9,8 @@ test("the root redirects to the visitor's language and leads to the check page",
     "AI can fake pixels. It can't fake physics.",
   );
 
-  await page.getByRole("link", { name: "Check a video" }).click();
+  // The poster and the closing band both lead to the check page.
+  await page.getByRole("link", { name: "Check a video" }).first().click();
   await expect(page).toHaveURL(/\/en\/check$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check a video");
 });
@@ -26,7 +27,7 @@ test("the language switcher keeps the page and translates it", async ({ page }) 
 test("Chinese renders the agreed verdict terms", async ({ page }) => {
   await page.goto("/zh-CN");
   await expect(page.getByRole("heading", { name: "物理上不可能" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "检查视频" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "检查视频" }).first()).toBeVisible();
 });
 
 test("the theme toggle switches themes and remembers the choice", async ({ page }) => {

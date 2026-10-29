@@ -7,24 +7,16 @@
     "lede": "发送一段物体下落、被抛出或弹跳的视频。Pisa 会测量它的运动，告诉你真实的重力能否产生这样的画面。",
     "cta": "检查视频",
     "verdictsTitle": "三种可能的结论",
-    "eyebrow": "病毒视频的物理检验",
     "taglineLead": "AI 能伪造像素，",
     "taglineTurn": "却伪造不了物理。",
     "howLink": "工作原理",
-    "demo": {
-      "filmed": "实拍",
-      "filmedNote": "球和它的幽灵一起下落。",
-      "generated": "AI 生成",
-      "generatedNote": "下落得好像重力弱了 4.9 倍。",
-      "legend": "幽灵：真实重力下球应在的位置",
-      "caption": "示意图：同样 1.5 米的下落，分别在地球重力下，以及在生成视频常见的弱重力下。"
-    },
     "steps": {
       "title": "Pisa 如何检查视频",
       "watching": "Pisa 找到物体下落、被抛出或弹跳的那一刻，并确认镜头足够稳定，可以测量。",
       "tracking": "Meta 的 SAM 3.1 在每一帧中勾勒出物体，所以轨迹是测量出来的，不是猜出来的。",
       "measuring": "用自由落体定律检验这条轨迹。空气可以让下落变慢，但真实的物体不会在空中减速。",
-      "explaining": "你会得到三种结论之一、支撑它的数字，以及可以亲眼看到的幽灵轨迹。"
+      "explaining": "你会得到三种结论之一、支撑它的数字，以及可以亲眼看到的幽灵轨迹。",
+      "engine": "Pisa 物理引擎"
     },
     "answers": {
       "physically_impossible": "违反了运动定律：物体在空中减速，或者加速得比重力允许的更快。",
@@ -39,20 +31,79 @@
       "opinionValue": "0%",
       "opinionLabel": "一个针对物理调优的视觉模型，对清晰的真实抛掷和弹跳视频判为合理的比例。测量运动则给出 0.96 到 0.99 的分数。",
       "opinionSource": "来源：Morpheus，ICML 2026",
-      "more": "我们如何确定 Pisa 有效"
+      "more": "我们如何确定 Pisa 有效",
+      "scale": {
+        "generated": "生成的视频",
+        "moon": "月球",
+        "mars": "火星",
+        "earth": "地球",
+        "summary": "在 0 到 10 m/s² 的刻度上：生成的视频在 0.38 到 2.27 之间，月球是 1.62，火星是 3.71，地球是 9.81。",
+        "moonNote": "更接近月球，而不是地球。"
+      }
     },
     "scope": {
       "title": "Pisa 检查什么",
       "checksTitle": "检查",
-      "checks": "下落、抛掷、弹跳，以及两个物体同时下落。",
       "skipsTitle": "不检查",
-      "skips": "换脸、对口型或克隆声音。"
+      "items": {
+        "fall": "下落",
+        "throw": "抛掷",
+        "bounce": "弹跳",
+        "pair": "两个物体同时下落"
+      },
+      "skipItems": {
+        "faces": "换脸",
+        "lips": "对口型",
+        "voices": "克隆声音"
+      }
     },
     "footer": {
       "built": "为 Meta 全球 AI 开发者黑客松打造，使用 Muse Spark 和 SAM 3.1。",
       "code": "源代码",
       "privacy": "隐私",
       "howWeKnow": "我们如何确定"
+    },
+    "lab": {
+      "presets": "选择重力",
+      "generated": "AI 生成",
+      "filmed": "实拍",
+      "ghost": "真实重力",
+      "video": "视频中",
+      "meters": "米",
+      "value": "{value} m/s²",
+      "videoGravity": "视频中的重力",
+      "earthGravity": "地球上",
+      "slider": "调整重力",
+      "same": "与地球相同",
+      "weaker": "比地球上弱 {ratio} 倍",
+      "stronger": "比地球上强 {ratio} 倍",
+      "replay": "再放一次",
+      "caption": "示意图：一个球从 1.5 米高处落下，每秒拍摄 15 次。虚线连接同一时刻的两个球。",
+      "summary": "视频中的重力：{video}。地球上：{earth}。{verdict}。",
+      "keyGhost": "幽灵：真实重力下球应在的位置",
+      "keyBall": "视频中下落的球",
+      "keyInstant": "两个球的同一时刻"
+    },
+    "proof": {
+      "title": "给出证据，而不是意见",
+      "lede": "无论在网页上还是在 WhatsApp 里，Pisa 都会回复三样任何人都能核对的东西。",
+      "forwarded": "已转发",
+      "question": "这是真的吗？",
+      "callouts": {
+        "verdict": "结论",
+        "verdictText": "三种答案之一，用平实的话说明。",
+        "ghost": "幽灵",
+        "ghostText": "黄绿色的圆圈显示真实重力会把物体放在哪里。",
+        "numbers": "数字",
+        "numbersText": "Pisa 测量到的数据，任何人都能核对。",
+        "language": "你的语言",
+        "languageText": "中文、英语、西班牙语和葡萄牙语。"
+      },
+      "caption": "Pisa 对一段电脑生成的测试视频的真实回复：两个球同时落下，一个受地球重力，另一个受约弱 4 倍的重力。"
+    },
+    "closing": {
+      "title": "收到一段不太对劲的视频？",
+      "lede": "一分钟内就能检查。无需注册，Pisa 只保存测量结果。"
     }
   },
   "Verdict": {
@@ -67,7 +118,17 @@
     "fileHint": "MP4 或 MOV，最长 60 秒，不超过 50 MB。",
     "submit": "检查这个视频",
     "uploading": "正在上传…",
-    "privacy": "Pisa 使用 Meta 的 AI 模型分析视频。在 Pisa 使用黑客松额度期间，Meta 可能会用收到的内容改进其模型。分析一结束，Pisa 就会删除你的视频，只保留测量结果。"
+    "privacy": "Pisa 使用 Meta 的 AI 模型分析视频。在 Pisa 使用黑客松额度期间，Meta 可能会用收到的内容改进其模型。分析一结束，Pisa 就会删除你的视频，只保留测量结果。",
+    "drop": "或拖到这里",
+    "change": "换一个视频",
+    "selected": "已选视频",
+    "tips": {
+      "title": "为了让 Pisa 能够测量",
+      "still": "相机保持稳定，尽量不要晃动。",
+      "whole": "完整拍下下落、抛掷或弹跳的过程。",
+      "alone": "物体自己下落、飞行或弹跳。",
+      "light": "光线充足，物体清晰可见。"
+    }
   },
   "LocaleSwitcher": {
     "label": "语言",
@@ -257,7 +318,8 @@
     "internal_error": "我们这边出了问题。请再试一次。"
   },
   "Header": {
-    "home": "Pisa 首页"
+    "home": "Pisa 首页",
+    "howWeKnow": "我们如何确定"
   },
   "Theme": {
     "toggle": "切换主题",

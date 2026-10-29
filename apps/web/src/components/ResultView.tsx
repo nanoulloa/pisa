@@ -139,10 +139,14 @@ export function ResultView({ result }: { result: AnalysisResult }) {
     },
   );
 
+  const evidence = result.evidence?.video && result.evidence.series[0] && (
+    <EvidenceVideo id={result.job.id} video={result.evidence.video} model={result.evidence.series[0].model} />
+  );
+
   return (
-    <article className="page result" aria-labelledby="verdict-title">
-      <span className="eyebrow">{t("eyebrow")}</span>
-      <div className={`verdict verdict-${verdict.label}`}>
+    <article className="result" aria-labelledby="verdict-title">
+      <header className={`verdict verdict-${verdict.label}`}>
+        <span className="eyebrow">{t("eyebrow")}</span>
         <VerdictIcon label={verdict.label} />
         <h1 id="verdict-title">{verdictLabels(verdict.label)}</h1>
         <p>
@@ -150,77 +154,78 @@ export function ResultView({ result }: { result: AnalysisResult }) {
             ? result.explanation.text
             : t(`explanations.${explanationKey(verdict, result.tests)}`)}
         </p>
-      </div>
-      {result.evidence?.video && result.evidence.series[0] && (
-        <EvidenceVideo
-          id={result.job.id}
-          video={result.evidence.video}
-          model={result.evidence.series[0].model}
-        />
-      )}
-      {verdict.label === "consistent_with_real_physics" && (
-        <p className="note">{t("consistentNote")}</p>
-      )}
+      </header>
 
-      <ul className="cards">
-        {cards.slice(0, MAX_CARDS).map((card) => (
-          <li key={card.key} className="card">
-            <span className="card-title">{card.title}</span>
-            <span className="card-value">{card.value}</span>
-            <span className="card-detail">{card.detail}</span>
-          </li>
-        ))}
-      </ul>
+      <div className={evidence ? "result-body" : "result-body result-body-text"}>
+        {evidence && <div className="result-evidence">{evidence}</div>}
+        <div className="result-side">
+          {verdict.label === "consistent_with_real_physics" && (
+            <p className="note">{t("consistentNote")}</p>
+          )}
+          <ul className="cards">
+            {cards.slice(0, MAX_CARDS).map((card) => (
+              <li key={card.key} className="card">
+                <span className="card-title">{card.title}</span>
+                <span className="card-value">{card.value}</span>
+                <span className="card-detail">{card.detail}</span>
+              </li>
+            ))}
+          </ul>
 
-      <details className="technical">
-        <summary>{t("detailsSummary")}</summary>
-        {result.evidence?.series[0] && <TrajectoryChart series={result.evidence.series[0]} />}
-        {result.plan && <PlanDetails plan={result.plan} />}
-        {result.tests.map((test, index) => (
-          <section key={index} className="technical-test">
-            <h2>
-              {t(`tests.${test.test}`)} · {t(`outcomes.${test.outcome}`)} ·{" "}
-              {t("confidence", { value: format.number(test.confidence, { style: "percent" }) })}
-            </h2>
-            <div className="table-wrap">
-              <table>
-                <tbody>
-                  {test.measurements.map((m) => (
-                    <tr key={m.name}>
-                      <th scope="row">{measurementName(m, (key) => t(`measurements.${key}`))}</th>
-                      <td className="num">
-                        {format.number(m.value, { maximumFractionDigits: 3 })} {m.unit === "1" ? "" : m.unit}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        ))}
-        {stabilization && (
+          <details className="technical">
+            <summary>{t("detailsSummary")}</summary>
+            {result.evidence?.series[0] && <TrajectoryChart series={result.evidence.series[0]} />}
+            {result.plan && <PlanDetails plan={result.plan} />}
+            {result.tests.map((test, index) => (
+              <section key={index} className="technical-test">
+                <h2>
+                  {t(`tests.${test.test}`)} · {t(`outcomes.${test.outcome}`)} ·{" "}
+                  {t("confidence", { value: format.number(test.confidence, { style: "percent" }) })}
+                </h2>
+                <div className="table-wrap">
+                  <table>
+                    <tbody>
+                      {test.measurements.map((m) => (
+                        <tr key={m.name}>
+                          <th scope="row">{measurementName(m, (key) => t(`measurements.${key}`))}</th>
+                          <td className="num">
+                            {format.number(m.value, { maximumFractionDigits: 3 })} {m.unit === "1" ? "" : m.unit}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ))}
+            {stabilization && (
+              <p className="hint">
+                {t("stabilization", {
+                  max: format.number(stabilization.max_motion_px, { maximumFractionDigits: 1 }),
+                  unreliable: format.number(stabilization.unreliable_frames),
+                  frames: format.number(stabilization.frames),
+                })}
+              </p>
+            )}
+            {result.explanation?.locale === locale && <p className="hint">{t("modelExplanation")}</p>}
+            <p className="hint">{t("policy", { version: verdict.policy_version })}</p>
+          </details>
+
           <p className="hint">
-            {t("stabilization", {
-              max: format.number(stabilization.max_motion_px, { maximumFractionDigits: 1 }),
-              unreliable: format.number(stabilization.unreliable_frames),
-              frames: format.number(stabilization.frames),
-            })}
+            {t("limits")}{" "}
+            <Link className="text-link" href="/how-we-know">
+              {t("howWeKnow")}
+            </Link>
           </p>
-        )}
-        {result.explanation?.locale === locale && <p className="hint">{t("modelExplanation")}</p>}
-        <p className="hint">{t("policy", { version: verdict.policy_version })}</p>
-      </details>
+        </div>
+      </div>
 
-      <p className="hint">
-        {t("limits")}{" "}
-        <Link className="text-link" href="/how-we-know">
-          {t("howWeKnow")}
+      <footer className="result-actions">
+        <ShareButtons id={result.job.id} verdict={verdictLabels(verdict.label)} />
+        <Link className="button-primary" href="/check">
+          {t("checkAnother")}
         </Link>
-      </p>
-      <ShareButtons id={result.job.id} verdict={verdictLabels(verdict.label)} />
-      <Link className="button-primary" href="/check">
-        {t("checkAnother")}
-      </Link>
+      </footer>
     </article>
   );
 }

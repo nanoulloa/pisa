@@ -39,7 +39,7 @@ export function LocaleMenu() {
       <button
         ref={button}
         type="button"
-        className="pill-button"
+        className="pill-button locale-button"
         aria-expanded={open}
         aria-controls="locale-list"
         aria-label={t("button", { name: localeNames[current] })}
@@ -50,6 +50,9 @@ export function LocaleMenu() {
         <svg className="pill-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1m14 20-5-10-5 10m2-4h6" />
         </svg>
+        <span className="locale-code" aria-hidden="true">
+          {current === "zh-CN" ? "中文" : current.slice(0, 2).toUpperCase()}
+        </span>
       </button>
       <ul id="locale-list" className="locale-list" hidden={!open}>
         {routing.locales.map((locale) => (
