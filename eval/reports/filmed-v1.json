@@ -1,0 +1,690 @@
+{
+  "name": "filmed-v1",
+  "created_at": "2026-11-04T01:29:36.655753Z",
+  "engine_version": "0.1.0",
+  "policy_version": "0.1.0",
+  "synthetic": false,
+  "segmenter": "sam-3.1",
+  "planner": "muse-spark-1.3",
+  "confusion": [
+    {
+      "truth": "real",
+      "physically_impossible": 0,
+      "consistent_with_real_physics": 5,
+      "inconclusive": 12
+    },
+    {
+      "truth": "generated",
+      "physically_impossible": 0,
+      "consistent_with_real_physics": 2,
+      "inconclusive": 9
+    }
+  ],
+  "false_positive_rate": {
+    "count": 0,
+    "total": 17,
+    "value": 0.0,
+    "ci_low": 0.0,
+    "ci_high": 0.1843
+  },
+  "detection_rate": {
+    "count": 0,
+    "total": 11,
+    "value": 0.0,
+    "ci_low": 0.0,
+    "ci_high": 0.2588
+  },
+  "inconclusive_rate": {
+    "count": 21,
+    "total": 28,
+    "value": 0.75,
+    "ci_low": 0.5664,
+    "ci_high": 0.8732
+  },
+  "conclusive_accuracy": {
+    "count": 5,
+    "total": 7,
+    "value": 0.7143,
+    "ci_low": 0.3589,
+    "ci_high": 0.9178
+  },
+  "by_tag": [
+    {
+      "tag": "bounce",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 1
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 2
+        }
+      ]
+    },
+    {
+      "tag": "drop",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 7
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 5
+        }
+      ]
+    },
+    {
+      "tag": "handheld",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 1
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "pair",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 4
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "static",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 5,
+          "inconclusive": 11
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "throw",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 2
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "test": "free_fall_shape",
+      "measured": {
+        "real": 6,
+        "generated": 1
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "galileo_pair",
+      "measured": {
+        "real": 2,
+        "generated": 1
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "bounce_energy",
+      "measured": {
+        "real": 6,
+        "generated": 2
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "implied_g",
+      "measured": {
+        "real": 2,
+        "generated": 0
+      },
+      "violated": {
+        "real": 1,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": 0.99
+    },
+    {
+      "test": "time_base_consistency",
+      "measured": {
+        "real": 2,
+        "generated": 0
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    }
+  ],
+  "latency_s": {
+    "median": 37.0295,
+    "p90": 57.862,
+    "max": 120.865
+  },
+  "cost_usd": 0.661324,
+  "cost_usd_per_clip": {
+    "median": 0.0224,
+    "p90": 0.0447,
+    "max": 0.0479
+  },
+  "clips": [
+    {
+      "id": "pair-01",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "galileo_pair",
+        "time_base_consistency"
+      ],
+      "latency_s": 57.862,
+      "cost_usd": 0.044171,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-01",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "bounce",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "time_base_consistency"
+      ],
+      "latency_s": 36.762,
+      "cost_usd": 0.027792,
+      "baseline": "real"
+    },
+    {
+      "id": "pair-02",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "galileo_pair"
+      ],
+      "latency_s": 45.501,
+      "cost_usd": 0.024837,
+      "baseline": "real"
+    },
+    {
+      "id": "throw-01",
+      "truth": "real",
+      "tags": [
+        "throw",
+        "bounce",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape"
+      ],
+      "latency_s": 38.053,
+      "cost_usd": 0.021139,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-02",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "too_unclear",
+      "decisive_tests": [],
+      "latency_s": 19.368,
+      "cost_usd": 0.000419,
+      "baseline": "real"
+    },
+    {
+      "id": "bounce-handheld-01",
+      "truth": "real",
+      "tags": [
+        "bounce",
+        "handheld"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 52.377,
+      "cost_usd": 0.015465,
+      "baseline": "real"
+    },
+    {
+      "id": "pair-01-gen",
+      "truth": "generated",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "galileo_pair"
+      ],
+      "latency_s": 42.981,
+      "cost_usd": 0.020798,
+      "baseline": "generated"
+    },
+    {
+      "id": "piq-0001-ball-and-block-fall-left-t1",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "too_unclear",
+      "decisive_tests": [],
+      "latency_s": 23.095,
+      "cost_usd": 0.016178,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0002-ball-and-block-fall-center-t1",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 44.909,
+      "cost_usd": 0.044687,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0003-ball-and-block-fall-right-t1",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 55.65,
+      "cost_usd": 0.044733,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0013-ball-in-basket-left-t1",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 32.15,
+      "cost_usd": 0.024461,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0014-ball-in-basket-center-t1",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "implied_g"
+      ],
+      "latency_s": 111.928,
+      "cost_usd": 0.047857,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0015-ball-in-basket-right-t1",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "weak_violation",
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "implied_g"
+      ],
+      "latency_s": 120.865,
+      "cost_usd": 0.036013,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0058-duck-falls-in-box-left-t1",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 30.58,
+      "cost_usd": 0.025702,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0059-duck-falls-in-box-center-t1",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 30.741,
+      "cost_usd": 0.024614,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0060-duck-falls-in-box-right-t1",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "too_unclear",
+      "decisive_tests": [],
+      "latency_s": 16.279,
+      "cost_usd": 0.014364,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0200-ball-and-block-fall-center-t2",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "too_unclear",
+      "decisive_tests": [],
+      "latency_s": 14.916,
+      "cost_usd": 0.015872,
+      "baseline": "real"
+    },
+    {
+      "id": "piq-0212-ball-in-basket-center-t2",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 34.825,
+      "cost_usd": 0.026038,
+      "baseline": "real"
+    },
+    {
+      "id": "bounce-hunyuan-gen",
+      "truth": "generated",
+      "tags": [
+        "bounce"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy"
+      ],
+      "latency_s": 38.213,
+      "cost_usd": 0.020746,
+      "baseline": "real"
+    },
+    {
+      "id": "throw-cosmos-gen",
+      "truth": "generated",
+      "tags": [
+        "throw"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_free_flight",
+      "decisive_tests": [],
+      "latency_s": 16.724,
+      "cost_usd": 0.009392,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-videocrafter-gen",
+      "truth": "generated",
+      "tags": [
+        "drop"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 37.297,
+      "cost_usd": 0.030075,
+      "baseline": "generated"
+    },
+    {
+      "id": "drop-wan-gen",
+      "truth": "generated",
+      "tags": [
+        "drop"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_free_flight",
+      "decisive_tests": [],
+      "latency_s": 14.197,
+      "cost_usd": 0.007776,
+      "baseline": "real"
+    },
+    {
+      "id": "bounce-cosmos-gen",
+      "truth": "generated",
+      "tags": [
+        "bounce"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 37.614,
+      "cost_usd": 0.021705,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-cosmos-gen",
+      "truth": "generated",
+      "tags": [
+        "drop"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 52.57,
+      "cost_usd": 0.023175,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-hunyuan-gen",
+      "truth": "generated",
+      "tags": [
+        "drop"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 30.841,
+      "cost_usd": 0.020592,
+      "baseline": "generated"
+    },
+    {
+      "id": "throw-hunyuan-gen",
+      "truth": "generated",
+      "tags": [
+        "throw"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 31.293,
+      "cost_usd": 0.020835,
+      "baseline": "real"
+    },
+    {
+      "id": "bounce-wan-gen",
+      "truth": "generated",
+      "tags": [
+        "bounce"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_free_flight",
+      "decisive_tests": [],
+      "latency_s": 16.256,
+      "cost_usd": 0.007882,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-cogvideo-gen",
+      "truth": "generated",
+      "tags": [
+        "drop"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 41.712,
+      "cost_usd": 0.024006,
+      "baseline": "generated"
+    }
+  ],
+  "baseline": {
+    "model": "muse-spark-1.3, muse-spark-1.3-contributor",
+    "question": "Is this video real or AI-generated?",
+    "false_positive_rate": {
+      "count": 0,
+      "total": 17,
+      "value": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.1843
+    },
+    "detection_rate": {
+      "count": 4,
+      "total": 11,
+      "value": 0.3636,
+      "ci_low": 0.1517,
+      "ci_high": 0.6462
+    },
+    "unsure_rate": {
+      "count": 0,
+      "total": 28,
+      "value": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.1206
+    },
+    "cost_usd": 0.253337
+  }
+}

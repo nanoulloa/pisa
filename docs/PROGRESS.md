@@ -13,7 +13,10 @@
 
 ### Next
 
-- Three more generated clips (drop-01, pair-02, throw-01), then run, baseline, score and publish phone-v1.
+- **Public clips:** 11 real falls from Physics-IQ (Google DeepMind, CC BY 4.0, scaled to 1080p) and 10 generated ball clips from the VideoPhy-2 test set (MIT; Wan, Hunyuan, Cosmos, CogVideoX, VideoCrafter), on the standard tier. $0.51 for the run and $0.25 for the baseline.
+- **filmed-v1 (phone plus public, 28 clips, merged from the saved runs at no cost):** no real clip judged impossible (0 of 17; up to 18%). No generated clip caught (0 of 11): 9 could not be measured (moving or panning cameras, close-ups, 8 to 16 fps, falls Muse Spark windowed at 0.18 s so SAM saw 6 frames) and 2 have a plausible fall (Kling 4.0, Hunyuan). Muse Spark answered every clip: 0 of 17 real called fake, 4 of 11 generated caught, by visual slips such as Kling's extra ball. Report: [eval/reports/filmed-v1.md](../eval/reports/filmed-v1.md).
+- **Paired check, offline:** Kling's clean flight, scaled to the real clip of the same room and camera, accelerates about 1.3 times the real ball (about 12.7 m/s² if the real one is 9.81). Pisa does not convict on that alone, since a sped-up real video would look the same.
+- **Not changed on purpose:** padding the planner's short event windows would measure more falls, but could pull a hand's throw or catch into a flight and convict a real video. Left for after the deadline.
 - Maybe a sixth law, object permanence (balls do not appear from nothing), only if it can be shown never to fire on the real clips.
 - The demo video and the submission, before Nov 4, 8 PM Costa Rica time.
 
