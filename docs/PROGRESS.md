@@ -10,10 +10,13 @@
 - **One frame no longer changes a verdict:** the Kling clip had four verdicts in four live checks (impossible twice, Inconclusive once, Consistent once) because Muse Spark placed its window one or two frames apart. SAM now tracks 0.25 s beyond each window, and a flight grows outward only while each next sample lies on its fitted constant-acceleration path, so a hand's push stays out (a first attempt that kept whatever T1 passed was caught by its own test: T1 reads a fading push as air drag). Replaying the four live plans, all four are Physically impossible (T5 0.974 to 0.977, gravity change 1.34 to 1.35 times). The eval can now replay saved plans (`run --plans-from RUN`); re-tracking the 40 known clips with their saved plans changed no verdict, no real clip shows a single violation, and the synthetic eval is unchanged. $0.55 for the re-run, $0.09 for the Kling replays. 215 engine tests (5 new). Published as filmed-v3.
 - **Live after the fix:** the Kling clip came back Physically impossible in three new live checks (T5 0.96, gravity change 1.34 to 1.35 times) and the real clip Consistent. Demo screen parts re-recorded headless on the live site with Playwright (landing, the Kling upload and progress, both results, How we know, scope), 1600 by 900, kept out of git in `eval/raw/demo/grabaciones`.
 - **Submission ready:** every form field answered in [SUBMISSION.md](SUBMISSION.md), in the form's order; the demo script has final narration with the live results ([DEMO_SCRIPT.md](DEMO_SCRIPT.md)).
+- **Demo video cut (2:59.9):** narration rewritten to read naturally; screen parts re-recorded with a visible cursor that moves at a person's pace, from the DevTools screencast at 1920 by 1080, including one more live upload of the Kling clip (Physically impossible, 1.35 times, $0.04). The founder's on-camera take was transcribed locally with Whisper and cut to the last good take of each line, with burned-in subtitles and a face circle. See the Assembly section of [DEMO_SCRIPT.md](DEMO_SCRIPT.md).
+
+- **Submitted** on the hackathon form before the deadline, with the demo at https://youtu.be/JjTlPZmFZY0 (Unlisted). The form caps the description at 3,000 characters and partner feedback at 150, so both were shortened; [SUBMISSION.md](SUBMISSION.md) holds what was sent.
 
 ### Next
 
-- The founder records the demo, uploads it to YouTube as Unlisted and submits before 8 PM Costa Rica time.
+- Optional: post the demo on X and add the link to the submission for the Most Viral bonus (engagement counted until Nov 8, 11:59 PM ET).
 - After judging, switch paid calls off again (`make deploy-engine`).
 - The real pair clip lost its T2 measurement in the re-run (its two balls' flights now start more than 0.05 s apart once grown back toward the release); its verdict is unchanged. Look at the release-gap rule after the deadline.
 

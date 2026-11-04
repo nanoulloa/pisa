@@ -28,6 +28,8 @@ Leave empty, unless you post the demo on X first.
 
 ## Project Description
 
+The form allows 3,000 characters; this is 2,763.
+
 Pisa is a reality check for viral videos. Forward a clip on WhatsApp or upload it on the web, and usually within a minute Pisa tells you whether the motion in it is physically possible: Physically impossible, Consistent with real physics, or Inconclusive.
 
 The problem: generated videos are getting hard to tell from real ones, and asking a chatbot "is this real?" returns an opinion nobody can check. Physics is harder to fake. Research shows video generators drop objects with a fraction of Earth's gravity and let two objects released together land apart.
@@ -36,11 +38,11 @@ How it works: Muse Spark 1.3 watches the clip, finds the moments something falls
 
 The answer comes with evidence anyone can check: the clip with the object outlined, a lime ghost following the path real gravity allows, and plain numbers. When nothing can be measured with confidence, Pisa says Inconclusive instead of guessing.
 
-How we know it works: we ran 40 videos whose answer we know. 29 are real, filmed with a phone or taken from Google DeepMind's Physics-IQ benchmark, and 11 were made by AI video generators (Kling, Wan, HunyuanVideo, Cosmos, CogVideoX, VideoCrafter). Pisa called 0 of the 29 real videos impossible (95% interval 0% to 12%), and 7 of its 8 conclusive verdicts were right. It caught 1 of 11 generated videos: a Kling clip made from the first frame of our own real clip, where a ball's gravity changes by about a third from one flight to the next. That clip first exposed a flaw: Muse Spark placed the start of a fall a frame or two apart on different runs, and Pisa's answer changed with it. Pisa now tracks a little beyond each window and keeps only the samples that continue the flight's own path; replaying those four runs, and in three new live checks, the clip came back Physically impossible every time. The real clip of the same room came back Consistent every time. Asked "Is this video real or AI-generated?" about the same videos, Muse Spark caught more generated ones (4 of 11) but called 2 real videos fake, and it can't show why. On 12 more real videos Pisa had never seen, tested after the last rule change, Pisa accused none; Muse Spark called 2 of them AI-generated.
+How we know it works: we ran 40 videos whose answer we know: 29 real (filmed with a phone or from Google DeepMind's Physics-IQ) and 11 made by AI generators (Kling, Wan, HunyuanVideo, Cosmos, CogVideoX, VideoCrafter). Pisa called 0 of the 29 real videos impossible (95% interval 0% to 12%), and 7 of its 8 conclusive verdicts were right. It caught 1 of 11 generated videos: a Kling clip made from the first frame of our own real clip, where a ball's gravity changes by about a third between flights. That clip first exposed a flaw, which we fixed; since then it comes back Physically impossible in every replay and live check, and the real clip of the same room comes back Consistent. Asked "Is this video real or AI-generated?", Muse Spark caught more generated videos (4 of 11) but called 2 real videos fake, and it can't show why. On 12 more real videos Pisa had never seen, it accused none.
 
-The honest limit: Pisa answered Inconclusive on 32 of the 40 videos. Most AI videos found online move the camera, shoot close up or have too few frames, and in many real lab clips the fall lasts under a fifth of a second, too few frames to measure. Pisa would rather say it can't tell than accuse a real video. The full report, every video and every law, is public at https://pisa-theta.vercel.app/en/how-we-know.
+The honest limit: Pisa answered Inconclusive on 32 of the 40 videos. Most AI videos online move the camera, shoot close up or have too few frames, and many real lab falls last under a fifth of a second. Pisa would rather say it can't tell than accuse a real video. Full report: https://pisa-theta.vercel.app/en/how-we-know
 
-Pisa works on the web and on WhatsApp, where these videos spread, in English, Spanish, Simplified Chinese and Brazilian Portuguese.
+Pisa works on the web and on WhatsApp, in English, Spanish, Simplified Chinese and Brazilian Portuguese.
 
 ## Public GitHub Repository
 
@@ -48,7 +50,7 @@ https://github.com/nanoulloa/pisa
 
 ## 3-Minute Demo Video
 
-The YouTube link (upload as Unlisted).
+https://youtu.be/JjTlPZmFZY0
 
 ## Describe your use of Meta products to build the submitted project
 
@@ -67,7 +69,9 @@ Just as important is what we don't ask the models to do. The research we build o
 
 ## Provide feedback from your experience using partner technologies
 
-Modal hosts Pisa's engine (FastAPI, ffmpeg, OpenCV and the physics code) as a web endpoint with a volume for work files and a scheduled function that deletes evidence after 24 hours. Deploys take seconds and secrets stay out of the code. One thing to improve: the CLI can echo secret values in its output, so we wrapped secret updates in a small script that prints key names only. We did not use Fireworks or Baseten.
+The form allows 150 characters:
+
+Modal hosts our engine: deploys take seconds and secrets stay out of code. One wish: the CLI should never echo secret values. No Fireworks or Baseten.
 
 ## Survey questions
 
