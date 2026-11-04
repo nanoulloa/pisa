@@ -31,7 +31,13 @@ from pisa_engine.evaluation.baseline import (
 from pisa_engine.evaluation.calibration import calibrate
 from pisa_engine.evaluation.manifest import Clip, Manifest
 from pisa_engine.evaluation.markdown import calibration_markdown, report_markdown
-from pisa_engine.evaluation.runner import RunInfo, RunStoppedError, load_runs, run_manifest
+from pisa_engine.evaluation.runner import (
+    RunInfo,
+    RunStoppedError,
+    load_runs,
+    run_manifest,
+    saved_plans,
+)
 from pisa_engine.evaluation.scoring import Outcome, outcomes, rate, score, summary
 from pisa_engine.model_api import costs
 from pisa_engine.model_api.client import MetaModelApiClient
@@ -150,6 +156,54 @@ async def test_a_run_stops_at_the_paid_calls_switch(
             progress=lambda _: None,
         )
     assert not list((out / "results").glob("*.json"))  # So a rerun retries them.
+
+
+async def test_a_rerun_can_replay_saved_plans_instead_of_planning(
+    eval_set: tuple[Path, Manifest], tmp_path: Path
+) -> None:
+    """So an engine change can be checked on the same clips without the planner's variance."""
+
+    class MustNotPlan:
+        async def plan(self, video: Path, ingest: IngestResult, *, policy: DataPolicy) -> Plan:
+            raise AssertionError("the planner was asked")
+
+    path, manifest = eval_set
+    first = tmp_path / "first"
+    await _run(path, manifest, first)
+    plans = saved_plans(first)
+    again = tmp_path / "again"
+    await run_manifest(
+        path,
+        manifest,
+        again,
+        _info(),
+        segmenter=ColorSegmenter(),
+        planner=MustNotPlan(),
+        evidence=LocalEvidenceStore(again / "evidence"),
+        plans=plans,
+        progress=lambda _: None,
+    )
+    _, before = load_runs(first)
+    _, after = load_runs(again)
+    for clip_id, run in after.items():
+        previous = before[clip_id].result
+        assert run.result is not None
+        assert previous is not None
+        assert run.result.plan == plans[clip_id]
+        assert run.result.verdict == previous.verdict
+
+    with pytest.raises(ValueError, match="no saved plan for: drop"):
+        await run_manifest(
+            path,
+            manifest,
+            tmp_path / "partial",
+            _info(),
+            segmenter=ColorSegmenter(),
+            planner=MustNotPlan(),
+            evidence=LocalEvidenceStore(tmp_path / "partial" / "evidence"),
+            plans={k: v for k, v in plans.items() if k != "drop"},
+            progress=lambda _: None,
+        )
 
 
 async def test_missing_clips_stop_the_run_before_it_starts(tmp_path: Path) -> None:

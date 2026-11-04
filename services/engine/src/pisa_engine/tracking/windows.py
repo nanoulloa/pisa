@@ -1,8 +1,8 @@
 """Tracking only where the plan says objects move freely.
 
 Each phrase is tracked once, over the span of its events (SAM bills per frame, one phrase
-per request), and only samples inside an event window are kept. Outside the windows a hand
-holds, throws or catches the object, and that motion is not free fall.
+per request), and only samples inside an event window, or just beyond it, are kept. Outside
+the windows a hand holds, throws or catches the object, and that motion is not free fall.
 """
 
 from __future__ import annotations
@@ -15,6 +15,10 @@ from pathlib import Path
 from pisa_contracts import DataPolicy, Plan, Timebase, TrackedObject
 from pisa_engine.ingest.normalize import trim_frames
 from pisa_engine.tracking.segmenter import Segmenter
+
+# How far beyond each of the planner's windows an object is tracked: two of its samples at
+# its usual 8 frames a second (see `reaches`).
+REACH_S = 0.25
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,6 +39,43 @@ def event_windows(plan: Plan) -> dict[str, list[Window]]:
         for phrase in event.object_phrases:
             windows[phrase].append(Window(event.start_s, event.end_s))
     return {phrase: _merged(spans) for phrase, spans in windows.items()}
+
+
+@dataclass(frozen=True, slots=True)
+class Reach:
+    """A span tracked beyond one of the planner's windows, and that window (the core)."""
+
+    span: Window
+    core: Window
+
+
+def reaches(
+    events: dict[str, list[Window]], timebase: Timebase, *, reach_s: float = REACH_S
+) -> dict[str, list[Reach]]:
+    """Each event window widened by `reach_s` on both sides, within the clip.
+
+    A planner that samples a few frames a second places a release or a landing only to
+    within one sampling interval, and it pulls its windows inside the motion to keep hands
+    out. A flight that then starts one frame later can lose the samples a test needs, so
+    the same clip could get a different verdict on another run. The extra samples are kept
+    only where they continue a flight's path (`physics.trajectory.settle_edges`). Neighbouring
+    spans meet halfway between their cores rather than overlap, so no sample is measured
+    twice.
+    """
+    duration_s = timebase.frame_count * timebase.fps_den / timebase.fps_num
+    widened: dict[str, list[Reach]] = {}
+    for phrase, cores in events.items():
+        spans = []
+        for index, core in enumerate(cores):  # Sorted and disjoint (see event_windows).
+            start = max(0.0, core.start_s - reach_s)
+            end = min(duration_s, core.end_s + reach_s)
+            if index > 0:
+                start = max(start, (cores[index - 1].end_s + core.start_s) / 2)
+            if index + 1 < len(cores):
+                end = min(end, (core.end_s + cores[index + 1].start_s) / 2)
+            spans.append(Reach(Window(start, end), core))
+        widened[phrase] = spans
+    return widened
 
 
 def reference_windows(plan: Plan, events: dict[str, list[Window]]) -> dict[str, list[Window]]:

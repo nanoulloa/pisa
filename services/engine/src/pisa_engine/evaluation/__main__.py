@@ -2,6 +2,7 @@
 
     synth                                  render the free synthetic set and its manifest
     run --manifest M --name N              run every clip through the pipeline (resumable)
+        [--plans-from RUN]                 replay RUN's plans: only tracking and measuring change
     baseline --manifest M --name N         ask Muse Spark "real or AI-generated?" (resumable)
     score --manifest M --name N            write eval/reports/N.json and N.md
     calibrate --manifest M --name N        suggest per-test thresholds, write N-calibration.md
@@ -28,7 +29,13 @@ from pisa_engine.evaluation.baseline import MuseSparkBaseline, load_baseline, ru
 from pisa_engine.evaluation.calibration import calibrate
 from pisa_engine.evaluation.manifest import load_manifest
 from pisa_engine.evaluation.markdown import calibration_markdown, report_markdown
-from pisa_engine.evaluation.runner import RunInfo, RunStoppedError, load_runs, run_manifest
+from pisa_engine.evaluation.runner import (
+    RunInfo,
+    RunStoppedError,
+    load_runs,
+    run_manifest,
+    saved_plans,
+)
 from pisa_engine.evaluation.scoring import outcomes, score
 from pisa_engine.evaluation.synthetic_set import write_synthetic_set
 from pisa_engine.render.store import LocalEvidenceStore
@@ -56,10 +63,15 @@ def _run(args: argparse.Namespace) -> int:
     settings = Settings()
     manifest = load_manifest(args.manifest)
     client = cache(lambda: meta_client_for(settings))
+    plans = saved_plans(RUNS_DIR / args.plans_from) if args.plans_from else None
+    planner = settings.muse_spark_model if settings.planner == "muse_spark" else "whole-clip"
+    if args.plans_from:
+        source = load_runs(RUNS_DIR / args.plans_from)[0].planner
+        planner = f"{source}, plans replayed from {args.plans_from}"
     info = RunInfo(
         manifest=_shown(args.manifest),
         segmenter=settings.sam_model if settings.segmenter == "sam" else "color-offline",
-        planner=settings.muse_spark_model if settings.planner == "muse_spark" else "whole-clip",
+        planner=planner,
         data_policy="internal" if args.allow_contributor else "user",
         started_at=datetime.now(UTC),
     )
@@ -79,6 +91,7 @@ def _run(args: argparse.Namespace) -> int:
                 segmenter=segmenter_for(settings, client),
                 planner=planner_for(settings, client),
                 evidence=LocalEvidenceStore(out_dir / "evidence"),
+                plans=plans,
                 force=args.force,
             )
         )
@@ -196,6 +209,13 @@ def _parser() -> argparse.ArgumentParser:
                 action="store_true",
                 help="Our own clips only: allow the cheaper contributor tier, whose inputs "
                 "Meta may use for training.",
+            )
+        if name == "run":
+            sub.add_argument(
+                "--plans-from",
+                metavar="RUN",
+                help="Replay the plans saved by run RUN instead of asking the planner, so only "
+                "tracking and measuring change.",
             )
         if name == "calibrate":
             sub.add_argument("--max-false-positives", type=int, default=0)

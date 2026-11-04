@@ -26,6 +26,13 @@ REST_MIN_STEPS = 3
 # (or JITTER_SIGMAS jitter deviations, when that is larger).
 BOUNCE_MIN_PX = 2.0
 
+# A flight grows beyond the planner's window only from this many samples inside it ...
+GROW_MIN_SAMPLES = 5
+# ... and only by samples within this many jitter deviations of its fitted path, or this many
+# pixels when the tracker is calmer than that (see `settle_edges`).
+GROW_SIGMAS = 4.0
+GROW_MIN_PX = 2.0
+
 
 @dataclass(frozen=True, slots=True)
 class Trajectory:
@@ -106,6 +113,62 @@ def segment_flight(trajectory: Trajectory, *, min_samples: int = 8) -> Flight:
         if before is not None and after is not None
     ]
     return Flight(phases=[piece for piece in pieces if piece is not None], bounces=bounces)
+
+
+def settle_edges(
+    flight: Flight, core_start: float, core_end: float, *, min_samples: int = 8
+) -> Flight:
+    """Keeps samples outside [core_start, core_end] only where they continue the same flight.
+
+    The tracker follows an object a little beyond the planner's window, where a hand may still
+    hold, throw or catch it. Each phase starts from its samples inside the window and grows
+    outward one sample at a time while the next sample lies where constant acceleration,
+    fitted to the samples kept so far, puts it: within GROW_SIGMAS jitter deviations, or
+    GROW_MIN_PX. A hand pushing or catching moves the object off that path within a frame or
+    two, so growth stops there. Phases left shorter than `min_samples` are dropped, and so
+    are bounces next to them.
+    """
+    settled = {
+        id(phase): _settled(phase, core_start, core_end, min_samples) for phase in flight.phases
+    }
+    bounces = [
+        Bounce(before, after, bounce.contact_t, bounce.contact_y)
+        for bounce in flight.bounces
+        if (before := settled[id(bounce.before)]) is not None
+        and (after := settled[id(bounce.after)]) is not None
+    ]
+    phases = [kept for phase in flight.phases if (kept := settled[id(phase)]) is not None]
+    return Flight(phases=phases, bounces=bounces)
+
+
+def _settled(
+    phase: Trajectory, core_start: float, core_end: float, min_samples: int
+) -> Trajectory | None:
+    n = len(phase)
+    lo = int(np.searchsorted(phase.t, core_start, side="left"))
+    hi = int(np.searchsorted(phase.t, core_end, side="right"))
+    if lo == 0 and hi == n:
+        return phase
+    if hi - lo >= GROW_MIN_SAMPLES:
+        tolerance = max(GROW_MIN_PX, GROW_SIGMAS * _jitter_px(phase.window(lo, hi)))
+        while lo > 0 and _continues(phase, lo, hi, lo - 1, tolerance):
+            lo -= 1
+        while hi < n and _continues(phase, lo, hi, hi, tolerance):
+            hi += 1
+    return phase.window(lo, hi) if hi - lo >= min_samples else None
+
+
+def _continues(phase: Trajectory, lo: int, hi: int, index: int, tolerance_px: float) -> bool:
+    """Whether sample `index` lies on the path fitted to samples [lo, hi): a parabola in y
+    (gravity) and a straight line in x (nothing pushes sideways in free flight)."""
+    t = phase.t[lo:hi]
+    origin = float(t.mean())  # Centered time keeps the fits well conditioned.
+    y_fit = np.polyfit(t - origin, phase.y[lo:hi], 2)
+    x_fit = np.polyfit(t - origin, phase.x[lo:hi], 1)
+    at = float(phase.t[index]) - origin
+    off_y = abs(float(np.polyval(y_fit, at)) - float(phase.y[index]))
+    off_x = abs(float(np.polyval(x_fit, at)) - float(phase.x[index]))
+    return max(off_y, off_x) <= tolerance_px
 
 
 def flight_phases(trajectory: Trajectory, *, min_samples: int = 8) -> list[Trajectory]:

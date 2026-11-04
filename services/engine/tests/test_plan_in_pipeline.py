@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -33,7 +34,7 @@ from pisa_engine.planning.planner import checked
 from pisa_engine.settings import Settings
 from pisa_engine.synthetic import BallScene, render
 from pisa_engine.tracking.segmenter import frame_time
-from pisa_engine.tracking.windows import Window, event_windows, reference_windows
+from pisa_engine.tracking.windows import REACH_S, Window, event_windows, reference_windows
 
 FPS = 60
 
@@ -166,14 +167,36 @@ def test_the_planners_window_keeps_the_hand_out(clip_1s: Path, tmp_path: Path) -
         clip_1s, tmp_path, planner=StaticPlanner(_plan([(0.32, 1.0)])), segmenter=segmenter
     )
     assert result["verdict"]["label"] == "consistent_with_real_physics"
-    # Only the window's frames went to the segmenter (SAM bills per frame), in a trimmed clip.
+    # Only the window's frames, and REACH_S before it, went to the segmenter (SAM bills per
+    # frame), in a trimmed clip. The push in those extra frames is left out of the flight.
     ((phrase, timebase),) = segmenter.calls
     assert phrase == "ball"
-    assert timebase.start_s == pytest.approx(19 / FPS)
-    assert timebase.frame_count == 60 - 19
+    first = math.floor((0.32 - REACH_S) * FPS)
+    assert timebase.start_s == pytest.approx(first / FPS)
+    assert timebase.frame_count == 60 - first
     samples = result["tracks"]["objects"][0]["samples"]
-    assert samples[0]["frame"] == 20  # Frame numbers are back in the whole clip's terms.
-    assert samples[0]["t_s"] == pytest.approx(20 / FPS)
+    assert samples[0]["frame"] == first + 1  # Frame numbers are back in the whole clip's terms.
+    assert samples[0]["t_s"] == pytest.approx((first + 1) / FPS)
+
+
+def test_a_window_that_starts_a_few_frames_later_measures_the_same_flight(
+    clip_1s: Path, tmp_path: Path
+) -> None:
+    """A planner places a release only to within its sampling interval. The flight Pisa
+    measures, and so its verdict, must not depend on where in that interval it lands."""
+    measured = []
+    for index, start in enumerate((0.32, 0.36, 0.42)):
+        result = _analyze(
+            clip_1s,
+            tmp_path / str(index),
+            planner=StaticPlanner(_plan([(start, 1.0)])),
+            segmenter=ScriptedSegmenter(*_toss()),
+        )
+        assert result["verdict"]["label"] == "consistent_with_real_physics"
+        shape = next(test for test in result["tests"] if test["test"] == "free_fall_shape")
+        values = {m["name"]: m["value"] for m in shape["measurements"]}
+        measured.append((values["samples"], round(values["acceleration_px_s2"], 6)))
+    assert len(set(measured)) == 1, measured
 
 
 def test_an_unmeasurable_plan_tracks_nothing_and_says_why(clip_1s: Path, tmp_path: Path) -> None:

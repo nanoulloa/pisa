@@ -44,13 +44,19 @@ from pisa_engine.physics.implied_g import Scale
 from pisa_engine.physics.results import measurement, result
 from pisa_engine.physics.scale import best_scale
 from pisa_engine.physics.suite import run_tests
-from pisa_engine.physics.trajectory import from_track, segment_flight
+from pisa_engine.physics.trajectory import from_track, segment_flight, settle_edges
 from pisa_engine.planning.planner import Planner
 from pisa_engine.render.ghost import OwnedFlight, evidence_series, ghosts
 from pisa_engine.render.store import EVIDENCE_TTL, EvidenceStore
 from pisa_engine.render.video import render_evidence
 from pisa_engine.tracking.segmenter import Segmenter, frame_time
-from pisa_engine.tracking.windows import Window, event_windows, reference_windows, track_windows
+from pisa_engine.tracking.windows import (
+    Reach,
+    event_windows,
+    reaches,
+    reference_windows,
+    track_windows,
+)
 from pisa_engine.verdict import verdict_for
 from pisa_engine.vision.stabilize import (
     MAX_UNRELIABLE_SHARE,
@@ -97,7 +103,9 @@ async def _run(
         if plan.measurable:
             await progress.enter("track")
             events = event_windows(plan)
-            windows = {**events, **reference_windows(plan, events)}
+            reached = reaches(events, ingest.timebase)
+            spans = {phrase: [r.span for r in found] for phrase, found in reached.items()}
+            windows = {**spans, **reference_windows(plan, events)}
             objects = await track_windows(
                 deps.segmenter, video, ingest.timebase, windows, work_dir, policy=job.data_policy
             )
@@ -120,7 +128,7 @@ async def _run(
             )
 
             await progress.enter("measure")
-            measured = _measure(objects, path, events, ingest)
+            measured = _measure(objects, path, reached, ingest)
 
             await progress.enter("test")
             scale = best_scale(plan.references, measured.samples_by_phrase)
@@ -190,10 +198,11 @@ class _Scene:
 def _measure(
     objects: list[TrackedObject],
     path: CameraPath,
-    events: dict[str, list[Window]],
+    reached: dict[str, list[Reach]],
     ingest: IngestResult,
 ) -> _Measured:
-    """Flights per object, shot and event window, in stabilized coordinates.
+    """Flights per object, shot and event window, in stabilized coordinates. Samples tracked
+    just beyond a window join a flight only where they continue its path.
 
     An object seen mostly on frames the camera path cannot place is not measured; it gets an
     insufficient-data result instead, so the verdict can say why. Reference objects that are
@@ -218,11 +227,15 @@ def _measure(
             continue
         for shot in stabilize(obj, path):
             samples_by_phrase[obj.phrase].extend(shot.samples)
-            for window in events.get(obj.phrase, []):
-                inside = [s for s in shot.samples if window.contains(s.t_s - start_s)]
+            for reach in reached.get(obj.phrase, []):
+                inside = [s for s in shot.samples if reach.span.contains(s.t_s - start_s)]
                 if inside:
                     piece = shot.model_copy(update={"samples": inside})
-                    flight = segment_flight(from_track(piece))
+                    flight = settle_edges(
+                        segment_flight(from_track(piece)),
+                        start_s + reach.core.start_s,
+                        start_s + reach.core.end_s,
+                    )
                     flights.append(OwnedFlight(obj.phrase, obj.object_id, flight))
     return _Measured(flights, unmeasured, dict(samples_by_phrase))
 

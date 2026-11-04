@@ -7,7 +7,13 @@ import pytest
 
 import pisa_contracts as contracts
 from pisa_engine.physics.shape import free_fall_shape
-from pisa_engine.physics.trajectory import Trajectory, flight_phases, from_track
+from pisa_engine.physics.trajectory import (
+    Trajectory,
+    flight_phases,
+    from_track,
+    segment_flight,
+    settle_edges,
+)
 from pisa_engine.synthetic import BallScene, MotionProfile
 from pisa_engine.verdict import POLICY_VERSION, decide
 
@@ -241,3 +247,36 @@ def test_policy(results: list[contracts.TestResult], label: str, reason: str | N
 def test_implied_g_alone_never_convicts() -> None:
     t4 = _result("violation", 0.99).model_copy(update={"test": "implied_g"})
     assert decide([t4]).label == "inconclusive"
+
+
+def _passes(phase: Trajectory) -> bool:
+    return free_fall_shape(phase).outcome == "pass"
+
+
+def test_samples_beyond_the_window_join_a_clean_flight() -> None:
+    t = np.arange(30) / 30
+    trajectory = Trajectory(t=t, x=100 + 50 * t, y=50 + 0.5 * 3000 * t**2)
+    (phase,) = settle_edges(segment_flight(trajectory), 0.3, 0.8).phases
+    assert len(phase) == 30  # The window was 0.3 s to 0.8 s; the flight is the whole track.
+
+
+def test_a_push_beyond_the_window_is_left_out() -> None:
+    """Before release a hand pushes the ball down harder than gravity. T1 alone would pass
+    the whole track, since an acceleration that fades looks like air drag."""
+    t = np.arange(40) / 40
+    release = 0.25
+    v0, y0 = 9000 * release, 50 + 0.5 * 9000 * release**2
+    tau = t - release
+    y = np.where(t < release, 50 + 0.5 * 9000 * t**2, y0 + v0 * tau + 0.5 * 3000 * tau**2)
+    trajectory = Trajectory(t=t, x=np.full(40, 100.0), y=y)
+    (phase,) = settle_edges(segment_flight(trajectory), 0.4, 1.0).phases
+    assert release - 0.03 < phase.t[0] < 0.4  # Grown back to the release, and no further.
+    acceleration = _measurement(free_fall_shape(phase), "acceleration_px_s2")
+    assert acceleration == pytest.approx(3000, rel=0.02)
+
+
+def test_a_flight_that_starts_too_late_to_anchor_keeps_only_the_window() -> None:
+    t = np.arange(30) / 30
+    trajectory = Trajectory(t=t, x=np.full(30, 100.0), y=50 + 0.5 * 3000 * t**2)
+    settled = settle_edges(segment_flight(trajectory), 0.3, 0.42)
+    assert settled.phases == []  # Four samples inside the window are too few to extend.

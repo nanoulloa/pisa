@@ -9,16 +9,17 @@ The explainer is left out: the eval scores verdicts, and explanations would only
 
 from __future__ import annotations
 
+import dataclasses
 import tempfile
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict
 
-from pisa_contracts import AnalysisResult, DataPolicy, Job
+from pisa_contracts import AnalysisResult, DataPolicy, IngestResult, Job, Plan
 from pisa_engine.evaluation.manifest import Manifest, clip_path
 from pisa_engine.explain.explainer import NoExplainer
 from pisa_engine.pipeline import PipelineDeps, run_job
@@ -57,6 +58,26 @@ class RunStoppedError(RuntimeError):
     """Every remaining clip would fail the same way, for example with paid calls switched off."""
 
 
+class SavedPlanner:
+    """Answers with a plan an earlier run saved, already checked, without calling a model."""
+
+    def __init__(self, plan: Plan) -> None:
+        self._plan = plan
+
+    async def plan(self, video: Path, ingest: IngestResult, *, policy: DataPolicy) -> Plan:
+        return self._plan
+
+
+def saved_plans(out_dir: Path) -> dict[str, Plan]:
+    """The plan of every clip a run analyzed."""
+    _, runs = load_runs(out_dir)
+    return {
+        clip_id: run.result.plan
+        for clip_id, run in runs.items()
+        if run.result is not None and run.result.plan is not None
+    }
+
+
 class _MemoryJobStore:
     def __init__(self) -> None:
         self._jobs: dict[UUID, Job] = {}
@@ -84,13 +105,21 @@ async def run_manifest(
     segmenter: Segmenter,
     planner: Planner,
     evidence: EvidenceStore,
+    plans: Mapping[str, Plan] | None = None,
     force: bool = False,
     progress: Callable[[str], None] = print,
 ) -> dict[str, ClipRun]:
-    """Runs the clips not run yet (all of them with `force`) and returns every clip's outcome."""
+    """Runs the clips not run yet (all of them with `force`) and returns every clip's outcome.
+
+    With `plans`, each clip replays its saved plan instead of asking the planner, so a re-run
+    changes only what comes after planning.
+    """
     missing = [c.file for c in manifest.clips if not clip_path(manifest_path, c).is_file()]
     if missing:  # Check before the first paid call, not halfway through.
         raise FileNotFoundError(f"clips not found: {', '.join(missing)}")
+    unplanned = [c.id for c in manifest.clips if plans is not None and c.id not in plans]
+    if unplanned:
+        raise ValueError(f"no saved plan for: {', '.join(unplanned)}")
     results_dir = out_dir / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
     _check_same_setup(out_dir / "run.json", info, force=force)
@@ -121,7 +150,10 @@ async def run_manifest(
         )
         with tempfile.TemporaryDirectory(prefix="pisa-eval-") as work:
             started = time.perf_counter()
-            final = await run_job(job, clip_path(manifest_path, clip), Path(work), deps)
+            clip_deps = deps
+            if plans is not None:
+                clip_deps = dataclasses.replace(deps, planner=SavedPlanner(plans[clip.id]))
+            final = await run_job(job, clip_path(manifest_path, clip), Path(work), clip_deps)
             latency = time.perf_counter() - started
         error = final.error.code if final.error else None
         if error in STOPPING_ERRORS:
