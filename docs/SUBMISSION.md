@@ -24,7 +24,7 @@ Push the Frontier
 
 ## X post link (Most Viral Track)
 
-Leave empty, unless you post the demo on X first.
+https://x.com/m_ulloaj/status/2118111148461421042 (a 48-second cut of the demo, since X caps video at 2:20)
 
 ## Project Description
 

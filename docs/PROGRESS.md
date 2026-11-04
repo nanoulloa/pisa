@@ -16,7 +16,7 @@
 
 ### Next
 
-- Optional: post the demo on X and add the link to the submission for the Most Viral bonus (engagement counted until Nov 8, 11:59 PM ET).
+- Most Viral bonus: the demo is on X (https://x.com/m_ulloaj/status/2118111148461421042, a 48-second cut) and the link is in the submission; engagement counts until Nov 8, 11:59 PM ET.
 - After judging, switch paid calls off again (`make deploy-engine`).
 - The real pair clip lost its T2 measurement in the re-run (its two balls' flights now start more than 0.05 s apart once grown back toward the release); its verdict is unchanged. Look at the release-gap rule after the deadline.
 
