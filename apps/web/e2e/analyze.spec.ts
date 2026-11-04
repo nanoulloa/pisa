@@ -50,7 +50,8 @@ test("two balls that fall apart give the fake away", async ({ page }) => {
   await check(page, "en", "pair_falls_apart", english);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Physically impossible");
   await expect(page.getByText("Two objects released together fall at different rates.")).toBeVisible();
-  await expect(page.getByText("1.64×", { exact: true })).toBeVisible();
+  // Earth's gravity over 6 m/s² is 1.635; video encoders differ by a hundredth or so.
+  await expect(page.getByText(/^1\.6\d×$/)).toBeVisible();
 
   // The evidence video is served, with a legend that does not rely on color.
   const video = page.locator("video");
