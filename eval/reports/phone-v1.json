@@ -1,6 +1,6 @@
 {
   "name": "phone-v1",
-  "created_at": "2026-11-04T00:22:17.789653Z",
+  "created_at": "2026-11-04T00:49:10.735956Z",
   "engine_version": "0.1.0",
   "policy_version": "0.1.0",
   "synthetic": false,
@@ -16,7 +16,7 @@
     {
       "truth": "generated",
       "physically_impossible": 0,
-      "consistent_with_real_physics": 0,
+      "consistent_with_real_physics": 1,
       "inconclusive": 0
     }
   ],
@@ -29,24 +29,24 @@
   },
   "detection_rate": {
     "count": 0,
-    "total": 0,
-    "value": null,
-    "ci_low": null,
-    "ci_high": null
+    "total": 1,
+    "value": 0.0,
+    "ci_low": 0.0,
+    "ci_high": 0.7935
   },
   "inconclusive_rate": {
     "count": 2,
-    "total": 6,
-    "value": 0.3333,
-    "ci_low": 0.0968,
-    "ci_high": 0.7
+    "total": 7,
+    "value": 0.2857,
+    "ci_low": 0.0822,
+    "ci_high": 0.6411
   },
   "conclusive_accuracy": {
     "count": 4,
-    "total": 4,
-    "value": 1.0,
-    "ci_low": 0.5101,
-    "ci_high": 1.0
+    "total": 5,
+    "value": 0.8,
+    "ci_low": 0.3755,
+    "ci_high": 0.9638
   },
   "by_tag": [
     {
@@ -112,7 +112,7 @@
         {
           "truth": "generated",
           "physically_impossible": 0,
-          "consistent_with_real_physics": 0,
+          "consistent_with_real_physics": 1,
           "inconclusive": 0
         }
       ]
@@ -129,7 +129,7 @@
         {
           "truth": "generated",
           "physically_impossible": 0,
-          "consistent_with_real_physics": 0,
+          "consistent_with_real_physics": 1,
           "inconclusive": 0
         }
       ]
@@ -157,7 +157,7 @@
       "test": "free_fall_shape",
       "measured": {
         "real": 4,
-        "generated": 0
+        "generated": 1
       },
       "violated": {
         "real": 0,
@@ -173,7 +173,7 @@
       "test": "galileo_pair",
       "measured": {
         "real": 2,
-        "generated": 0
+        "generated": 1
       },
       "violated": {
         "real": 0,
@@ -189,7 +189,7 @@
       "test": "bounce_energy",
       "measured": {
         "real": 4,
-        "generated": 0
+        "generated": 1
       },
       "violated": {
         "real": 0,
@@ -220,7 +220,7 @@
     {
       "test": "time_base_consistency",
       "measured": {
-        "real": 4,
+        "real": 2,
         "generated": 0
       },
       "violated": {
@@ -235,13 +235,13 @@
     }
   ],
   "latency_s": {
-    "median": 41.777,
+    "median": 42.981,
     "p90": 57.862,
     "max": 57.862
   },
-  "cost_usd": 0.133821,
+  "cost_usd": 0.154619,
   "cost_usd_per_clip": {
-    "median": 0.023,
+    "median": 0.0211,
     "p90": 0.0442,
     "max": 0.0442
   },
@@ -296,8 +296,7 @@
       "decisive_tests": [
         "bounce_energy",
         "free_fall_shape",
-        "galileo_pair",
-        "time_base_consistency"
+        "galileo_pair"
       ],
       "latency_s": 45.501,
       "cost_usd": 0.024837,
@@ -315,8 +314,7 @@
       "reason_code": null,
       "decisive_tests": [
         "bounce_energy",
-        "free_fall_shape",
-        "time_base_consistency"
+        "free_fall_shape"
       ],
       "latency_s": 38.053,
       "cost_usd": 0.021139,
@@ -349,6 +347,24 @@
       "latency_s": 52.377,
       "cost_usd": 0.015465,
       "baseline": "real"
+    },
+    {
+      "id": "pair-01-gen",
+      "truth": "generated",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "galileo_pair"
+      ],
+      "latency_s": 42.981,
+      "cost_usd": 0.020798,
+      "baseline": "generated"
     }
   ],
   "baseline": {
@@ -362,19 +378,19 @@
       "ci_high": 0.3903
     },
     "detection_rate": {
-      "count": 0,
-      "total": 0,
-      "value": null,
-      "ci_low": null,
-      "ci_high": null
+      "count": 1,
+      "total": 1,
+      "value": 1.0,
+      "ci_low": 0.2065,
+      "ci_high": 1.0
     },
     "unsure_rate": {
       "count": 0,
-      "total": 6,
+      "total": 7,
       "value": 0.0,
       "ci_low": 0.0,
-      "ci_high": 0.3903
+      "ci_high": 0.3543
     },
-    "cost_usd": 0.00252
+    "cost_usd": 0.003387
   }
 }

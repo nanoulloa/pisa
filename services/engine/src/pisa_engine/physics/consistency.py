@@ -4,6 +4,10 @@ Slow motion stretches every moment of a clip equally, so it scales all accelerat
 same factor: a real slowed-down clip still shows one acceleration. Generated clips often
 change it from one flight to the next. Comparing flights of the same object keeps the camera
 distance the same, so pixels compare directly.
+
+Only flights that T1 finds to be clean parabolas are compared. A stretch where the object
+rolls, is caught or moves toward the camera has an acceleration in pixels that is not
+gravity's, and comparing it would call a real video impossible.
 """
 
 from __future__ import annotations
@@ -15,6 +19,7 @@ from dataclasses import dataclass
 from pisa_contracts import TestResult
 from pisa_engine.physics.fit import fit_free_fall
 from pisa_engine.physics.results import measurement, result, z_confidence
+from pisa_engine.physics.shape import free_fall_shape
 from pisa_engine.physics.trajectory import Trajectory
 
 
@@ -31,7 +36,11 @@ def time_base_consistency(
     phases: Sequence[Trajectory], thresholds: ConsistencyThresholds | None = None
 ) -> TestResult:
     limits = thresholds or ConsistencyThresholds()
-    usable = [phase for phase in phases if len(phase) >= limits.min_samples]
+    usable = [
+        phase
+        for phase in phases
+        if len(phase) >= limits.min_samples and free_fall_shape(phase).outcome == "pass"
+    ]
     if len(usable) < 2:
         return result("time_base_consistency", "not_applicable", 0.0, [], "fewer_than_two_flights")
 

@@ -171,6 +171,35 @@ def test_one_flight_cannot_be_compared() -> None:
     assert (result.outcome, result.reason_code) == ("not_applicable", "fewer_than_two_flights")
 
 
+def test_a_stretch_that_is_not_free_flight_is_left_out() -> None:
+    # Two real flights, then the ball rolls along the floor: rolling has no gravity to compare.
+    t = np.arange(30) / 60
+    first = Trajectory(t=t, x=100 + 50 * t, y=100 + 0.5 * EARTH_G * PX_PER_M * t**2)
+    t2 = 1.0 + t
+    second = Trajectory(t=t2, x=100 + 50 * t2, y=300 - 900 * t + 0.5 * EARTH_G * PX_PER_M * t**2)
+    t3 = 2.0 + t
+    rolling = Trajectory(t=t3, x=200 + 80 * t, y=np.full_like(t, 600.0))
+    result = time_base_consistency([first, second, rolling])
+    assert result.outcome == "pass"
+    assert _measurement(result, "flights") == 2
+
+
+def test_a_flight_that_moves_in_depth_is_left_out() -> None:
+    # The second flight's ball grows 2.4 times: it comes toward the camera, so its pixel
+    # acceleration is not comparable, however different it looks.
+    t = np.arange(30) / 60
+    first = Trajectory(t=t, x=100 + 50 * t, y=100 + 0.5 * EARTH_G * PX_PER_M * t**2)
+    t2 = 1.0 + t
+    second = Trajectory(
+        t=t2,
+        x=100 + 50 * t2,
+        y=300 + 0.5 * 1.6 * EARTH_G * PX_PER_M * t**2,
+        area=np.linspace(400, 960, t.size),
+    )
+    result = time_base_consistency([first, second])
+    assert (result.outcome, result.reason_code) == ("not_applicable", "fewer_than_two_flights")
+
+
 def test_noisy_real_bounces_keep_one_gravity() -> None:
     clean = _bouncing(0.7)
     rng = np.random.default_rng(17)
