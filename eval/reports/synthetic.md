@@ -2,7 +2,7 @@
 
 **Synthetic set.** Every clip was rendered by the engine's own generator with known physics. These numbers show that the pipeline and the scoring work end to end; they say nothing yet about real phone videos or real video generators.
 
-Engine 0.1.0, verdict policy 0.1.0, segmenter `color-offline`, planner `whole-clip`. Scored 2026-10-27 22:03 UTC.
+Engine 0.1.0, verdict policy 0.1.0, segmenter `color-offline`, planner `whole-clip`. Scored 2026-11-04 16:33 UTC.
 
 ## Headline
 
@@ -58,32 +58,32 @@ Counts are clips, as real / generated. A test is decisive when a clip was judged
 
 ## Time and cost
 
-Seconds per clip, end to end: median 0.41, 90th percentile 0.66, slowest 0.98.
+Seconds per clip, end to end: median 1.18, 90th percentile 1.91, slowest 3.06.
 Paid model calls: $0.0000 for the whole set, $0.0000 median per clip.
 
 ## Clips
 
 | Clip | Truth | Tags | Verdict | Tests behind it, or reason | Seconds | USD | Muse Spark |
 |---|---|---|---|---|--:|--:|---|
-| drop-still | real | drop static | Consistent with real physics | T1 | 0.42 | 0.0000 |  |
-| drop-sideways | real | drop static | Consistent with real physics | T1 | 0.40 | 0.0000 |  |
-| drop-jittery | real | drop static | Consistent with real physics | T1 | 0.38 | 0.0000 |  |
-| drop-handheld | real | drop handheld | Consistent with real physics | T1 | 0.54 | 0.0000 |  |
-| throw | real | throw static | Consistent with real physics | T1 | 0.44 | 0.0000 |  |
-| throw-handheld | real | throw handheld | Consistent with real physics | T1 | 0.66 | 0.0000 |  |
-| bounce-soft | real | bounce static | Consistent with real physics | T1, T3, T5 | 0.66 | 0.0000 |  |
-| bounce-lively | real | bounce static | Consistent with real physics | T1, T3, T5 | 0.65 | 0.0000 |  |
-| bounce-handheld | real | bounce handheld | Consistent with real physics | T1, T3, T5 | 0.95 | 0.0000 |  |
-| pair-together | real | pair static | Consistent with real physics | T1, T2 | 0.38 | 0.0000 |  |
-| pair-together-sideways | real | pair static | Consistent with real physics | T1, T2 | 0.38 | 0.0000 |  |
-| drop-slow-motion | real | drop static slow-motion | Consistent with real physics | T1 | 0.36 | 0.0000 |  |
-| eased-drop | generated | drop static | Physically impossible | T1 | 0.37 | 0.0000 |  |
-| eased-drop-sideways | generated | drop static | Physically impossible | T1 | 0.37 | 0.0000 |  |
-| eased-drop-handheld | generated | drop handheld | Physically impossible | T1 | 0.54 | 0.0000 |  |
-| bounce-gains-energy | generated | bounce static | Physically impossible | T3 | 0.49 | 0.0000 |  |
-| bounce-gains-more | generated | bounce static | Physically impossible | T3 | 0.53 | 0.0000 |  |
-| pair-apart | generated | pair static | Physically impossible | T2 | 0.38 | 0.0000 |  |
-| pair-far-apart | generated | pair static | Physically impossible | T2 | 0.38 | 0.0000 |  |
-| constant-speed-drop | generated | drop static | Inconclusive | no_measurable_events | 0.37 | 0.0000 |  |
-| low-gravity-drop | generated | drop static low-gravity | Consistent with real physics | T1 | 0.37 | 0.0000 |  |
-| low-gravity-bounce | generated | bounce static low-gravity | Consistent with real physics | T1, T3, T5 | 0.98 | 0.0000 |  |
+| drop-still | real | drop static | Consistent with real physics | T1 | 0.62 | 0.0000 |  |
+| drop-sideways | real | drop static | Consistent with real physics | T1 | 0.60 | 0.0000 |  |
+| drop-jittery | real | drop static | Consistent with real physics | T1 | 0.74 | 0.0000 |  |
+| drop-handheld | real | drop handheld | Consistent with real physics | T1 | 1.14 | 0.0000 |  |
+| throw | real | throw static | Consistent with real physics | T1 | 1.63 | 0.0000 |  |
+| throw-handheld | real | throw handheld | Consistent with real physics | T1 | 2.14 | 0.0000 |  |
+| bounce-soft | real | bounce static | Consistent with real physics | T1, T3, T5 | 1.70 | 0.0000 |  |
+| bounce-lively | real | bounce static | Consistent with real physics | T1, T3, T5 | 1.45 | 0.0000 |  |
+| bounce-handheld | real | bounce handheld | Consistent with real physics | T1, T3, T5 | 1.91 | 0.0000 |  |
+| pair-together | real | pair static | Consistent with real physics | T1, T2 | 0.93 | 0.0000 |  |
+| pair-together-sideways | real | pair static | Consistent with real physics | T1, T2 | 1.31 | 0.0000 |  |
+| drop-slow-motion | real | drop static slow-motion | Consistent with real physics | T1 | 1.02 | 0.0000 |  |
+| eased-drop | generated | drop static | Physically impossible | T1 | 1.21 | 0.0000 |  |
+| eased-drop-sideways | generated | drop static | Physically impossible | T1 | 1.35 | 0.0000 |  |
+| eased-drop-handheld | generated | drop handheld | Physically impossible | T1 | 1.41 | 0.0000 |  |
+| bounce-gains-energy | generated | bounce static | Physically impossible | T3 | 0.96 | 0.0000 |  |
+| bounce-gains-more | generated | bounce static | Physically impossible | T3 | 1.33 | 0.0000 |  |
+| pair-apart | generated | pair static | Physically impossible | T2 | 0.78 | 0.0000 |  |
+| pair-far-apart | generated | pair static | Physically impossible | T2 | 0.71 | 0.0000 |  |
+| constant-speed-drop | generated | drop static | Inconclusive | no_measurable_events | 0.65 | 0.0000 |  |
+| low-gravity-drop | generated | drop static low-gravity | Consistent with real physics | T1 | 0.65 | 0.0000 |  |
+| low-gravity-bounce | generated | bounce static low-gravity | Consistent with real physics | T1, T3, T5 | 3.06 | 0.0000 |  |
