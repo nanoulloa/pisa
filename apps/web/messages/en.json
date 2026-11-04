@@ -386,7 +386,7 @@
     "results": {
       "title": "How well it works",
       "synthetic": "These first numbers come from {count, number} clips we rendered with known physics: {real, number} that follow it and {generated, number} that break it the way AI video generators do. They show that every part works end to end. Results on videos filmed with phones and made by AI generators will replace them.",
-      "filmed": "{count, number} videos: {real, number} filmed with phones and {generated, number} made by AI video generators from the same first frames.",
+      "filmed": "{count, number} videos whose answer we know: {real, number} real ones, filmed with a phone or taken from Google DeepMind's Physics-IQ benchmark, and {generated, number} made by AI video generators. Most generated videos found online had nothing Pisa could measure with confidence (a moving camera, a close-up, too few frames), so it said Inconclusive instead of guessing.",
       "count": "{count, number} of {total, number}",
       "falsePositives": "real videos called physically impossible",
       "falsePositivesNote": "The mistake that matters most. With {total, number} real videos, the true rate could still be as high as {high}.",

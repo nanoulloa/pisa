@@ -386,7 +386,7 @@
     "results": {
       "title": "Quão bem funciona",
       "synthetic": "Estes primeiros números vêm de {count, number} clipes que geramos com física conhecida: {real, number} que a seguem e {generated, number} que a quebram do jeito que os geradores de vídeo com IA fazem. Eles mostram que cada parte funciona de ponta a ponta. Os resultados com vídeos filmados com celulares e criados por geradores de IA vão substituí-los.",
-      "filmed": "{count, number} vídeos: {real, number} filmados com celulares e {generated, number} criados por geradores de vídeo com IA a partir dos mesmos primeiros quadros.",
+      "filmed": "{count, number} vídeos cuja resposta conhecemos: {real, number} reais, filmados com celular ou tirados do benchmark Physics-IQ do Google DeepMind, e {generated, number} criados por geradores de vídeo com IA. Na maioria dos vídeos de IA encontrados na internet não havia nada que o Pisa pudesse medir com confiança (câmera em movimento, plano muito fechado ou poucos quadros), então ele disse Inconclusivo em vez de adivinhar.",
       "count": "{count, number} de {total, number}",
       "falsePositives": "vídeos reais classificados como fisicamente impossíveis",
       "falsePositivesNote": "O erro que mais importa. Com {total, number} vídeos reais, a taxa verdadeira ainda pode chegar a {high}.",

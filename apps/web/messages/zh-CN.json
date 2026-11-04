@@ -386,7 +386,7 @@
     "results": {
       "title": "效果如何",
       "synthetic": "这批初步数据来自我们按已知物理规律渲染的 {count, number} 段片段：{real, number} 段符合物理规律，{generated, number} 段像 AI 视频生成器那样违反了它。这些数据说明每个环节都能完整运行。之后会换成用手机拍摄、以及由 AI 生成器制作的视频的结果。",
-      "filmed": "共 {count, number} 段视频：{real, number} 段用手机拍摄，{generated, number} 段由 AI 视频生成器从相同的首帧生成。",
+      "filmed": "共 {count, number} 段已知答案的视频：{real, number} 段真实视频，用手机拍摄或来自 Google DeepMind 的 Physics-IQ 基准测试，另有 {generated, number} 段由 AI 视频生成器生成。网上找到的 AI 视频大多没有能可靠测量的内容（镜头在移动、画面太近或帧数太少），所以 Pisa 给出“无法判定”，而不是去猜。",
       "count": "{count, number}/{total, number}",
       "falsePositives": "真实视频被判定为物理上不可能",
       "falsePositivesNote": "这是最重要的错误。只有 {total, number} 段真实视频时，真实比例仍可能高达 {high}。",

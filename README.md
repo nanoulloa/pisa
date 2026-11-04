@@ -52,6 +52,16 @@ The physics tests prefer checks that need no scale and no time base: the shape o
 
 The eval runs labeled clips through the same pipeline users get and scores the verdicts against what each clip really is. The number that matters most is the false positive rate: real videos called impossible. Every rate is reported with its 95% Wilson interval, a calibration step tunes the verdict thresholds to keep real videos safe first, and Muse Spark is asked "Is this video real or AI-generated?" about the same clips as a baseline. The published report is on the "How we know" page and in [eval/reports](eval/reports); the method and the recording guide are in [eval/README.md](eval/README.md).
 
+Published results ([filmed-v2](eval/reports/filmed-v2.md)), on 40 videos whose answer we know:
+
+| | Pisa measures | Muse Spark answers |
+|---|---|---|
+| Real videos called impossible or fake (29: 6 filmed on a phone, 23 from Google DeepMind's Physics-IQ) | 0 of 29 (95% interval 0% to 12%) | 2 of 29 |
+| AI-generated videos caught (11: Kling, Wan, HunyuanVideo, Cosmos, CogVideoX, VideoCrafter) | 1 of 11 | 4 of 11 |
+| No call (Inconclusive or unsure) | 32 of 40 | 1 of 40 |
+
+Pisa never accused a real video, and 7 of its 8 conclusive verdicts were right. It is also Inconclusive most of the time: most AI clips found online move the camera, shoot close up or have too few frames, and in many lab clips the fall lasts under a fifth of a second. Twelve of the real clips were run only after the last rule change ([holdout-v1](eval/reports/holdout-v1.md)): Pisa accused none of them; Muse Spark called 2 of them AI-generated.
+
 The eval already paid for itself: on rendered clips with one or two pixels of tracking jitter, it caught real throws being called impossible, and the rest detection was fixed before any real video was affected.
 
 ## Scope
