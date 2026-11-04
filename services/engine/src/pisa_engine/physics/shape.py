@@ -15,7 +15,8 @@ acceleration grows during the fall. Eased animation and many generated clips do 
 A perfect parabola with the wrong g still passes: slow motion makes real falls look like
 that, so the strength of gravity is left to T4 and T5. When the object changes size a lot
 it is moving toward or away from the camera, perspective bends the projected path, and the
-test declines to judge.
+test declines to judge. It also declines when something hides part of the object, since a
+partial mask puts its centre in the wrong place.
 """
 
 from __future__ import annotations
@@ -44,8 +45,11 @@ class ShapeThresholds:
     min_speed_share: float = 0.1
     # "Acceleration grows": the rise across the phase, as a share of the largest |acceleration|.
     min_acceleration_rise: float = 0.6
-    # Largest over smallest mask area beyond which perspective is not trusted.
+    # Largest over smallest area beyond which perspective is not trusted.
     max_area_ratio: float = 1.5
+    # A whole disc fills pi/4 (0.79) of its box and a blurred one more; below this share of
+    # its box the mask is missing a part, and its centre is not the object's.
+    min_fill: float = 0.6
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +81,7 @@ def free_fall_shape(phase: Trajectory, thresholds: ShapeThresholds | None = None
     peak_acceleration = float(np.abs(acceleration_t).max()) or 1.0
     peak_speed = float(np.abs(velocity_t).max()) or 1.0
     area_ratio = _area_ratio(phase)
+    fill = float(phase.fill.min()) if phase.fill is not None and phase.fill.size else 1.0
     measurements = [
         measurement("acceleration_px_s2", acceleration, "px/s^2"),
         measurement("acceleration_start_px_s2", float(acceleration_t[0]), "px/s^2"),
@@ -85,10 +90,13 @@ def free_fall_shape(phase: Trajectory, thresholds: ShapeThresholds | None = None
         measurement("bic_gain_changing_acceleration", gain_changing, "1"),
         measurement("residual_rms_px", math.sqrt(quadratic.rss / n), "px"),
         measurement("area_ratio", area_ratio, "1"),
+        measurement("fill_min", fill, "1"),
         measurement("samples", n, "1"),
         measurement("duration_s", float(phase.t[-1] - phase.t[0]), "s"),
     ]
 
+    if fill < limits.min_fill:
+        return result("free_fall_shape", "insufficient_data", 0.0, measurements, "occluded")
     if area_ratio > limits.max_area_ratio:
         return result("free_fall_shape", "insufficient_data", 0.0, measurements, "depth_change")
     if gain_changing >= limits.min_bic_gain_changing:

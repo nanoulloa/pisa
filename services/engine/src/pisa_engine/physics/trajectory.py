@@ -29,32 +29,42 @@ BOUNCE_MIN_PX = 2.0
 
 @dataclass(frozen=True, slots=True)
 class Trajectory:
-    """Positions over time in image pixels (y points down), and the object's area in pixels.
+    """Positions over time in image pixels (y points down), with the object's size and fill.
 
     Area stands in for depth: an object that grows or shrinks is moving toward or away from
-    the camera. Without masks (for example in tests), area is constant.
+    the camera. It is the area of a square on the narrow side of the object's box, because
+    motion blur stretches a mask along its motion but not across it. Fill is the share of its
+    box the mask covers: a disc covers pi/4 of it and a blurred disc more, while an object
+    seen through bars or past an edge covers much less. Without masks (for example in tests)
+    neither is known.
     """
 
     t: FloatArray
     x: FloatArray
     y: FloatArray
     area: FloatArray | None = None
+    fill: FloatArray | None = None
 
     def __len__(self) -> int:
         return int(self.t.size)
 
     def window(self, start: int, stop: int) -> Trajectory:
         area = None if self.area is None else self.area[start:stop]
-        return Trajectory(self.t[start:stop], self.x[start:stop], self.y[start:stop], area)
+        fill = None if self.fill is None else self.fill[start:stop]
+        return Trajectory(self.t[start:stop], self.x[start:stop], self.y[start:stop], area, fill)
 
 
 def from_track(obj: TrackedObject) -> Trajectory:
     samples = sorted(obj.samples, key=lambda sample: sample.frame)
+    width = np.array([s.bbox.x2 - s.bbox.x1 for s in samples], dtype=np.float64)
+    height = np.array([s.bbox.y2 - s.bbox.y1 for s in samples], dtype=np.float64)
+    mask = np.array([s.area_px for s in samples], dtype=np.float64)
     return Trajectory(
         t=np.array([s.t_s for s in samples], dtype=np.float64),
         x=np.array([s.centroid.x for s in samples], dtype=np.float64),
         y=np.array([s.centroid.y for s in samples], dtype=np.float64),
-        area=np.array([s.area_px for s in samples], dtype=np.float64),
+        area=np.minimum(width, height) ** 2,
+        fill=mask / np.maximum(width * height, 1.0),
     )
 
 

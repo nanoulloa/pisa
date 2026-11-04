@@ -1,6 +1,6 @@
 # Eval: public-v1
 
-Engine 0.1.0, verdict policy 0.1.0, segmenter `sam-3.1`, planner `muse-spark-1.3`. Scored 2026-11-04 01:27 UTC.
+Engine 0.1.0, verdict policy 0.1.0, segmenter `sam-3.1`, planner `muse-spark-1.3`. Scored 2026-11-04 01:41 UTC.
 
 ## Headline
 
@@ -8,8 +8,8 @@ Engine 0.1.0, verdict policy 0.1.0, segmenter `sam-3.1`, planner `muse-spark-1.3
 |---|---|
 | False positives: real clips judged impossible | 0 of 11 (0%; 95% interval 0% to 26%) |
 | Detection: generated clips judged impossible | 0 of 10 (0%; 95% interval 0% to 28%) |
-| Inconclusive, all clips | 19 of 21 (90%; 95% interval 71% to 97%) |
-| Conclusive verdicts that match the truth | 1 of 2 (50%; 95% interval 9% to 91%) |
+| Inconclusive, all clips | 18 of 21 (86%; 95% interval 65% to 95%) |
+| Conclusive verdicts that match the truth | 2 of 3 (67%; 95% interval 21% to 94%) |
 
 Intervals are 95% Wilson intervals: with few clips they stay wide, as they should.
 
@@ -21,13 +21,13 @@ Intervals are 95% Wilson intervals: with few clips they stay wide, as they shoul
 |---|---|---|
 | Real clips called fake | 0 of 11 (0%; 95% interval 0% to 26%) | 0 of 11 (0%; 95% interval 0% to 26%) |
 | Generated clips caught | 0 of 10 (0%; 95% interval 0% to 28%) | 3 of 10 (30%; 95% interval 11% to 60%) |
-| No call (inconclusive, unsure) | 19 of 21 (90%; 95% interval 71% to 97%) | 0 of 21 (0%; 95% interval 0% to 15%) |
+| No call (inconclusive, unsure) | 18 of 21 (86%; 95% interval 65% to 95%) | 0 of 21 (0%; 95% interval 0% to 15%) |
 
 ## Confusion matrix
 
 | Truth | Impossible | Consistent | Inconclusive |
 |---|--:|--:|--:|
-| real | 0 | 1 | 10 |
+| real | 0 | 2 | 9 |
 | generated | 0 | 1 | 9 |
 
 ## By tag
@@ -35,10 +35,10 @@ Intervals are 95% Wilson intervals: with few clips they stay wide, as they shoul
 | Tag | Truth | Impossible | Consistent | Inconclusive |
 |---|---|--:|--:|--:|
 | bounce | generated | 0 | 1 | 2 |
-| drop | real | 0 | 1 | 6 |
+| drop | real | 0 | 2 | 5 |
 | drop | generated | 0 | 0 | 5 |
 | pair | real | 0 | 0 | 4 |
-| static | real | 0 | 1 | 10 |
+| static | real | 0 | 2 | 9 |
 | throw | generated | 0 | 0 | 2 |
 
 ## Physics tests
@@ -47,10 +47,10 @@ Counts are clips, as real / generated. A test is decisive when a clip was judged
 
 | Test | Measured | Violated | Decisive | Closest call on a real clip |
 |---|--:|--:|--:|--:|
-| T1 Free-fall shape | 2 / 0 | 0 / 0 | 0 / 0 | none |
+| T1 Free-fall shape | 0 / 0 | 0 / 0 | 0 / 0 | none |
 | T2 Galileo pair | 0 / 0 | 0 / 0 | 0 / 0 | none |
 | T3 Bounce energy | 2 / 1 | 0 / 0 | 0 / 0 | none |
-| T4 Implied g | 2 / 0 | 1 / 0 | 0 / 0 | 0.99 |
+| T4 Implied g | 0 / 0 | 0 / 0 | 0 / 0 | none |
 | T5 Time-base consistency | 0 / 0 | 0 / 0 | 0 / 0 | none |
 
 ## Time and cost
@@ -66,8 +66,8 @@ Paid model calls: $0.5067 for the whole set, $0.0232 median per clip.
 | piq-0002-ball-and-block-fall-center-t1 | real | pair static | Inconclusive | no_measurable_events | 44.91 | 0.0447 | real |
 | piq-0003-ball-and-block-fall-right-t1 | real | pair static | Inconclusive | no_measurable_events | 55.65 | 0.0447 | real |
 | piq-0013-ball-in-basket-left-t1 | real | drop static | Inconclusive | no_measurable_events | 32.15 | 0.0245 | real |
-| piq-0014-ball-in-basket-center-t1 | real | drop static | Consistent with real physics | T1, T3, T4 | 111.93 | 0.0479 | real |
-| piq-0015-ball-in-basket-right-t1 | real | drop static | Inconclusive | weak_violation | 120.86 | 0.0360 | real |
+| piq-0014-ball-in-basket-center-t1 | real | drop static | Consistent with real physics | T3 | 111.93 | 0.0479 | real |
+| piq-0015-ball-in-basket-right-t1 | real | drop static | Consistent with real physics | T3 | 120.86 | 0.0360 | real |
 | piq-0058-duck-falls-in-box-left-t1 | real | drop static | Inconclusive | no_measurable_events | 30.58 | 0.0257 | real |
 | piq-0059-duck-falls-in-box-center-t1 | real | drop static | Inconclusive | no_measurable_events | 30.74 | 0.0246 | real |
 | piq-0060-duck-falls-in-box-right-t1 | real | drop static | Inconclusive | too_unclear | 16.28 | 0.0144 | real |

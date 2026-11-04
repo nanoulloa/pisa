@@ -15,6 +15,7 @@ export const EXPLANATIONS = [
   "weak_violation",
   "no_measurable_acceleration",
   "depth_change",
+  "occluded",
   "camera_motion",
   "too_few_samples",
   "no_free_flight",

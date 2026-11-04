@@ -7,7 +7,7 @@ import pytest
 
 import pisa_contracts as contracts
 from pisa_engine.physics.shape import free_fall_shape
-from pisa_engine.physics.trajectory import Trajectory, flight_phases
+from pisa_engine.physics.trajectory import Trajectory, flight_phases, from_track
 from pisa_engine.synthetic import BallScene, MotionProfile
 from pisa_engine.verdict import POLICY_VERSION, decide
 
@@ -129,6 +129,45 @@ def test_an_object_changing_size_is_not_judged() -> None:
     (phase,) = flight_phases(growing)
     result = free_fall_shape(phase)
     assert (result.outcome, result.reason_code) == ("insufficient_data", "depth_change")
+
+
+def _falling_ball(*, blur_s: float = 0.0, fill: float = np.pi / 4) -> contracts.TrackedObject:
+    """SAM's track of a 20 px ball falling at 9.81 m/s^2 (400 px/m). Each mask is stretched
+    along the fall by its speed over `blur_s`, and covers `fill` of its box."""
+    t = np.arange(36) / FPS
+    y = 80 + 0.5 * 9.81 * 400 * t**2
+    streak = 9.81 * 400 * t * blur_s
+    samples = []
+    for frame, (ti, yi, si) in enumerate(zip(t, y, streak, strict=True)):
+        box = contracts.BBox(x1=290, y1=yi - 10 - si / 2, x2=310, y2=yi + 10 + si / 2)
+        samples.append(
+            contracts.TrackSample(
+                frame=frame,
+                t_s=float(ti),
+                bbox=box,
+                centroid=contracts.Point2(x=300, y=float(yi)),
+                area_px=float(fill * 20 * (20 + si)),
+                confidence=0.98,
+            )
+        )
+    return contracts.TrackedObject(phrase="ball", object_id=0, samples=samples)
+
+
+def test_motion_blur_is_not_taken_for_a_change_of_depth() -> None:
+    # The mask grows 4 times as the ball speeds up, but only along its fall: it keeps its
+    # distance from the camera, so the fall is judged.
+    (phase,) = flight_phases(from_track(_falling_ball(blur_s=1 / 60)))
+    result = free_fall_shape(phase)
+    assert result.outcome == "pass"
+    size_change = next(m.value for m in result.measurements if m.name == "area_ratio")
+    assert size_change == pytest.approx(1.0)
+
+
+def test_a_partly_hidden_object_is_not_judged() -> None:
+    # Seen through the bars of a crate, the mask covers 40% of its box: its centre is off.
+    (phase,) = flight_phases(from_track(_falling_ball(fill=0.4)))
+    result = free_fall_shape(phase)
+    assert (result.outcome, result.reason_code) == ("insufficient_data", "occluded")
 
 
 def test_constant_velocity_has_no_measurable_acceleration() -> None:

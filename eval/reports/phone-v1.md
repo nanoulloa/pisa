@@ -1,15 +1,15 @@
 # Eval: phone-v1
 
-Engine 0.1.0, verdict policy 0.1.0, segmenter `sam-3.1`, planner `muse-spark-1.3`. Scored 2026-11-04 00:49 UTC.
+Engine 0.1.0, verdict policy 0.1.0, segmenter `sam-3.1`, planner `muse-spark-1.3`. Scored 2026-11-04 01:40 UTC.
 
 ## Headline
 
 | Measure | Result |
 |---|---|
 | False positives: real clips judged impossible | 0 of 6 (0%; 95% interval 0% to 39%) |
-| Detection: generated clips judged impossible | 0 of 1 (0%; 95% interval 0% to 79%) |
+| Detection: generated clips judged impossible | 1 of 1 (100%; 95% interval 21% to 100%) |
 | Inconclusive, all clips | 2 of 7 (29%; 95% interval 8% to 64%) |
-| Conclusive verdicts that match the truth | 4 of 5 (80%; 95% interval 38% to 96%) |
+| Conclusive verdicts that match the truth | 5 of 5 (100%; 95% interval 57% to 100%) |
 
 Intervals are 95% Wilson intervals: with few clips they stay wide, as they should.
 
@@ -20,7 +20,7 @@ Intervals are 95% Wilson intervals: with few clips they stay wide, as they shoul
 | Measure | Pisa measures | Muse Spark answers |
 |---|---|---|
 | Real clips called fake | 0 of 6 (0%; 95% interval 0% to 39%) | 0 of 6 (0%; 95% interval 0% to 39%) |
-| Generated clips caught | 0 of 1 (0%; 95% interval 0% to 79%) | 1 of 1 (100%; 95% interval 21% to 100%) |
+| Generated clips caught | 1 of 1 (100%; 95% interval 21% to 100%) | 1 of 1 (100%; 95% interval 21% to 100%) |
 | No call (inconclusive, unsure) | 2 of 7 (29%; 95% interval 8% to 64%) | 0 of 7 (0%; 95% interval 0% to 35%) |
 
 ## Confusion matrix
@@ -28,7 +28,7 @@ Intervals are 95% Wilson intervals: with few clips they stay wide, as they shoul
 | Truth | Impossible | Consistent | Inconclusive |
 |---|--:|--:|--:|
 | real | 0 | 4 | 2 |
-| generated | 0 | 1 | 0 |
+| generated | 1 | 0 | 0 |
 
 ## By tag
 
@@ -38,9 +38,9 @@ Intervals are 95% Wilson intervals: with few clips they stay wide, as they shoul
 | drop | real | 0 | 1 | 1 |
 | handheld | real | 0 | 0 | 1 |
 | pair | real | 0 | 2 | 0 |
-| pair | generated | 0 | 1 | 0 |
+| pair | generated | 1 | 0 | 0 |
 | static | real | 0 | 4 | 1 |
-| static | generated | 0 | 1 | 0 |
+| static | generated | 1 | 0 | 0 |
 | throw | real | 0 | 1 | 0 |
 
 ## Physics tests
@@ -49,11 +49,11 @@ Counts are clips, as real / generated. A test is decisive when a clip was judged
 
 | Test | Measured | Violated | Decisive | Closest call on a real clip |
 |---|--:|--:|--:|--:|
-| T1 Free-fall shape | 4 / 1 | 0 / 0 | 0 / 0 | none |
+| T1 Free-fall shape | 4 / 1 | 0 / 1 | 0 / 0 | none |
 | T2 Galileo pair | 2 / 1 | 0 / 0 | 0 / 0 | none |
 | T3 Bounce energy | 4 / 1 | 0 / 0 | 0 / 0 | none |
 | T4 Implied g | 0 / 0 | 0 / 0 | 0 / 0 | none |
-| T5 Time-base consistency | 2 / 0 | 0 / 0 | 0 / 0 | none |
+| T5 Time-base consistency | 3 / 1 | 0 / 1 | 0 / 1 | none |
 
 ## Time and cost
 
@@ -66,8 +66,8 @@ Paid model calls: $0.1546 for the whole set, $0.0211 median per clip.
 |---|---|---|---|---|--:|--:|---|
 | pair-01 | real | pair static | Consistent with real physics | T1, T2, T3, T5 | 57.86 | 0.0442 | real |
 | drop-01 | real | drop bounce static | Consistent with real physics | T1, T3, T5 | 36.76 | 0.0278 | real |
-| pair-02 | real | pair static | Consistent with real physics | T1, T2, T3 | 45.50 | 0.0248 | real |
+| pair-02 | real | pair static | Consistent with real physics | T1, T2, T3, T5 | 45.50 | 0.0248 | real |
 | throw-01 | real | throw bounce static | Consistent with real physics | T1, T3 | 38.05 | 0.0211 | real |
 | drop-02 | real | drop static | Inconclusive | too_unclear | 19.37 | 0.0004 | real |
 | bounce-handheld-01 | real | bounce handheld | Inconclusive | no_measurable_events | 52.38 | 0.0155 | real |
-| pair-01-gen | generated | pair static | Consistent with real physics | T1, T2, T3 | 42.98 | 0.0208 | generated |
+| pair-01-gen | generated | pair static | Physically impossible | T5 | 42.98 | 0.0208 | generated |

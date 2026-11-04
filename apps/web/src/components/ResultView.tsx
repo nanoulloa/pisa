@@ -19,6 +19,7 @@ const MEASUREMENT_NAMES = [
   "bic_gain_changing_acceleration",
   "residual_rms_px",
   "area_ratio",
+  "fill_min",
   "samples",
   "duration_s",
   "acceleration_ratio",

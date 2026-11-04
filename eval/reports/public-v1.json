@@ -1,6 +1,6 @@
 {
   "name": "public-v1",
-  "created_at": "2026-11-04T01:27:49.417389Z",
+  "created_at": "2026-11-04T01:41:16.246161Z",
   "engine_version": "0.1.0",
   "policy_version": "0.1.0",
   "synthetic": false,
@@ -10,8 +10,8 @@
     {
       "truth": "real",
       "physically_impossible": 0,
-      "consistent_with_real_physics": 1,
-      "inconclusive": 10
+      "consistent_with_real_physics": 2,
+      "inconclusive": 9
     },
     {
       "truth": "generated",
@@ -35,18 +35,18 @@
     "ci_high": 0.2775
   },
   "inconclusive_rate": {
-    "count": 19,
+    "count": 18,
     "total": 21,
-    "value": 0.9048,
-    "ci_low": 0.7109,
-    "ci_high": 0.9735
+    "value": 0.8571,
+    "ci_low": 0.6536,
+    "ci_high": 0.9502
   },
   "conclusive_accuracy": {
-    "count": 1,
-    "total": 2,
-    "value": 0.5,
-    "ci_low": 0.0945,
-    "ci_high": 0.9055
+    "count": 2,
+    "total": 3,
+    "value": 0.6667,
+    "ci_low": 0.2077,
+    "ci_high": 0.9385
   },
   "by_tag": [
     {
@@ -72,8 +72,8 @@
         {
           "truth": "real",
           "physically_impossible": 0,
-          "consistent_with_real_physics": 1,
-          "inconclusive": 6
+          "consistent_with_real_physics": 2,
+          "inconclusive": 5
         },
         {
           "truth": "generated",
@@ -106,8 +106,8 @@
         {
           "truth": "real",
           "physically_impossible": 0,
-          "consistent_with_real_physics": 1,
-          "inconclusive": 10
+          "consistent_with_real_physics": 2,
+          "inconclusive": 9
         },
         {
           "truth": "generated",
@@ -139,7 +139,7 @@
     {
       "test": "free_fall_shape",
       "measured": {
-        "real": 2,
+        "real": 0,
         "generated": 0
       },
       "violated": {
@@ -187,18 +187,18 @@
     {
       "test": "implied_g",
       "measured": {
-        "real": 2,
+        "real": 0,
         "generated": 0
       },
       "violated": {
-        "real": 1,
+        "real": 0,
         "generated": 0
       },
       "decisive": {
         "real": 0,
         "generated": 0
       },
-      "closest_call_real": 0.99
+      "closest_call_real": null
     },
     {
       "test": "time_base_consistency",
@@ -295,9 +295,7 @@
       "verdict": "consistent_with_real_physics",
       "reason_code": null,
       "decisive_tests": [
-        "bounce_energy",
-        "free_fall_shape",
-        "implied_g"
+        "bounce_energy"
       ],
       "latency_s": 111.928,
       "cost_usd": 0.047857,
@@ -310,12 +308,10 @@
         "drop",
         "static"
       ],
-      "verdict": "inconclusive",
-      "reason_code": "weak_violation",
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
       "decisive_tests": [
-        "bounce_energy",
-        "free_fall_shape",
-        "implied_g"
+        "bounce_energy"
       ],
       "latency_s": 120.865,
       "cost_usd": 0.036013,
