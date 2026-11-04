@@ -1,33 +1,35 @@
 # Demo script (about 3 minutes)
 
-Every number on screen comes from a real run, and the narration says nothing the product does not do. Narration is written to be read at a calm pace (about 140 words a minute). Status says what each shot still needs.
+Every number on screen comes from a real run, and the narration says nothing the product does not do. Narration is written to be read at a calm pace (about 140 words a minute).
+
+The two clips are the founder's own: `pair-01` (two balls dropped together in a bedroom, filmed on an iPhone, cropped so no one is in frame) and `pair-01-gen` (Kling 4.0, generated from the first frame of `pair-01`, watermark cropped). Both were checked on the live site on Nov 4 with paid calls on:
+
+- `pair-01-gen`: Physically impossible. The ball's gravity changes by 1.35 times from one flight to another (time-base consistency). https://pisa-theta.vercel.app/en/result/4168d258-5a69-44f0-9cd5-6131237c40eb
+- `pair-01`: Consistent with real physics. 8 flights and 6 bounces, the two balls fall together. https://pisa-theta.vercel.app/en/result/0792e9af-2b59-4593-81f2-d7b90f4e1e42
+
+Evidence videos expire 24 hours after each check (Nov 5, about 9:20 AM Costa Rica time). After that, upload the clip again.
 
 ## Shots
 
-| # | Time | On screen | Narration | Needs | Status |
-|---|---|---|---|---|---|
-| 1 | 0:00 | A viral-style clip: a bottle or ball falls a little too slowly. Then the same frame frozen, with "Real or AI?" | "This video has been shared thousands of times. Is it real?" | One generated clip from the set | Needs the generated clips |
-| 2 | 0:12 | A chatbot asked "Is this video real or AI-generated?" and its answer. | "Ask a chatbot and you get an opinion. Sometimes right, sometimes wrong, never something you can check." | The Muse Spark baseline answer for the same clip (`make eval-baseline`) | Needs paid calls |
-| 3 | 0:25 | The Pisa web app: upload, then the progress steps Watching, Tracking, Measuring, Explaining. | "Pisa doesn't guess. It measures. Muse Spark finds the moment something falls. SAM 3.1 outlines it in every frame." | Paid engine (`make deploy-engine PAID=true`) | Needs paid calls |
-| 4 | 0:45 | The result: verdict "Physically impossible", the evidence video with the lime ghost falling ahead of the object, the measurement cards. | "The ghost shows where real gravity would put the object. Here they part ways: [the reason Pisa gives, in its own plain words]. That is the evidence, and you can see it." | The same generated clip | Needs the generated clips |
-| 5 | 1:10 | A real clip of the founder dropping the same ball: "Consistent with real physics", the ghost on top of the ball. | "A real drop. The ghost and the ball fall together." | One real clip | Needs the real clips |
-| 6 | 1:25 | A phone screen: forward a video to Pisa on WhatsApp, the acknowledgment, then the evidence video and verdict in Spanish. | "Most people meet these videos on WhatsApp, so Pisa lives there too. Forward it, and the answer comes back in your language." | WhatsApp with the permanent token, a screen recording from the phone | Ready (works today with rendered clips; real clips need paid calls) |
-| 7 | 1:50 | The "How it works" diagram: Muse Spark plans, SAM 3.1 tracks, our engine measures and decides, Muse Spark explains. | "Meta's models help. Muse Spark plans and explains, SAM 3.1 tracks. But the verdict always comes from five laws of physics, checked by plain, tested code." | The diagram from the How we know page | Ready |
-| 8 | 2:10 | The How we know page: real videos called impossible, generated videos caught, the intervals, and the comparison with asking Muse Spark. | "We tested Pisa on videos whose answer we know. [N] of [M] real videos were called impossible. It caught [X] of [Y] generated ones. When it can't measure, it says so." | The filmed eval, scored and published | Needs the real and generated clips |
-| 9 | 2:40 | The limits list, then the logo and the tagline. | "Pisa can't check faces or voices, and generators will learn to fall correctly. That's why it checks several laws at once, and shows its work. AI can fake pixels. It can't fake physics." | Nothing new | Ready |
-
-Bracketed numbers are filled from `eval/reports/published.json` after the filmed eval runs.
+| # | Time | On screen | Narration |
+|---|---|---|---|
+| 1 | 0:00 | The Kling clip, full screen. | "Two balls, dropped together, bouncing on the floor. This video was made by an AI video generator from a single photo of my room. Would you notice? Ask a chatbot, and you get an opinion. Pisa measures." |
+| 2 | 0:20 | pisa-theta.vercel.app, then Check a video, choose the Kling clip, Check. The progress steps Watching, Tracking, Measuring, Explaining. | "Pisa uses Meta's models where they are strong. Muse Spark watches the clip and finds every moment something falls or bounces. SAM 3.1 outlines each ball in every frame. Then our physics engine measures each flight and checks it against five laws every real fall obeys. The verdict always comes from the measurements, never from a model." |
+| 3 | 1:00 | The result: verdict, evidence video with the lime ghost, measurement cards. | "Physically impossible. Each flight between bounces is measured on its own, and in a real video they all feel the same gravity. Here, gravity changes by 1.35 times from one flight to the next. The lime ghost shows the path real gravity allows, and every number is measured, not guessed." |
+| 4 | 1:25 | The result for the real clip. | "Here is the real video. Same room, same balls. Eight flights, six bounces, and the two balls fall together. Consistent with real physics." |
+| 5 | 1:40 | A phone: forward the Kling clip to Pisa on WhatsApp, the acknowledgment, then the evidence video and verdict in Spanish. | "Most people meet these videos on WhatsApp, so Pisa lives there too. Forward the video, and the answer comes back in your language, with the evidence." |
+| 6 | 2:00 | The How we know page: the three numbers, the chart, then the table comparing Pisa with asking Muse Spark. | "Does it work? We tested Pisa on 40 videos whose answer we know. It called none of the 29 real videos impossible. It caught 1 of the 11 AI videos, and on most of them it said Inconclusive, because most AI clips online move the camera or are too short to measure. Asking Muse Spark directly caught more, but it called two real videos fake, and it can't show why. On 12 more real videos Pisa had never seen, it accused none." |
+| 7 | 2:40 | The landing page: what Pisa checks and skips, then the top with the tagline. | "Pisa checks falls, throws and bounces, not faces or voices. Generators will learn to fall better, so Pisa checks several laws at once and always shows its work. AI can fake pixels. It can't fake physics." |
 
 ## Before recording
 
-1. The filmed eval is scored and published (`make eval`, `make eval-baseline`, then `publish`), and the web app is redeployed so the How we know page shows it.
-2. The engine is deployed with paid calls on (`make deploy-engine PAID=true`), and the spend cap in `.env` (`PISA_SPEND_CAP_USD`) covers the rehearsal and the takes.
-3. Three clips are chosen and checked twice: the hook (generated, called impossible for a clear reason), the real drop (consistent), and the WhatsApp clip.
-4. The browser is at 1280 by 800, light theme, no extensions or bookmarks bar; the phone has notifications silenced.
-5. After recording, the engine goes back to free mode (`make deploy-engine`) unless the live demo needs it.
+1. The engine runs with paid calls on (`make deploy-engine PAID=true`), behind a $20 spend cap (`PISA_SPEND_CAP_USD`). Each check costs about two to six cents of the free credits.
+2. Rehearse once: upload the Kling clip and forward it on WhatsApp, so both paths are warm and you know how long they take.
+3. Browser window at about 1280 by 800, no bookmarks bar; phone notifications silenced.
 
 ## Recording notes
 
-- Record each shot separately and cut them together; the analysis takes longer than a demo should, so shot 3 can be trimmed.
+- Record three pieces: the Mac screen for shots 1 to 4, the phone screen for shot 5, the Mac screen for shots 6 and 7. Join them in QuickTime (Edit > Add Clip to End) or iMovie.
+- The analysis takes about 40 seconds; keep talking through shot 2, or trim the wait.
 - Keep the cursor still while the ghost plays.
-- Captions in English; the WhatsApp shot stays in Spanish to show the language detection.
+- Upload to YouTube as Unlisted and paste the link in the form.

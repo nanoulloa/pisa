@@ -1,5 +1,19 @@
 # Progress
 
+## Day 16 · Wednesday, Nov 4 (submission day)
+
+### Done
+
+- **Unseen clips:** 12 more real Physics-IQ clips (take 2: ball and block, ball in basket, duck in box, and two scenarios never seen before, a mirror ball falling and a ball rolling off a table), run on the standard tier after the last rule change. No real clip judged impossible (0 of 12; up to 24%). All 12 Inconclusive: Muse Spark marks each fall at about 0.18 s (5 frames at 30 fps) or finds none, so nothing is measured. Asked directly, Muse Spark called 2 of these real clips AI-generated; one answer ran out of tokens and counts as unsure. $0.33 for the run and $0.18 for the baseline. Report: [eval/reports/holdout-v1.md](../eval/reports/holdout-v1.md).
+- **Published filmed-v2 (filmed-v1 plus the unseen clips, 40 clips):** 0 of 29 real judged impossible (0% to 12%), 1 of 11 generated caught (2% to 38%), 32 of 40 Inconclusive, 7 of 8 conclusive verdicts right. Muse Spark: 2 of 29 real called fake, 4 of 11 generated caught. The How we know page now shows it, with copy that names where the clips come from and why most AI clips are Inconclusive. Report: [eval/reports/filmed-v2.md](../eval/reports/filmed-v2.md).
+- **Paid calls on in production,** with the founder's yes, behind a $20 cap on the free credits (`make sync-secrets`, then `make deploy-engine PAID=true`). Checked on the live engine: the Kling clip is Physically impossible (T5, 1.35 times) and the real clip of the same room is Consistent (8 flights, 6 bounces, the pair falls together), $0.09 for both. Total spent on Meta Model API so far: about $1.60.
+- **Submission ready:** every form field answered in [SUBMISSION.md](SUBMISSION.md), in the form's order; the demo script has final narration with the live results ([DEMO_SCRIPT.md](DEMO_SCRIPT.md)).
+
+### Next
+
+- The founder records the demo, uploads it to YouTube as Unlisted and submits before 8 PM Costa Rica time.
+- After judging, switch paid calls off again (`make deploy-engine`).
+
 ## Day 15 · Tuesday, Nov 3
 
 ### Done
