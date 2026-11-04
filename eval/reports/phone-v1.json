@@ -1,0 +1,380 @@
+{
+  "name": "phone-v1",
+  "created_at": "2026-11-04T00:22:17.789653Z",
+  "engine_version": "0.1.0",
+  "policy_version": "0.1.0",
+  "synthetic": false,
+  "segmenter": "sam-3.1",
+  "planner": "muse-spark-1.3",
+  "confusion": [
+    {
+      "truth": "real",
+      "physically_impossible": 0,
+      "consistent_with_real_physics": 4,
+      "inconclusive": 2
+    },
+    {
+      "truth": "generated",
+      "physically_impossible": 0,
+      "consistent_with_real_physics": 0,
+      "inconclusive": 0
+    }
+  ],
+  "false_positive_rate": {
+    "count": 0,
+    "total": 6,
+    "value": 0.0,
+    "ci_low": 0.0,
+    "ci_high": 0.3903
+  },
+  "detection_rate": {
+    "count": 0,
+    "total": 0,
+    "value": null,
+    "ci_low": null,
+    "ci_high": null
+  },
+  "inconclusive_rate": {
+    "count": 2,
+    "total": 6,
+    "value": 0.3333,
+    "ci_low": 0.0968,
+    "ci_high": 0.7
+  },
+  "conclusive_accuracy": {
+    "count": 4,
+    "total": 4,
+    "value": 1.0,
+    "ci_low": 0.5101,
+    "ci_high": 1.0
+  },
+  "by_tag": [
+    {
+      "tag": "bounce",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 1
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "drop",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 1
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "handheld",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 1
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "pair",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 2,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "static",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 4,
+          "inconclusive": 1
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    },
+    {
+      "tag": "throw",
+      "rows": [
+        {
+          "truth": "real",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 1,
+          "inconclusive": 0
+        },
+        {
+          "truth": "generated",
+          "physically_impossible": 0,
+          "consistent_with_real_physics": 0,
+          "inconclusive": 0
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "test": "free_fall_shape",
+      "measured": {
+        "real": 4,
+        "generated": 0
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "galileo_pair",
+      "measured": {
+        "real": 2,
+        "generated": 0
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "bounce_energy",
+      "measured": {
+        "real": 4,
+        "generated": 0
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "implied_g",
+      "measured": {
+        "real": 0,
+        "generated": 0
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    },
+    {
+      "test": "time_base_consistency",
+      "measured": {
+        "real": 4,
+        "generated": 0
+      },
+      "violated": {
+        "real": 0,
+        "generated": 0
+      },
+      "decisive": {
+        "real": 0,
+        "generated": 0
+      },
+      "closest_call_real": null
+    }
+  ],
+  "latency_s": {
+    "median": 41.777,
+    "p90": 57.862,
+    "max": 57.862
+  },
+  "cost_usd": 0.133821,
+  "cost_usd_per_clip": {
+    "median": 0.023,
+    "p90": 0.0442,
+    "max": 0.0442
+  },
+  "clips": [
+    {
+      "id": "pair-01",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "galileo_pair",
+        "time_base_consistency"
+      ],
+      "latency_s": 57.862,
+      "cost_usd": 0.044171,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-01",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "bounce",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "time_base_consistency"
+      ],
+      "latency_s": 36.762,
+      "cost_usd": 0.027792,
+      "baseline": "real"
+    },
+    {
+      "id": "pair-02",
+      "truth": "real",
+      "tags": [
+        "pair",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "galileo_pair",
+        "time_base_consistency"
+      ],
+      "latency_s": 45.501,
+      "cost_usd": 0.024837,
+      "baseline": "real"
+    },
+    {
+      "id": "throw-01",
+      "truth": "real",
+      "tags": [
+        "throw",
+        "bounce",
+        "static"
+      ],
+      "verdict": "consistent_with_real_physics",
+      "reason_code": null,
+      "decisive_tests": [
+        "bounce_energy",
+        "free_fall_shape",
+        "time_base_consistency"
+      ],
+      "latency_s": 38.053,
+      "cost_usd": 0.021139,
+      "baseline": "real"
+    },
+    {
+      "id": "drop-02",
+      "truth": "real",
+      "tags": [
+        "drop",
+        "static"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "too_unclear",
+      "decisive_tests": [],
+      "latency_s": 19.368,
+      "cost_usd": 0.000419,
+      "baseline": "real"
+    },
+    {
+      "id": "bounce-handheld-01",
+      "truth": "real",
+      "tags": [
+        "bounce",
+        "handheld"
+      ],
+      "verdict": "inconclusive",
+      "reason_code": "no_measurable_events",
+      "decisive_tests": [],
+      "latency_s": 52.377,
+      "cost_usd": 0.015465,
+      "baseline": "real"
+    }
+  ],
+  "baseline": {
+    "model": "muse-spark-1.3-contributor",
+    "question": "Is this video real or AI-generated?",
+    "false_positive_rate": {
+      "count": 0,
+      "total": 6,
+      "value": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3903
+    },
+    "detection_rate": {
+      "count": 0,
+      "total": 0,
+      "value": null,
+      "ci_low": null,
+      "ci_high": null
+    },
+    "unsure_rate": {
+      "count": 0,
+      "total": 6,
+      "value": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.3903
+    },
+    "cost_usd": 0.00252
+  }
+}

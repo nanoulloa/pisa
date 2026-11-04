@@ -1,5 +1,19 @@
 # Progress
 
+## Day 15 · Tuesday, Nov 3
+
+### Done
+
+- **First filmed clips, through the real models:** two iPhone videos (60 fps) cut into six clips, one per throw, cropped or blurred so the founder's face is out of frame, with audio and location removed. Run with SAM 3.1 and Muse Spark on the contributor tier for $0.1338, plus $0.0025 for the baseline question.
+- **No real clip called impossible:** 4 Consistent with real physics (two Galileo pairs, a drop with three bounces, a downward throw), 2 Inconclusive (a fall Muse Spark judged too unclear, and the handheld clip that follows the ball, where the camera moved up to 645 px). Measured accelerations agree within 8% across flights in every clip; speed kept after each bounce 66 to 74%; the two balls of each pair fall at the same rate within 2% and 8%. Evidence videos checked frame by frame. Report: [eval/reports/phone-v1.md](../eval/reports/phone-v1.md).
+- **Baseline:** Muse Spark called all six real clips real, so the comparison only means something once generated clips are in.
+- **First frames for the generated clips** are in `eval/raw/phone-v1/frames/`, with the prompt for each.
+
+### Next
+
+- The founder generates one clip per first frame with a free image-to-video tool, then run, baseline, score and publish phone-v1.
+- The demo video and the submission, before Nov 4, 8 PM Costa Rica time.
+
 ## Day 9 · Wednesday, Oct 28
 
 ### Done
